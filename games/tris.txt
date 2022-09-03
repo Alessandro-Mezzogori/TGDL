@@ -1,0 +1,35 @@
+players 2
+    player 1 has cross
+    player 2 has circle
+
+global state:
+    turn cross -> circle
+        triggers:
+            player.state.action
+    board 9:
+        owned state:
+            tickedBy: none
+            action check(player):
+                require:    
+                    tickedBy is none
+
+local state cross:
+    action check(boardCell):
+        boardCell.check(this)
+
+local state circle:
+    action check(boardCell)
+        boardCell.check(this)
+
+goal:
+    trigger:
+        global.board.boardCell.check
+    require:
+        boardCell.1 boardCell.2 boardCell.3 has same player 
+        boardCell.4 boardCell.5 boardCell.6 has same player 
+        boardCell.7 boardCell.8 boardCell.9 has same player 
+        boardCell.1 boardCell.4 boardCell.7 has same player 
+        boardCell.2 boardCell.5 boardCell.8 has same player 
+        boardCell.3 boardCell.6 boardCell.9 has same player 
+        boardCell.1 boardCell.5 boardCell.9 has same player 
+        boardCell.3 boardCell.5 boardCell.7 has same player 
