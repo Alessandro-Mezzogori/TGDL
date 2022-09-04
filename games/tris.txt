@@ -1,4 +1,4 @@
-players 2
+players 2:
     player 1 has cross
     player 2 has circle
 
