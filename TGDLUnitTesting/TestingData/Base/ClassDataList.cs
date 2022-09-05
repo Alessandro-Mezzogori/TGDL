@@ -2,7 +2,9 @@
 
 namespace TGDLUnitTesting.TestingData
 {
-    internal abstract class ClassDataList<TInput, TOutput> : IEnumerable<object[]>
+    internal interface IClassDataList<out TInput, out TOutput> : IEnumerable<object[]> { }
+
+    internal abstract class ClassDataList<TInput, TOutput> : IClassDataList<TInput, TOutput>
         where TInput : notnull
         where TOutput : notnull
     {

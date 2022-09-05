@@ -22,5 +22,7 @@ public static class TokenConstants
     public const string ActionToken = "action";
 
     public const string ReturnToken = "return";
+
+    public const string ThisToken = "this";
 }
 

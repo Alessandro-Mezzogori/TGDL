@@ -12,7 +12,7 @@ namespace TGDLUnitTesting
         {
             if (shouldThrow)
             {
-                Assert.Throws<ParseException>(() => Parsers.Tokens.Identifier.Parse(input));
+                Assert.Throws<ParseException>(() => Grammar.Tokens.Identifier.Parse(input));
             } 
         }
 
@@ -23,7 +23,7 @@ namespace TGDLUnitTesting
         {
             if (shouldThrow)
             {
-                Assert.Throws<ParseException>(() => Parsers.Tokens.Type.Parse(input));
+                Assert.Throws<ParseException>(() => Grammar.Tokens.Type.Parse(input));
             }
         }
 

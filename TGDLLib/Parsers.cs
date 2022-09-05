@@ -3,17 +3,19 @@ using TGDLLib.Syntax;
 
 namespace TGDLLib;
 
-internal static class Parsers
+internal static class Grammar
 {
     internal static class Tokens
     {
+        private static readonly Parser<string> Token =
+            Parse.Letter.AtLeastOnce().Concat(Parse.LetterOrDigit.Many()).Text().Token();
+
         // Action Parsers
         public static readonly Parser<IdentifierSyntaxToken> Identifier =
-            Parse.Letter.AtLeastOnce().Text().Token().Select(x => new IdentifierSyntaxToken(x));
+            from token in Token select new IdentifierSyntaxToken(token);
 
         public static readonly Parser<TypeSyntaxToken> Type =
-            Parse.Letter.AtLeastOnce().Text().Token().Select(x => new TypeSyntaxToken(x));
-
+            from token in Token select new TypeSyntaxToken(token);
     }
 
     internal static class Operators
@@ -25,26 +27,25 @@ internal static class Parsers
         public static readonly Parser<Operation> Division = Parse.Char(TokenConstants.DivisionOperatorToken).Return(Operation.Division).Token();
         public static readonly Parser<Operation> Modulo = Parse.String(TokenConstants.ModulopOperatorToken).Return(Operation.Modulo).Token();
 
-        public static readonly Parser<Operation> LeftAssociativeOperators =
-            Addition.Or(Subtraction).Or(Moltiplication).Or(Division).Or(Modulo);
         // Right Associative
         public static readonly Parser<Operation> Power = Parse.Char(TokenConstants.PowerOperatorToken).Return(Operation.Power).Token();
-
-        public static readonly Parser<Operation> RightAssociativeOperators =
-            Power;
-
-        public static readonly Parser<Operation> All = LeftAssociativeOperators.Or(RightAssociativeOperators);
     }
 
     internal static class Expressions
     {
         public static readonly Parser<ExpressionSyntax> Expression =
-             Parse.Ref<ExpressionSyntax>(() => MemberAccessExpression)
-            .Or(Parse.Ref(() => LiteralExpression))
-            .Or(Parse.Ref(() => OperationExpression));
+            Parse.Ref<ExpressionSyntax>(() => OperationExpression)
+            .XOr(Parse.Ref(() => MemberAccessExpression))
+            .XOr(Parse.Ref(() => LiteralExpression));
+        
+
+        // TODO Redo all the parsers
+        public static readonly Parser<ExpressionSyntax> ExpressionReverse = 
+            Parse.Ref<ExpressionSyntax>(() => LiteralExpression)
+            .XOr(Parse.Ref(() => MemberAccessExpression))
+            .XOr(Parse.Ref(() => OperationExpression));
 
         private record LiteralExprHelper(string Literal, LiteralType Type);
-
         private static Parser<string> SignHelper(Parser<string> parser) =>
             from sign in Parse.Char(TokenConstants.SubtractionOperatorToken).Optional()
             from signed in parser
@@ -55,37 +56,49 @@ internal static class Parsers
                         .Or(SignHelper(Parse.Decimal).Select(dec => new LiteralExprHelper(dec, LiteralType.Double)))
             select new LiteralExpressionSyntax(helper.Literal, helper.Type);
 
-        public static readonly Parser<ExpressionSyntax> ChainAssociativeOperation =
-            Parse.ChainOperator( // TODO Gets used even for right associative
-                Operators.LeftAssociativeOperators,
-                Expression,
-                (op, left, right) => new OperationExpressionSyntax(left, op, right)
-            )
-            .Or(Parse.ChainRightOperator(
-                Operators.RightAssociativeOperators,
-                Expression,
-                (op, left, right) => new OperationExpressionSyntax (left, op, right)
-            ));
+        public static readonly Parser<ExpressionSyntax> InnerOperation =
+            Parse.ChainRightOperator(
+                Operators.Power,
+                ExpressionReverse,
+                (op, left, right) => new OperationExpressionSyntax(left, op, right));
 
-        public static readonly Parser<OperationExpressionSyntax> OperationExpression =
+        public static readonly Parser<ExpressionSyntax> Factor =
+            Parse.ChainOperator(
+                Operators.Moltiplication.Or(Operators.Division).Or(Operators.Modulo),
+                InnerOperation,
+                (op, left, right) => new OperationExpressionSyntax(left, op, right));
+
+        public static readonly Parser<ExpressionSyntax> Term =
+            Parse.ChainOperator(
+                Operators.Addition.Or(Operators.Subtraction),
+                Factor,
+                (op, left, right) => new OperationExpressionSyntax(left, op, right));
+
+        public static readonly Parser<ExpressionSyntax> OperationExpression =
             from leftParent in Parse.Char(TokenConstants.OperationStart).Optional()
-            from expression in ChainAssociativeOperation
+            from expression in Term
             from rightParent in Parse.Char(TokenConstants.OperationEnd).Optional()
-            select (OperationExpressionSyntax)expression; // ChainAssociativeOperaiton returns only OperationExpressionSyntax
+            select expression;
 
         public static readonly Parser<MemberAccessExpressionSyntax> MemberAccessExpression =
-            from identifier in Tokens.Identifier
-            from memberAccessOperator in Parse.Char(TokenConstants.MemberAccessOperator)
+            from identifier in (
+                from id in Tokens.Identifier
+                from memberAccessOperator in Parse.Char(TokenConstants.MemberAccessOperator)
+                select id
+            ).Optional()
             from member in Tokens.Identifier
-            select new MemberAccessExpressionSyntax(identifier, member);
+            select new MemberAccessExpressionSyntax(identifier.GetOrDefault() ?? new IdentifierSyntaxToken(TokenConstants.ThisToken), member);
     }
 
     internal static class Statements
     {
-        public static readonly Parser<ReturnStatement> ReturnStatement =
-            from returnToken in Parse.String(TokenConstants.ReturnToken)
+        public static readonly Parser<ReturnStatementSyntax> ReturnStatement =
+            from returnToken in Parse.String(TokenConstants.ReturnToken).Token()
             from expression in Expressions.Expression
-            select new ReturnStatement(expression);
+            select new ReturnStatementSyntax(expression);
+
+        // Assignment
+        // Invocation
 
         public static readonly Parser<StatementSyntax> Statement =
             ReturnStatement;
@@ -93,8 +106,18 @@ internal static class Parsers
 
     // TODO Rivedere la sintassi per il corpo delle azioni / Funzioni
     public static readonly Parser<BodySyntaxDeclaration> BodySyntax =
-        from statements in Statements.Statement.Many()
-        select new BodySyntaxDeclaration(statements);
+        (
+            // Openblock
+            from statements in Statements.Statement.Many()
+            // closeBlock
+            select new BodySyntaxDeclaration(statements)
+        )
+        .Or(
+            from returnStatement in Statements.ReturnStatement
+            select new SingleLineBodySyntaxDeclaration(returnStatement)
+        );
+
+
 
     public static readonly Parser<ParameterSyntaxDeclaration> ParameterSyntax =
         from type in Tokens.Type
@@ -124,7 +147,7 @@ internal static class Parsers
 
     public static readonly Parser<GameActionSyntaxDeclaration> GameActionSyntaxDeclaration =
         from actionToken in Parse.String(TokenConstants.ActionToken)
-        from identifier in Tokens.Identifier 
+        from identifier in Tokens.Identifier
         from openBlcok in Parse.Char(TokenConstants.BlockStart)
         from require in RequireSyntax.Optional()
         select new GameActionSyntaxDeclaration(identifier, require.GetOrDefault());

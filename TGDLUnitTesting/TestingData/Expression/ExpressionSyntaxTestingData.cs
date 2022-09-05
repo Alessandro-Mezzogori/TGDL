@@ -11,6 +11,31 @@ namespace TGDLUnitTesting.TestingData
             {
                 Input = "data.access",
                 Output = new MemberAccessExpressionSyntax(new("data"), new("access"))
+            },
+            new()
+            {
+                Input = "access",
+                Output = new MemberAccessExpressionSyntax(new("this"), new("access"))
+            },
+            new()
+            {
+                Input = "data.",
+                Output = new(),
+                Test = TestType.Fail
+            },
+            new()
+            {
+                Input = "1",
+                Output = new LiteralExpressionSyntax("1", LiteralType.Integer),
+            },
+            new()
+            {
+                Input = "1 + 2",
+                Output = new OperationExpressionSyntax(
+                    new LiteralExpressionSyntax("1", LiteralType.Integer),
+                    Operation.Addition,
+                    new LiteralExpressionSyntax("2", LiteralType.Integer)
+                )
             }
         };
     }

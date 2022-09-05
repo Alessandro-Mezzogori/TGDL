@@ -13,10 +13,18 @@ public class BodySyntaxDeclaration
     // - AssignmentExpression
     // - OperationExpression
     // - InvocationExpression
-    IEnumerable<StatementSyntax> Statements { get; }
+    public IEnumerable<StatementSyntax> Statements { get; }
 
     public BodySyntaxDeclaration(IEnumerable<StatementSyntax> statements)
     {
         Statements = statements;
+    }
+}
+
+public class SingleLineBodySyntaxDeclaration : BodySyntaxDeclaration
+{
+    public SingleLineBodySyntaxDeclaration(ReturnStatementSyntax returnStatement) 
+        : base(new ReturnStatementSyntax[] {returnStatement})
+    {
     }
 }

@@ -1,10 +1,10 @@
 ﻿namespace TGDLLib.Syntax;
 
-public class ReturnStatement : StatementSyntax
+public class ReturnStatementSyntax : StatementSyntax
 {
     // One Expression
     public ExpressionSyntax Expression { get; }
-    public ReturnStatement(ExpressionSyntax expression)
+    public ReturnStatementSyntax(ExpressionSyntax expression)
     {
         Expression = expression;
     }

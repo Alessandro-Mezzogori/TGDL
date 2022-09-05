@@ -29,19 +29,21 @@ internal static class TestingHelpers
     public static void TestParsingDataUnit<TOutput>(DataUnit<string, TOutput> unit, Parser<TOutput> Parser, IEqualityComparer<TOutput>? comparer)
         where TOutput: notnull
     {
-        Func<string, TOutput> conversionFunction = x => Parser.Parse(x);
         comparer ??= EqualityComparer<TOutput>.Default;
 
+        IResult<TOutput> result = Parser.TryParse(unit.Input);
         switch (unit.Test)
         {
             case TestType.Equal:
-                Assert.Equal(unit.Output, conversionFunction(unit.Input), comparer);
+                Assert.True(result.WasSuccessful);
+                Assert.Equal(unit.Output, result.Value, comparer);
                 break;
             case TestType.NotEqual:
-                Assert.NotEqual(unit.Output, conversionFunction(unit.Input), comparer);
+                Assert.True(result.WasSuccessful);
+                Assert.NotEqual(unit.Output, result.Value, comparer);
                 break;
             case TestType.Fail:
-                Assert.Throws<ParseException>(() => conversionFunction(unit.Input));
+                Assert.False(result.WasSuccessful);
                 break;
             default:
                 throw new NotImplementedException();

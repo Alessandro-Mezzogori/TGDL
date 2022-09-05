@@ -11,14 +11,20 @@ public class SyntaxParsing
     [ClassData(typeof(ParameterSyntaxDeclarationData))]
     public void ParameterSyntaxDeclarationTest(DataUnit<string, ParameterSyntaxDeclaration> unit)
     {
-        TestingHelpers.TestParsingDataUnit(unit, Parsers.ParameterSyntax, new ParameterSyntaxDeclarationComparer());
+        TestingHelpers.TestParsingDataUnit(unit, Grammar.ParameterSyntax, new ParameterSyntaxDeclarationComparer());
     }
 
     [Theory]
     [ClassData(typeof(ParametersSyntaxDeclarationData))]
     public void ParametersSyntaxDeclarationTest(DataUnit<string, IEnumerable<ParameterSyntaxDeclaration>> unit)
     {
-        TestingHelpers.TestParsingDataUnit(unit, Parsers.ParametersSyntax, new ParametersSyntaxDeclarationComparer());
+        TestingHelpers.TestParsingDataUnit(unit, Grammar.ParametersSyntax, new ParametersSyntaxDeclarationComparer());
+    }
+
+    [Theory, ClassData(typeof(BodySyntaxDeclarationTestingData))]
+    public void BodySyntaxDeclarationTest(DataUnit<string, BodySyntaxDeclaration> unit)
+    {
+        TestingHelpers.TestParsingDataUnit(unit, Grammar.BodySyntax, new BodySyntaxDeclarationComparer());
     }
 
     public void RequireLambdaExpressionDeclaration(DataUnit<string, RequireLambdaExpressionDeclaration> unit)
