@@ -3,5 +3,4 @@
 // Base class for all statements
 public class StatementSyntax
 {
-
 }
