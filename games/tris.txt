@@ -13,9 +13,13 @@ global state:
                 require:    
                     tickedBy is none
 
+local state active:
+
 local state cross:
     action check(boardCell):
         boardCell.check(this)
+    require:
+        
 
 local state circle:
     action check(boardCell)
