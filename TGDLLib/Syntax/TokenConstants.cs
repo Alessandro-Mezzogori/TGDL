@@ -7,6 +7,7 @@ public static class TokenConstants
 
     public const char MemberAccessOperator = '.';
 
+    public const char AssignmentOperator = '=';
     public const char AdditionOperatorToken = '+';
     public const char SubtractionOperatorToken = '-';
     public const char MoltiplicationOperatorToken = '*';
@@ -25,5 +26,13 @@ public static class TokenConstants
     public const string ReturnToken = "return";
 
     public const string ThisToken = "this";
+
+    public const string StateToken = "state";
+    public const string LocalToken = "state";
+    public const string GlobalToken = "global";
+    public const string GroupToken = "group";
+
+    public const string True = "true";
+    public const string False = "false";
 }
 
