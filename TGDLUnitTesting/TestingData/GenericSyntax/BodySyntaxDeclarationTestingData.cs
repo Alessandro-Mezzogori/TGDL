@@ -10,8 +10,45 @@ internal class BodySyntaxDeclarationTestingData : ParserDataList<BodySyntaxDecla
     {
         new()
         {
-            Input
+            Input = "=> return 1 + 1",
+            Output = new(new StatementSyntax[]
+            {
+                new ReturnStatementSyntax(
+                    new OperationExpressionSyntax(
+                        new LiteralExpressionSyntax("1", LiteralType.Integer),
+                        Operation.Addition,
+                        new LiteralExpressionSyntax("1", LiteralType.Integer)
+                    )
+                )
+            })
+        },
+        new()
+        {
+            Input = @"=>
+                        ",
+            Output = new(new StatementSyntax[0])
+        },
+        new() // Edge case, should i allow it ? 
+        {
+            Input = @"=>",
+            Output = new(new StatementSyntax[0])
+        },
+        new() // Edge case, should i allow it ? 
+        {
+            Input = @"=>
+                        return 1 + 1",
+            Output = new(new StatementSyntax[]
+            {
+                new ReturnStatementSyntax(
+                    new OperationExpressionSyntax(
+                        new LiteralExpressionSyntax("1", LiteralType.Integer),
+                        Operation.Addition,
+                        new LiteralExpressionSyntax("1", LiteralType.Integer)
+                    )
+                )
+            })
         }
+
     };
 }
 

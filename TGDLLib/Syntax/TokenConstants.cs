@@ -18,6 +18,7 @@ public static class TokenConstants
     public const char OperationEnd = ')';
 
     public const char BlockStart = ':';
+
     public const string RequireToken = "require";
     public const string ActionToken = "action";
 

@@ -5,7 +5,10 @@ namespace TGDLUnitTesting.TestingData;
 
 internal class StatementSyntaxTestingData : ParserDataList<StatementSyntax>
 {
-    public override List<DataUnit<string, StatementSyntax>> DataList => throw new NotImplementedException();
+    public override List<DataUnit<string, StatementSyntax>> DataList => new()
+    {
+
+    };
 }
 
 internal class StatementSyntaxComparer : IEqualityComparer<StatementSyntax>

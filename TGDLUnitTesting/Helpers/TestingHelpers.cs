@@ -1,37 +1,40 @@
 ﻿using Sprache;
 using TGDLUnitTesting.TestingData;
+using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace TGDLUnitTesting;
 
 internal static class TestingHelpers 
 {
-    public static void TestParsingDataUnit<TOutput>(DataUnit<string, TOutput> unit, Parser<TOutput> Parser, Func<TOutput, TOutput, bool> comparer)
+    public static void TestParsingDataUnit<TOutput>(DataUnit<string, TOutput> unit, Parser<TOutput> parser, Func<TOutput, TOutput, bool> comparer)
         where TOutput: notnull
     {
-        Func<string, TOutput> conversionFunction = x => Parser.Parse(x);
-
+        IResult<TOutput> result = ParseUnit(unit, parser);
         switch (unit.Test)
         {
             case TestType.Equal:
-                Assert.True(comparer(unit.Output, conversionFunction(unit.Input)));
+                Assert.True(result.WasSuccessful);
+                Assert.True(comparer(unit.Output, result.Value));
                 break;
             case TestType.NotEqual:
-                Assert.False(comparer(unit.Output, conversionFunction(unit.Input)));
+                Assert.True(result.WasSuccessful);
+                Assert.False(comparer(unit.Output, result.Value));
                 break;
             case TestType.Fail:
-                Assert.Throws<ParseException>(() => conversionFunction(unit.Input));
+                Assert.False(result.WasSuccessful);
                 break;
             default:
                 throw new NotImplementedException();
         }
     }
 
-    public static void TestParsingDataUnit<TOutput>(DataUnit<string, TOutput> unit, Parser<TOutput> Parser, IEqualityComparer<TOutput>? comparer)
+    public static void TestParsingDataUnit<TOutput>(DataUnit<string, TOutput> unit, Parser<TOutput> parser, IEqualityComparer<TOutput>? comparer)
         where TOutput: notnull
     {
         comparer ??= EqualityComparer<TOutput>.Default;
 
-        IResult<TOutput> result = Parser.TryParse(unit.Input);
+        IResult<TOutput> result = ParseUnit(unit, parser);
         switch (unit.Test)
         {
             case TestType.Equal:
@@ -48,5 +51,15 @@ internal static class TestingHelpers
             default:
                 throw new NotImplementedException();
         }
+    }
+
+    private static IResult<TOutput> ParseUnit<TOutput>(DataUnit<string, TOutput> unit, Parser<TOutput> parser) where TOutput : notnull
+    {
+        var result = parser.TryParse(unit.Input);
+        if (!result.WasSuccessful && unit.Test != TestType.Fail)
+        {
+            Console.WriteLine(result.Message);
+        }
+        return result;
     }
 }

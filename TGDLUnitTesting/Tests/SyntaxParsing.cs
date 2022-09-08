@@ -27,7 +27,7 @@ public class SyntaxParsing
         TestingHelpers.TestParsingDataUnit(unit, Grammar.BodySyntax, new BodySyntaxDeclarationComparer());
     }
 
-    public void RequireLambdaExpressionDeclaration(DataUnit<string, RequireLambdaExpressionDeclaration> unit)
+    public void RequireLambdaExpressionDeclaration(DataUnit<string, RequireLambdaSyntaxDeclaration> unit)
     {
     }
 }

@@ -2,9 +2,9 @@
 
 public class RequireSyntaxDeclaration
 {
-    public IEnumerable<RequireLambdaExpressionDeclaration> Expressions { get; }
+    public IEnumerable<RequireLambdaSyntaxDeclaration> Expressions { get; }
 
-    public RequireSyntaxDeclaration(IEnumerable<RequireLambdaExpressionDeclaration> expressions)
+    public RequireSyntaxDeclaration(IEnumerable<RequireLambdaSyntaxDeclaration> expressions)
     {
         Expressions = expressions;
     }

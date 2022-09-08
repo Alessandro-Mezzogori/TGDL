@@ -93,7 +93,8 @@ internal static class Grammar
     internal static class Statements
     {
         public static readonly Parser<ReturnStatementSyntax> ReturnStatement =
-            from returnToken in Parse.String(TokenConstants.ReturnToken).Token()
+            from returnToken in Parse.String(TokenConstants.ReturnToken)
+            from whitespace in Parse.WhiteSpace.AtLeastOnce()
             from expression in Expressions.Expression
             select new ReturnStatementSyntax(expression);
 
@@ -104,19 +105,19 @@ internal static class Grammar
             ReturnStatement;
     }
 
+
     // TODO Rivedere la sintassi per il corpo delle azioni / Funzioni
     public static readonly Parser<BodySyntaxDeclaration> BodySyntax =
-        (
-            // Openblock
-            from statements in Statements.Statement.Many()
-            // closeBlock
+        from body in 
+            from openBlock in Parse.String(TokenConstants.LambdaBodyDelimiter)
+            from allowedWhitespace in Parse.WhiteSpace.Many()
+            from statements in (
+                from statement in Statements.Statement
+                from endOfStatement in Parse.LineEnd.Or(Parse.LineTerminator)
+                select statement
+            ).Many()
             select new BodySyntaxDeclaration(statements)
-        )
-        .Or(
-            from returnStatement in Statements.ReturnStatement
-            select new SingleLineBodySyntaxDeclaration(returnStatement)
-        );
-
+        select body;
 
 
     public static readonly Parser<ParameterSyntaxDeclaration> ParameterSyntax =
@@ -133,12 +134,12 @@ internal static class Grammar
           ).Many()
           select new List<ParameterSyntaxDeclaration> { firstParameter }.Concat(otherParameters);
 
-    public static readonly Parser<RequireLambdaExpressionDeclaration> RequireLambdaExpression =
+    public static readonly Parser<RequireLambdaSyntaxDeclaration> RequireLambdaExpression =
         from parameters in ParametersSyntax.Optional()
         from delimiter in Parse.String(TokenConstants.LambdaBodyDelimiter)
         from openBlock in Parse.Char(TokenConstants.BlockStart)
         from body in BodySyntax
-        select new RequireLambdaExpressionDeclaration(parameters.GetOrElse(Enumerable.Empty<ParameterSyntaxDeclaration>()), body);
+        select new RequireLambdaSyntaxDeclaration(parameters.GetOrElse(Enumerable.Empty<ParameterSyntaxDeclaration>()), body);
 
     public static readonly Parser<RequireSyntaxDeclaration> RequireSyntax =
         from requireToken in Parse.String(TokenConstants.RequireToken)
