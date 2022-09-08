@@ -16,30 +16,30 @@ namespace TGDLUnitTesting.TestingData
             {
                 Input = "1 + 2",
                 Output = new OperationExpressionSyntax(
-                    new LiteralExpressionSyntax("1", LiteralType.Integer), 
+                    new LiteralExpressionSyntax("1", TGDLType.Decimal), 
                     Operation.Addition, 
-                    new LiteralExpressionSyntax("2", LiteralType.Integer)
+                    new LiteralExpressionSyntax("2", TGDLType.Decimal)
                 ),
             },
             new()
             {
                 Input = "(3 + 2)",
                 Output = new OperationExpressionSyntax(
-                    new LiteralExpressionSyntax("3", LiteralType.Integer), 
+                    new LiteralExpressionSyntax("3", TGDLType.Decimal), 
                     Operation.Addition, 
-                    new LiteralExpressionSyntax("2", LiteralType.Integer)
+                    new LiteralExpressionSyntax("2", TGDLType.Decimal)
                 ),
             },
             new()
             {
                 Input = "3 + (1 + 2)",
                 Output = new OperationExpressionSyntax(
-                    new LiteralExpressionSyntax("3", LiteralType.Integer), 
+                    new LiteralExpressionSyntax("3", TGDLType.Decimal), 
                     Operation.Addition, 
                     new OperationExpressionSyntax(
-                        new LiteralExpressionSyntax("1", LiteralType.Integer),
+                        new LiteralExpressionSyntax("1", TGDLType.Decimal),
                         Operation.Addition,
-                        new LiteralExpressionSyntax("2", LiteralType.Integer)
+                        new LiteralExpressionSyntax("2", TGDLType.Decimal)
                     )
                 ),
             },
@@ -47,12 +47,12 @@ namespace TGDLUnitTesting.TestingData
             {
                 Input = "3 - (1 + 2)",
                 Output = new OperationExpressionSyntax(
-                    new LiteralExpressionSyntax("3", LiteralType.Integer), 
+                    new LiteralExpressionSyntax("3", TGDLType.Decimal), 
                     Operation.Subtraction, 
                     new OperationExpressionSyntax(
-                        new LiteralExpressionSyntax("1", LiteralType.Integer),
+                        new LiteralExpressionSyntax("1", TGDLType.Decimal),
                         Operation.Addition,
-                        new LiteralExpressionSyntax("2", LiteralType.Integer)
+                        new LiteralExpressionSyntax("2", TGDLType.Decimal)
                     )
                 ),
             },
@@ -60,12 +60,12 @@ namespace TGDLUnitTesting.TestingData
             {
                 Input = "-3 - (1 - 2)",
                 Output = new OperationExpressionSyntax(
-                    new LiteralExpressionSyntax("-3", LiteralType.Integer), 
+                    new LiteralExpressionSyntax("-3", TGDLType.Decimal), 
                     Operation.Subtraction, 
                     new OperationExpressionSyntax(
-                        new LiteralExpressionSyntax("1", LiteralType.Integer),
+                        new LiteralExpressionSyntax("1", TGDLType.Decimal),
                         Operation.Subtraction,
-                        new LiteralExpressionSyntax("2", LiteralType.Integer)
+                        new LiteralExpressionSyntax("2", TGDLType.Decimal)
                     )
                 ),
             },
@@ -73,16 +73,16 @@ namespace TGDLUnitTesting.TestingData
             {
                 Input = "3 - (1 - 2 + 2)",
                 Output = new OperationExpressionSyntax(
-                    new LiteralExpressionSyntax("3", LiteralType.Integer), 
+                    new LiteralExpressionSyntax("3", TGDLType.Decimal), 
                     Operation.Subtraction, 
                     new OperationExpressionSyntax(
                         new OperationExpressionSyntax(
-                            new LiteralExpressionSyntax("1", LiteralType.Integer),
+                            new LiteralExpressionSyntax("1", TGDLType.Decimal),
                             Operation.Subtraction,
-                            new LiteralExpressionSyntax("2", LiteralType.Integer)
+                            new LiteralExpressionSyntax("2", TGDLType.Decimal)
                         ),
                         Operation.Addition,
-                        new LiteralExpressionSyntax ("2", LiteralType.Integer)
+                        new LiteralExpressionSyntax ("2", TGDLType.Decimal)
                     )
                 ),
             },
@@ -90,15 +90,15 @@ namespace TGDLUnitTesting.TestingData
             {
                 Input = "3 + (1 - (2 + 1))",
                 Output = new OperationExpressionSyntax(
-                    new LiteralExpressionSyntax("3", LiteralType.Integer), 
+                    new LiteralExpressionSyntax("3", TGDLType.Decimal), 
                     Operation.Addition, 
                     new OperationExpressionSyntax(
-                        new LiteralExpressionSyntax("1", LiteralType.Integer),
+                        new LiteralExpressionSyntax("1", TGDLType.Decimal),
                         Operation.Subtraction,
                         new OperationExpressionSyntax( 
-                            new LiteralExpressionSyntax("2", LiteralType.Integer),
+                            new LiteralExpressionSyntax("2", TGDLType.Decimal),
                             Operation.Addition,
-                            new LiteralExpressionSyntax("1", LiteralType.Integer)
+                            new LiteralExpressionSyntax("1", TGDLType.Decimal)
                         )
                     )
                 ),
@@ -107,15 +107,15 @@ namespace TGDLUnitTesting.TestingData
             {
                 Input = "3 / (1 * (2 mod 1))",
                 Output = new OperationExpressionSyntax(
-                    new LiteralExpressionSyntax("3", LiteralType.Integer), 
+                    new LiteralExpressionSyntax("3", TGDLType.Decimal), 
                     Operation.Division, 
                     new OperationExpressionSyntax(
-                        new LiteralExpressionSyntax("1", LiteralType.Integer),
+                        new LiteralExpressionSyntax("1", TGDLType.Decimal),
                         Operation.Moltiplication,
                         new OperationExpressionSyntax( 
-                            new LiteralExpressionSyntax("2", LiteralType.Integer),
+                            new LiteralExpressionSyntax("2", TGDLType.Decimal),
                             Operation.Modulo,
-                            new LiteralExpressionSyntax("1", LiteralType.Integer)
+                            new LiteralExpressionSyntax("1", TGDLType.Decimal)
                         )
                     )
                 ),
@@ -125,24 +125,24 @@ namespace TGDLUnitTesting.TestingData
                 Input = "3 / 2 / 1 )",
                 Output = new OperationExpressionSyntax(
                     new OperationExpressionSyntax(
-                        new LiteralExpressionSyntax("3", LiteralType.Integer), 
+                        new LiteralExpressionSyntax("3", TGDLType.Decimal), 
                         Operation.Division, 
-                        new LiteralExpressionSyntax("2", LiteralType.Integer)
+                        new LiteralExpressionSyntax("2", TGDLType.Decimal)
                     ),
                     Operation.Division,
-                    new LiteralExpressionSyntax("1", LiteralType.Integer)
+                    new LiteralExpressionSyntax("1", TGDLType.Decimal)
                 ),
             },
             new()
             {
                 Input = "3 ^ 2 ^ 1",
                 Output = new OperationExpressionSyntax(
-                    new LiteralExpressionSyntax("3", LiteralType.Integer),
+                    new LiteralExpressionSyntax("3", TGDLType.Decimal),
                     Operation.Power,
                     new OperationExpressionSyntax(
-                        new LiteralExpressionSyntax("2", LiteralType.Integer),
+                        new LiteralExpressionSyntax("2", TGDLType.Decimal),
                         Operation.Power,
-                        new LiteralExpressionSyntax("1", LiteralType.Integer)
+                        new LiteralExpressionSyntax("1", TGDLType.Decimal)
                     )
                 )
             },
@@ -150,20 +150,20 @@ namespace TGDLUnitTesting.TestingData
             {
                 Input = "1 - 3 ^ 2 ^ 1 mod 2",
                 Output = new OperationExpressionSyntax(
-                    new LiteralExpressionSyntax("1", LiteralType.Integer),
+                    new LiteralExpressionSyntax("1", TGDLType.Decimal),
                     Operation.Subtraction,
                     new OperationExpressionSyntax(
                         new OperationExpressionSyntax(
-                            new LiteralExpressionSyntax("3", LiteralType.Integer),
+                            new LiteralExpressionSyntax("3", TGDLType.Decimal),
                             Operation.Power,
                             new OperationExpressionSyntax(
-                                new LiteralExpressionSyntax("2", LiteralType.Integer),
+                                new LiteralExpressionSyntax("2", TGDLType.Decimal),
                                 Operation.Power,
-                                new LiteralExpressionSyntax("1", LiteralType.Integer)
+                                new LiteralExpressionSyntax("1", TGDLType.Decimal)
                             )
                         ),
                         Operation.Modulo,
-                        new LiteralExpressionSyntax("2", LiteralType.Integer)
+                        new LiteralExpressionSyntax("2", TGDLType.Decimal)
                     )
                 )
             },
@@ -171,12 +171,12 @@ namespace TGDLUnitTesting.TestingData
             {
                 Input = "this.access ^ 1 ^ 2",
                 Output = new OperationExpressionSyntax(
-                    new MemberAccessExpressionSyntax(new("this"), new("access")),
+                    new AttributeAccessExpressionSyntax(new("this"), new("access")),
                     Operation.Power,
                     new OperationExpressionSyntax(
-                        new LiteralExpressionSyntax("1", LiteralType.Integer),
+                        new LiteralExpressionSyntax("1", TGDLType.Decimal),
                         Operation.Power,
-                        new LiteralExpressionSyntax("2", LiteralType.Integer)
+                        new LiteralExpressionSyntax("2", TGDLType.Decimal)
                   )
                 )
             }

@@ -7,8 +7,14 @@ namespace TGDLUnitTesting
 {
     public class ExpressionParsing
     {
+        [Theory, ClassData(typeof(LiteralExpressionSyntaxTestingData))]
+        public void LiteralExpressionSyntaxTests(DataUnit<string, LiteralExpressionSyntax> unit)
+        {
+            TestingHelpers.TestParsingDataUnit(unit, Grammar.Expressions.LiteralExpression, new LiteralExpressionSyntaxComparer());
+        }
+
         [Theory, ClassData(typeof(MemberAccessExpressionSyntaxTestingData))]
-        public void MemberAccessExpressionSyntaxTest(DataUnit<string, MemberAccessExpressionSyntax> unit)
+        public void MemberAccessExpressionSyntaxTest(DataUnit<string, AttributeAccessExpressionSyntax> unit)
         {
             TestingHelpers.TestParsingDataUnit(unit, Grammar.Expressions.MemberAccessExpression, new MemberAccessExpressionSyntaxComparer());
         }

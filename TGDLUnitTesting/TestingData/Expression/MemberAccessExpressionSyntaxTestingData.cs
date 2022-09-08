@@ -3,9 +3,9 @@ using TGDLLib.Syntax;
 
 namespace TGDLUnitTesting.TestingData
 {
-    internal class MemberAccessExpressionSyntaxTestingData: ParserDataList<MemberAccessExpressionSyntax>
+    internal class MemberAccessExpressionSyntaxTestingData: ParserDataList<AttributeAccessExpressionSyntax>
     {
-        public override List<DataUnit<string, MemberAccessExpressionSyntax>> DataList => new()
+        public override List<DataUnit<string, AttributeAccessExpressionSyntax>> DataList => new()
         {
             new()
             {
@@ -21,9 +21,9 @@ namespace TGDLUnitTesting.TestingData
         };
     }
 
-    internal class MemberAccessExpressionSyntaxComparer : IEqualityComparer<MemberAccessExpressionSyntax>
+    internal class MemberAccessExpressionSyntaxComparer : IEqualityComparer<AttributeAccessExpressionSyntax>
     {
-        public bool Equals(MemberAccessExpressionSyntax? x, MemberAccessExpressionSyntax? y)
+        public bool Equals(AttributeAccessExpressionSyntax? x, AttributeAccessExpressionSyntax? y)
         {
             if (x == null && y == null) return true;
             if (x == null || y == null) return false;
@@ -31,7 +31,7 @@ namespace TGDLUnitTesting.TestingData
             return x.Target.Identifier == y.Target.Identifier && x.Member.Identifier == y.Member.Identifier;
         }
 
-        public int GetHashCode([DisallowNull] MemberAccessExpressionSyntax obj)
+        public int GetHashCode([DisallowNull] AttributeAccessExpressionSyntax obj)
         {
             return obj.GetHashCode();
         }

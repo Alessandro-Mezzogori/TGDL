@@ -16,14 +16,14 @@ namespace TGDLUnitTesting.TestingData
             {
                 Input = "return this.test",
                 Output = new(
-                    new MemberAccessExpressionSyntax(new("this"), new("test"))
+                    new AttributeAccessExpressionSyntax(new("this"), new("test"))
                 )
             },
             new()
             {
                 Input = "return test",
                 Output = new(
-                    new MemberAccessExpressionSyntax(new("this"), new("test"))
+                    new AttributeAccessExpressionSyntax(new("this"), new("test"))
                 )
             },
             new()
@@ -31,9 +31,9 @@ namespace TGDLUnitTesting.TestingData
                 Input = "return 1 + 1",
                 Output = new(
                     new OperationExpressionSyntax(
-                        new LiteralExpressionSyntax("1", LiteralType.Integer),
+                        new LiteralExpressionSyntax("1", TGDLType.Decimal),
                         Operation.Addition,
-                        new LiteralExpressionSyntax("1", LiteralType.Integer)
+                        new LiteralExpressionSyntax("1", TGDLType.Decimal)
                     )
                 )
             },
@@ -41,7 +41,7 @@ namespace TGDLUnitTesting.TestingData
             {
                 Input = "return 1",
                 Output = new(
-                    new LiteralExpressionSyntax("1", LiteralType.Integer)
+                    new LiteralExpressionSyntax("1", TGDLType.Decimal)
                 )
             },
 

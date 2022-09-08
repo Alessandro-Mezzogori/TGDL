@@ -10,12 +10,12 @@ namespace TGDLUnitTesting.TestingData
             new()
             {
                 Input = "data.access",
-                Output = new MemberAccessExpressionSyntax(new("data"), new("access"))
+                Output = new AttributeAccessExpressionSyntax(new("data"), new("access"))
             },
             new()
             {
                 Input = "access",
-                Output = new MemberAccessExpressionSyntax(new("this"), new("access"))
+                Output = new AttributeAccessExpressionSyntax(new("this"), new("access"))
             },
             new()
             {
@@ -26,15 +26,15 @@ namespace TGDLUnitTesting.TestingData
             new()
             {
                 Input = "1",
-                Output = new LiteralExpressionSyntax("1", LiteralType.Integer),
+                Output = new LiteralExpressionSyntax("1", TGDLType.Decimal),
             },
             new()
             {
                 Input = "1 + 2",
                 Output = new OperationExpressionSyntax(
-                    new LiteralExpressionSyntax("1", LiteralType.Integer),
+                    new LiteralExpressionSyntax("1", TGDLType.Decimal),
                     Operation.Addition,
-                    new LiteralExpressionSyntax("2", LiteralType.Integer)
+                    new LiteralExpressionSyntax("2", TGDLType.Decimal)
                 )
             }
         };
@@ -56,10 +56,10 @@ namespace TGDLUnitTesting.TestingData
                 // TODO Comparer
                 return xLiteral.Type == yLiteral.Type && xLiteral.Value == yLiteral.Value;
             }
-            else if(x is MemberAccessExpressionSyntax)
+            else if(x is AttributeAccessExpressionSyntax)
             {
-                var xAccess = (MemberAccessExpressionSyntax)x;
-                var yAccess = (MemberAccessExpressionSyntax)y;
+                var xAccess = (AttributeAccessExpressionSyntax)x;
+                var yAccess = (AttributeAccessExpressionSyntax)y;
 
                 return new MemberAccessExpressionSyntaxComparer().Equals(xAccess, yAccess);
             }
