@@ -1,6 +1,7 @@
 ﻿using TGDLLib;
 using TGDLLib.Syntax;
 using TGDLUnitTesting.TestingData;
+using TGDLUnitTesting.TestingData.GenericSyntax;
 
 namespace TGDLUnitTesting;
 
@@ -27,7 +28,28 @@ public class SyntaxParsing
         TestingHelpers.TestParsingDataUnit(unit, Grammar.BodySyntax, new BodySyntaxDeclarationComparer());
     }
 
-    public void RequireLambdaExpressionDeclaration(DataUnit<string, RequireLambdaSyntaxDeclaration> unit)
+    [Theory, ClassData(typeof(AttributeSyntaxDeclarationTestingData))]
+    public void AttributeSyntaxDeclarationTest(DataUnit<string, AttributeSyntaxDeclaration> unit)
     {
+        TestingHelpers.TestParsingDataUnit(unit, Grammar.Attribute, new AttributeSyntaxDeclarationComparer());
     }
+
+    [Theory, ClassData(typeof(StateSyntaxDeclarationTestingData))]
+    public void StateSyntaxDeclarationTest(DataUnit<string, StateSyntaxDeclaration> unit)
+    {
+        TestingHelpers.TestParsingDataUnit(unit, Grammar.State, new StateSyntaxDeclarationComparer());
+    }
+
+    [Theory, ClassData(typeof(LambdaSyntaxDeclarationTestingData))]
+    public void LambdaSyntaxDeclarationTest(DataUnit<string, LambdaSyntaxDeclaration> unit)
+    {
+        TestingHelpers.TestParsingDataUnit(unit, Grammar.Lambda, new LambdaSyntaxDeclarationComparer());
+    }
+
+    [Theory, ClassData(typeof(RequireSyntaxDeclarationTestingData))]
+    public void RequireSyntaxDeclarationTest(DataUnit<string, RequireSyntaxDeclaration> unit)
+    {
+        TestingHelpers.TestParsingDataUnit(unit, Grammar.Require, new RequireSyntaxDeclarationComparer());
+    }
+
 }
