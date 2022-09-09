@@ -26,17 +26,34 @@ internal class BodySyntaxDeclarationTestingData : ParserDataList<BodySyntaxDecla
         {
             Input = @"=>
                         ",
-            Output = new(new StatementSyntax[0])
+            Output = new(new StatementSyntax[0]),
+            Test = TestType.Fail
         },
         new() // Edge case, should i allow it ? 
         {
             Input = @"=>",
-            Output = new(new StatementSyntax[0])
+            Output = new(new StatementSyntax[0]),
+            Test = TestType.Fail
         },
         new() // Edge case, should i allow it ? 
         {
             Input = @"=>
                         return 1 + 1",
+            Output = new(new StatementSyntax[]
+            {
+                new ReturnStatementSyntax(
+                    new OperationExpressionSyntax(
+                        new LiteralExpressionSyntax("1", TGDLType.Decimal),
+                        Operation.Addition,
+                        new LiteralExpressionSyntax("1", TGDLType.Decimal)
+                    )
+                )
+            })
+        },
+        new() // Edge case, should i allow it ? 
+        {
+            Input = @"=>
+                        1 + 1",
             Output = new(new StatementSyntax[]
             {
                 new ReturnStatementSyntax(
