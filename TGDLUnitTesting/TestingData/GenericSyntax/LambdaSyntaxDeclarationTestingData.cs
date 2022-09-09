@@ -64,8 +64,8 @@ internal class LambdaSyntaxDeclarationTestingData : ParserDataList<LambdaSyntaxD
                         sf.Return(
                             sf.Operation(
                                 sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)),
-                                Operation.Addition,
-                                sf.Literal("1", sf.PredefinedType(TGDLType.Decimal))
+                                sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)),
+                                Operation.Addition
                             )
                         )
                     }
@@ -85,8 +85,8 @@ internal class LambdaSyntaxDeclarationTestingData : ParserDataList<LambdaSyntaxD
                         sf.Return(
                             sf.Operation(
                                 sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)),
-                                Operation.Addition,
-                                sf.Literal("1", sf.PredefinedType(TGDLType.Decimal))
+                                sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)),
+                                Operation.Addition
                             )
                         )
                     }

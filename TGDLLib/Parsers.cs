@@ -36,6 +36,23 @@ internal static class Grammar
 
         // Right Associative
         public static readonly Parser<Operation> Power = Parse.Char(TokenConstants.PowerOperatorToken).Return(Operation.Power).Token();
+
+        // Comparison operators
+
+        public static readonly Parser<ComparisonOperator> Equal = Parse.String(TokenConstants.EqualOperator).Return(ComparisonOperator.Equal).Token();
+        public static readonly Parser<ComparisonOperator> NotEqual = Parse.String(TokenConstants.NotEqualOperator).Return(ComparisonOperator.NotEqual).Token();
+        public static readonly Parser<ComparisonOperator> GreaterThan = Parse.Char(TokenConstants.GreaterThanOperator).Return(ComparisonOperator.GreaterThan).Token();
+        public static readonly Parser<ComparisonOperator> GreaterOrEqual = Parse.String(TokenConstants.GreaterOrEqualOperator).Return(ComparisonOperator.GreaterOrEqual).Token();
+        public static readonly Parser<ComparisonOperator> LessThan = Parse.Char(TokenConstants.LessThanOperator).Return(ComparisonOperator.LessThan).Token();
+        public static readonly Parser<ComparisonOperator> LessOrEqual = Parse.String(TokenConstants.LessOrEqualOperato).Return(ComparisonOperator.LessOrEqual).Token();
+
+        public static readonly Parser<ComparisonOperator> ComparisonOperators = 
+                Equal
+                .Or(NotEqual)
+                .Or(GreaterOrEqual)
+                .Or(GreaterThan)
+                .Or(LessOrEqual)
+                .Or(LessThan);
     }
 
     internal static class Literals
@@ -61,17 +78,20 @@ internal static class Grammar
     internal static class Expressions
     {
         public static readonly Parser<ExpressionSyntax> Expression =
-            Parse.Ref<ExpressionSyntax>(() => OperationExpression)
+            Parse.Ref<ExpressionSyntax>(() => ComparisonExpression)
+            .Or(Parse.Ref<ExpressionSyntax>(() => OperationExpression))
             .XOr(Parse.Ref(() => MemberAccessExpression))
-            .XOr(Parse.Ref(() => LiteralExpression));
-        
+            .XOr(Parse.Ref(() => LiteralExpression))
+            ;
+
 
         // TODO Redo all the parsers
-        public static readonly Parser<ExpressionSyntax> ExpressionReverse = 
+        public static readonly Parser<ExpressionSyntax> ExpressionReverse =
             Parse.Ref<ExpressionSyntax>(() => LiteralExpression)
             .Or(Parse.Ref(() => MemberAccessExpression))
-            .XOr(Parse.Ref(() => OperationExpression));
-
+            .Or(Parse.Ref(() => OperationExpression))
+            .XOr(Parse.Ref(() => ComparisonExpression))
+            ;
 
 
         public static readonly Parser<LiteralExpressionSyntax> LiteralExpression =
@@ -111,6 +131,12 @@ internal static class Grammar
             ).Optional()
             from member in Tokens.Identifier
             select new AttributeAccessExpressionSyntax(identifier.GetOrElse(new IdentifierSyntaxToken(TokenConstants.ThisToken)), member);
+
+        public static readonly Parser<ComparisonExpressionSyntax> ComparisonExpression =
+            from leftOperand in ExpressionReverse
+            from comparisonOperator in Operators.ComparisonOperators
+            from rightOperand in ExpressionReverse 
+            select SyntaxFactory.Comparison(leftOperand, rightOperand, comparisonOperator);
     }
 
     internal static class Statements

@@ -35,5 +35,15 @@ namespace TGDLUnitTesting
                 new OperationExpressionSyntaxComparer()
             );
         }
+
+        [Theory, ClassData(typeof(ComparisonExpressionSyntaxTestingData))]
+        public void ComparisonExpressionSyntaxTest(DataUnit<string, ComparisonExpressionSyntax> unit)
+        {
+            TestingHelpers.TestParsingDataUnit(
+                unit,
+                Grammar.Expressions.ComparisonExpression,
+                new ComparisonExpressionSyntaxComparer()
+            );
+        }
     }
 }

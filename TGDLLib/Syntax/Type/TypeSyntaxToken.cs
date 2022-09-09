@@ -13,7 +13,7 @@ public enum TGDLType
 }
 
 
-public abstract class TypeSyntax
+public abstract class TypeSyntax 
 {
     public bool IsDeclaredType { get; protected set; } = false;
     public bool IsPredifinedType { get; protected set; } = false;

@@ -15,6 +15,13 @@ public static class TokenConstants
     public const char PowerOperatorToken = '^';
     public const string ModulopOperatorToken = "mod";
 
+    public const string EqualOperator = "==";
+    public const string NotEqualOperator = "!=";
+    public const char GreaterThanOperator = '>';
+    public const string GreaterOrEqualOperator = ">=";
+    public const char LessThanOperator = '<';
+    public const string LessOrEqualOperato = "<=";
+
     public const char OperationStart = '(';
     public const char OperationEnd = ')';
 

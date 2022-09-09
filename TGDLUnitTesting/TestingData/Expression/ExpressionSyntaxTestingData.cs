@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using TGDLLib.Syntax;
 using TGDLUnitTesting.TestingData.GenericSyntax;
+using Xunit.Sdk;
 
 namespace TGDLUnitTesting.TestingData
 {
@@ -72,6 +73,13 @@ namespace TGDLUnitTesting.TestingData
                 var yOperation = (OperationExpressionSyntax)y;
 
                 return new OperationExpressionSyntaxComparer().Equals(xOperation, yOperation);
+            }
+            else if(x is ComparisonExpressionSyntax)
+            {
+                var xComparison = (ComparisonExpressionSyntax)x;
+                var yComparison = (ComparisonExpressionSyntax)y;
+
+                return new OperationExpressionSyntaxComparer().Equals(xComparison, yComparison); 
             }
 
             throw new NotImplementedException();
