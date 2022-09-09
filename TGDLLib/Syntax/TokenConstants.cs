@@ -28,7 +28,7 @@ public static class TokenConstants
     public const string ThisToken = "this";
 
     public const string StateToken = "state";
-    public const string LocalToken = "state";
+    public const string LocalToken = "local";
     public const string GlobalToken = "global";
     public const string GroupToken = "group";
 
