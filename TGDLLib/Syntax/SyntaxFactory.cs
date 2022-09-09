@@ -1,4 +1,6 @@
-﻿namespace TGDLLib.Syntax;
+﻿using System.Data;
+
+namespace TGDLLib.Syntax;
 
 public class SyntaxFactory
 {
@@ -66,9 +68,62 @@ public class SyntaxFactory
         return TypeDeclaration(TGDLType.State, typeIdentifier);
     }
 
-    public static void ParseLiteralExpressino(string literal)
+    public static LiteralExpressionSyntax Literal(string value, TGDLType type)
     {
-        // number
-        // 
+        return new LiteralExpressionSyntax(value, type);
+    }
+
+    public static AttributeSyntaxDeclaration StateAttribute(IdentifierSyntaxToken identifier, LiteralExpressionSyntax initializeValue)
+    {
+        return new AttributeSyntaxDeclaration(identifier, initializeValue);
+    }
+
+    public static StateScopeToken StateScope(StateScope scope)
+    {
+        return new StateScopeToken(scope);
+    } 
+
+    public static StateSyntaxDeclaration State(IdentifierSyntaxToken identifier, StateScopeToken? scope = null, IEnumerable<AttributeSyntaxDeclaration>? attributes = null)
+    {
+        scope ??= SyntaxFactory.StateScope(Syntax.StateScope.Local);
+        attributes ??= Enumerable.Empty<AttributeSyntaxDeclaration>();
+        return new StateSyntaxDeclaration(identifier, attributes, scope);
+    }
+
+    public static LambdaSyntaxDeclaration Lambda(BodySyntaxDeclaration body, IEnumerable<ParameterSyntaxDeclaration>? parameters = null)
+    {
+        parameters ??= Enumerable.Empty<ParameterSyntaxDeclaration>();
+        return new LambdaSyntaxDeclaration(parameters, body);
+    }
+
+    public static ParameterSyntaxDeclaration Parameter(TypeSyntax type, IdentifierSyntaxToken identifier)
+    {
+        return new ParameterSyntaxDeclaration(type, identifier);
+    }
+
+    public static BodySyntaxDeclaration Body(IEnumerable<StatementSyntax>? statements = null)
+    {
+        statements ??= Enumerable.Empty<StatementSyntax>();
+        return new BodySyntaxDeclaration(statements);
+    }
+
+    public static ReturnStatementSyntax Return(ExpressionSyntax expression)
+    {
+        return new ReturnStatementSyntax(expression);
+    }
+
+    public static OperationExpressionSyntax Operation(ExpressionSyntax left, Operation op, ExpressionSyntax right)
+    {
+        return new OperationExpressionSyntax(left, op, right);
+    }
+
+    public static AttributeAccessExpressionSyntax AttributeAccess(IdentifierSyntaxToken target, IdentifierSyntaxToken attribute)
+    {
+        return new AttributeAccessExpressionSyntax(target, attribute);
+    }
+
+    public static LiteralExpressionSyntax Literal(string value, PredefinedTypeSyntax type)
+    {
+        return new LiteralExpressionSyntax(value, type);
     }
 }
