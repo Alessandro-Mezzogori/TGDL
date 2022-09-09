@@ -28,7 +28,8 @@ namespace TGDLUnitTesting.TestingData
             if (x == null && y == null) return true;
             if (x == null || y == null) return false;
 
-            return x.Target.Identifier == y.Target.Identifier && x.Member.Identifier == y.Member.Identifier;
+            return x.Target.Identifier == y.Target.Identifier 
+                && x.Member.Identifier == y.Member.Identifier;
         }
 
         public int GetHashCode([DisallowNull] AttributeAccessExpressionSyntax obj)

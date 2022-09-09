@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using TGDLLib.Syntax;
+using TGDLUnitTesting.TestingData.GenericSyntax;
 
 namespace TGDLUnitTesting.TestingData
 {
@@ -10,20 +11,20 @@ namespace TGDLUnitTesting.TestingData
             new(){
                 Input = "bool testBool",
                 Output = new (
-                    new ("bool"),
+                    new PredefinedTypeSyntax(TGDLType.Bool),
                     new ("testBool"))
             },
             new(){
-                Input = "int testInt",
+                Input = "decimal testInt",
                 Output = new (
-                    new ("bool"),
+                    new PredefinedTypeSyntax(TGDLType.Bool),
                     new ("testInt")),
                 Test = TestType.NotEqual
             },
             new(){
                 Input = "string testString",
                 Output = new (
-                    new ("string"),
+                    new PredefinedTypeSyntax(TGDLType.String),
                     new ("testString"))
             },
         };
@@ -31,13 +32,14 @@ namespace TGDLUnitTesting.TestingData
 
     internal class ParameterSyntaxDeclarationComparer : IEqualityComparer<ParameterSyntaxDeclaration>
     {
+        private readonly TypeSyntaxComparer _typeComparer = new();
+
         public bool Equals(ParameterSyntaxDeclaration? x, ParameterSyntaxDeclaration? y)
         {
             if (x == null && y == null) return true;
             if (x == null || y == null) return false;
 
-            return x.Identifier.Identifier == y.Identifier.Identifier
-                   && x.Type.Type == y.Type.Type;
+            return x.Identifier.Identifier == y.Identifier.Identifier && _typeComparer.Equals(x.Type, y.Type);
         }
 
         public int GetHashCode([DisallowNull] ParameterSyntaxDeclaration obj)

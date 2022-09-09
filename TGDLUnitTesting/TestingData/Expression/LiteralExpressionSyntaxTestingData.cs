@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using TGDLLib.Syntax;
+using TGDLUnitTesting.TestingData.GenericSyntax;
 
 namespace TGDLUnitTesting.TestingData;
 
@@ -10,11 +11,6 @@ internal class LiteralExpressionSyntaxTestingData : ParserDataList<LiteralExpres
         new()
         {
             Input = "1",
-            Output = new("1", TGDLType.Decimal)
-        },
-        new()
-        {
-            Input = " 1 ",
             Output = new("1", TGDLType.Decimal)
         },
         new()
@@ -31,7 +27,7 @@ internal class LiteralExpressionSyntaxTestingData : ParserDataList<LiteralExpres
         },
         new()
         {
-            Input = "   1.0",
+            Input = "1.0",
             Output = new("1.0", TGDLType.Decimal)
         },
         new()
@@ -62,21 +58,33 @@ internal class LiteralExpressionSyntaxTestingData : ParserDataList<LiteralExpres
         },
         new()
         {
-            Input = "truetrue",
+            Input = "false2",
             Output = new("", TGDLType.Decimal),
             Test = TestType.Fail
+        },
+        new()
+        {
+            Input = "atruetrue",
+            Output = new("", TGDLType.Decimal),
+            Test = TestType.Fail
+        },
+        new() // logic error but parsing wise it is ok and it returns 1
+        {
+            Input = "1true",
+            Output = new("1", TGDLType.Decimal),
         },
     };
 }
 
 internal class LiteralExpressionSyntaxComparer : IEqualityComparer<LiteralExpressionSyntax>
 {
+    private TypeSyntaxComparer _typeComparer = new();
     public bool Equals(LiteralExpressionSyntax? x, LiteralExpressionSyntax? y)
     {
         if(x == null && y == null) return true;
         if(x == null || y == null) return false;
 
-        return x.Value == y.Value && x.Type.Type  == y.Type.Type;
+        return x.Value == y.Value && _typeComparer.Equals(x.Type, y.Type); 
     }
 
     public int GetHashCode([DisallowNull] LiteralExpressionSyntax obj)

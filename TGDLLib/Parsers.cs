@@ -14,8 +14,13 @@ internal static class Grammar
         public static readonly Parser<IdentifierSyntaxToken> Identifier =
             from token in Token select new IdentifierSyntaxToken(token);
 
-        public static readonly Parser<TypeSyntaxToken> Type =
-            from token in Token select new TypeSyntaxToken(token);
+        public static readonly Parser<TypeSyntax> Type =
+            from token in Token select SyntaxFactory.ParseTypeName(token);
+
+        public static readonly Parser<string> StateScope =
+            Parse.String(TokenConstants.LocalToken).Text()
+            .XOr(Parse.String(TokenConstants.GroupToken).Text())
+            .XOr(Parse.String(TokenConstants.GlobalToken).Text());
     }
 
     internal static class Operators
@@ -31,6 +36,28 @@ internal static class Grammar
         public static readonly Parser<Operation> Power = Parse.Char(TokenConstants.PowerOperatorToken).Return(Operation.Power).Token();
     }
 
+    internal static class Literals
+    {
+        public static readonly Parser<char> Sign = Parse.Char(TokenConstants.SubtractionOperatorToken);
+
+        public static readonly Parser<LiteralExpressionSyntax> Decimal = 
+            from sign in Sign.Optional()
+            from dec in Parse.DecimalInvariant
+            select new LiteralExpressionSyntax(sign.IsDefined ? sign.Get() + dec : dec,TGDLType.Decimal); // TODO check if decimal includes int or only doubles
+
+        public static readonly Parser<LiteralExpressionSyntax> String = 
+            from openQuote in Parse.Char('"')
+            from content in Parse.AnyChar.Until(Parse.Char('"')).Text()
+            select new LiteralExpressionSyntax(content, TGDLType.String);
+
+
+
+        public static readonly Parser<LiteralExpressionSyntax> Bool = 
+            from boolean in Parse.String(TokenConstants.True).XOr(Parse.String(TokenConstants.False)).Text()
+            from not in Parse.Not(Parse.LetterOrDigit.AtLeastOnce())
+            select  new LiteralExpressionSyntax(boolean, TGDLType.Bool); 
+    }
+
     internal static class Expressions
     {
         public static readonly Parser<ExpressionSyntax> Expression =
@@ -42,20 +69,16 @@ internal static class Grammar
         // TODO Redo all the parsers
         public static readonly Parser<ExpressionSyntax> ExpressionReverse = 
             Parse.Ref<ExpressionSyntax>(() => LiteralExpression)
-            .XOr(Parse.Ref(() => MemberAccessExpression))
+            .Or(Parse.Ref(() => MemberAccessExpression))
             .XOr(Parse.Ref(() => OperationExpression));
 
-        private record LiteralExprHelper(string Literal, LiteralType Type);
-        private static Parser<string> SignHelper(Parser<string> parser) =>
-            from sign in Parse.Char(TokenConstants.SubtractionOperatorToken).Optional()
-            from signed in parser
-            select (sign.IsDefined ? "-" : "") + signed;
+
 
         public static readonly Parser<LiteralExpressionSyntax> LiteralExpression =
-            from helper in SignHelper(Parse.Number).Select(integer => new LiteralExprHelper(integer, LiteralType.Integer))
-                        .Or(SignHelper(Parse.Decimal).Select(dec => new LiteralExprHelper(dec, LiteralType.Double)))
-            select new LiteralExpressionSyntax(helper.Literal, helper.Type);
-
+            Literals.Decimal
+            .Or(Literals.String)
+            .Or(Literals.Bool);
+            
         public static readonly Parser<ExpressionSyntax> InnerOperation =
             Parse.ChainRightOperator(
                 Operators.Power,
@@ -80,14 +103,14 @@ internal static class Grammar
             from rightParent in Parse.Char(TokenConstants.OperationEnd).Optional()
             select expression;
 
-        public static readonly Parser<MemberAccessExpressionSyntax> MemberAccessExpression =
+        public static readonly Parser<AttributeAccessExpressionSyntax> MemberAccessExpression =
             from identifier in (
                 from id in Tokens.Identifier
                 from memberAccessOperator in Parse.Char(TokenConstants.MemberAccessOperator)
                 select id
             ).Optional()
             from member in Tokens.Identifier
-            select new MemberAccessExpressionSyntax(identifier.GetOrDefault() ?? new IdentifierSyntaxToken(TokenConstants.ThisToken), member);
+            select new AttributeAccessExpressionSyntax(identifier.GetOrElse(new IdentifierSyntaxToken(TokenConstants.ThisToken)), member);
     }
 
     internal static class Statements
@@ -134,16 +157,35 @@ internal static class Grammar
           ).Many()
           select new List<ParameterSyntaxDeclaration> { firstParameter }.Concat(otherParameters);
 
-    public static readonly Parser<RequireLambdaSyntaxDeclaration> RequireLambdaExpression =
+    public static readonly Parser<LambdaSyntaxDeclaration> LambdaExpression =
         from parameters in ParametersSyntax.Optional()
         from delimiter in Parse.String(TokenConstants.LambdaBodyDelimiter)
         from openBlock in Parse.Char(TokenConstants.BlockStart)
         from body in BodySyntax
-        select new RequireLambdaSyntaxDeclaration(parameters.GetOrElse(Enumerable.Empty<ParameterSyntaxDeclaration>()), body);
+        select new LambdaSyntaxDeclaration(parameters.GetOrElse(Enumerable.Empty<ParameterSyntaxDeclaration>()), body);
+
+/*
+    public static readonly Parse<AttributeSyntaxDeclaration> AttributeDeclaration =
+        from identifier in Tokens.Identifier
+        from assignmentOperator in Parse.Char(TokenConstants.AssignmentOperator)
+        from defaultValue in Parse.AnyChar.AtLeastOnce().Until(Parse.LineEnd)
+        select 
+
+    public static readonly Parser<StateSyntaxDeclaration> State =
+        from scope in Tokens.StateScope.Optional()
+        from stateKeyword in Parse.String(TokenConstants.StateToken)
+        from identifier in Tokens.Identifier
+        from openStateToken in Parse.Char(TokenConstants.BlockStart)
+        from newLine in Parse.LineEnd
+            // attribute definitions
+            // action definitions
+        select new StateSyntaxDeclaration()
+
+
 
     public static readonly Parser<RequireSyntaxDeclaration> RequireSyntax =
         from requireToken in Parse.String(TokenConstants.RequireToken)
-        from lambdas in RequireLambdaExpression.AtLeastOnce()
+        from lambdas in LambdaExpression.AtLeastOnce()
         select new RequireSyntaxDeclaration(lambdas);
 
     public static readonly Parser<GameActionSyntaxDeclaration> GameActionSyntaxDeclaration =
@@ -152,4 +194,52 @@ internal static class Grammar
         from openBlcok in Parse.Char(TokenConstants.BlockStart)
         from require in RequireSyntax.Optional()
         select new GameActionSyntaxDeclaration(identifier, require.GetOrDefault());
+*/
+}
+
+
+public static class ParseExtensions
+{
+    public static Parser<string> Alone(string pattern)
+    {
+        var expectations = new string[] { pattern };
+        
+        return delegate (IInput i) 
+        {
+             if (!i.AtEnd)
+            {
+                IInput input = i;
+                string text = i.Source.Substring(i.Position);
+
+                var result = text.StartsWith(pattern);
+                if (result)
+                {
+                    var charAfterPattern = text.Substring(pattern.Length).FirstOrDefault();
+                    if(charAfterPattern == default || char.IsWhiteSpace(charAfterPattern))
+                        return Result.Success(pattern, input);
+                }
+
+                return Result.Failure<string>(input, $"expected {pattern}", expectations);
+            }
+
+            return Result.Failure<string>(i, "Unexpected end of input", expectations);
+        };
+    }
+/*
+    public static Parser<string> StringNotConsuming(string s)
+    {
+        if(s == null)
+        {
+            throw new ArgumentNullException(nameof(s));
+        }
+
+        return s.ToEnumerable()
+            .Select(new Func<char, Parser<char>>(Char))
+            .Aggregate(
+                Return(Enumerable.Empty<char>()), 
+                (Parser<IEnumerable<char>> a, Parser<char> p) => a.Concat(p.Once()))
+                .Named(s);
+
+            
+    }*/
 }

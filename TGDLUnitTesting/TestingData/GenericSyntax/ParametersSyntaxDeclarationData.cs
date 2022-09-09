@@ -3,34 +3,26 @@ using TGDLLib.Syntax;
 
 namespace TGDLUnitTesting.TestingData
 {
+    // TODO Remove default predefined types in parameters list
+    // only state or special predefined can be 
     internal class ParametersSyntaxDeclarationData : ParserDataList<IEnumerable<ParameterSyntaxDeclaration>>
     {
         public override List<DataUnit<string, IEnumerable<ParameterSyntaxDeclaration>>> DataList => new()
         {
             new(){
-                Input = "bool Bool, int Int, player Player",
+                Input = "bool Bool, decimal Int, player Player",
                 Output = new List<ParameterSyntaxDeclaration>
                 {
-                    new(new("bool"), new("Bool")),
-                    new(new("int"), new("Int")),
-                    new(new("player"), new("Player"))
+                    new(SyntaxFactory.PredefinedType(TGDLType.Bool), new("Bool")),
+                    new(SyntaxFactory.PredefinedType(TGDLType.Decimal), new("Int")),
+                    new(SyntaxFactory.SuppliedPredefinedType(TGDLType.Player), new("Player")),
                 }
-            },
-            new(){
-                Input = "bool Bool, player Int, player Player",
-                Output = new List<ParameterSyntaxDeclaration>
-                {
-                    new(new("bool"), new("Bool")),
-                    new(new("int"), new("Int")),
-                    new(new("player"), new("Player"))
-                },
-                Test = TestType.NotEqual
             },
             new(){
                 Input = "bool Bool",
                 Output = new List<ParameterSyntaxDeclaration>
                 {
-                    new(new("bool"), new("Bool")),
+                    new(SyntaxFactory.PredefinedType(TGDLType.Bool), new("Bool")),
                 },
                 Test = TestType.Equal      
             },

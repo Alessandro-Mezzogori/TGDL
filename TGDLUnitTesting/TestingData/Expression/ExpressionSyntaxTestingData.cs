@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using TGDLLib.Syntax;
+using TGDLUnitTesting.TestingData.GenericSyntax;
 
 namespace TGDLUnitTesting.TestingData
 {
@@ -42,6 +43,7 @@ namespace TGDLUnitTesting.TestingData
 
     internal class ExpressionSyntaxComparer : IEqualityComparer<ExpressionSyntax>
     {
+        private readonly TypeSyntaxComparer _typeComparer = new();
         public bool Equals(ExpressionSyntax? x, ExpressionSyntax? y)
         {
             if(x == null && y == null) return true;
@@ -54,7 +56,8 @@ namespace TGDLUnitTesting.TestingData
                 var yLiteral = (LiteralExpressionSyntax)y;
 
                 // TODO Comparer
-                return xLiteral.Type == yLiteral.Type && xLiteral.Value == yLiteral.Value;
+                return _typeComparer.Equals(xLiteral.Type, yLiteral.Type) 
+                    && xLiteral.Value == yLiteral.Value;
             }
             else if(x is AttributeAccessExpressionSyntax)
             {

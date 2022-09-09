@@ -191,11 +191,7 @@ namespace TGDLUnitTesting.TestingData
         {
             if(x == null && y == null) return true;
             if(x == null || y == null) return false;
-            if (x is not OperationExpressionSyntax || y is not OperationExpressionSyntax) return false;
-
-
-            var xOp = (OperationExpressionSyntax)x;
-            var yOp = (OperationExpressionSyntax)y;
+            if (x is not OperationExpressionSyntax xOp || y is not OperationExpressionSyntax yOp) return false;
 
             return _comparer.Equals(xOp.LeftOperand, yOp.LeftOperand) &&
                     xOp.Operation == yOp.Operation &&

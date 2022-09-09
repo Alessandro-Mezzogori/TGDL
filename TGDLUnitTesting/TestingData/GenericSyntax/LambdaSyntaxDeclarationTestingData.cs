@@ -15,6 +15,7 @@ internal class LambdaSyntaxDeclarationComparer : IEqualityComparer<LambdaSyntaxD
 {
     private readonly ParameterSyntaxDeclarationComparer _parameterComparer = new();
     private readonly BodySyntaxDeclarationComparer _bodyComparer = new();
+    private readonly TypeSyntaxComparer _typeComparer = new();
 
     public bool Equals(LambdaSyntaxDeclaration? x, LambdaSyntaxDeclaration? y)
     {
@@ -22,9 +23,9 @@ internal class LambdaSyntaxDeclarationComparer : IEqualityComparer<LambdaSyntaxD
         if(x == null || y == null) return false;
 
         // Parameters comparison
-        return  !x.Parameters.Except(y.Parameters, _parameterComparer).Any()
+        return !x.Parameters.Except(y.Parameters, _parameterComparer).Any()
                 && _bodyComparer.Equals(x.Body, y.Body)
-                && x.ReturnType.Type == y.ReturnType.Type;
+                && _typeComparer.Equals(x.ReturnType, y.ReturnType);
     }
 
     public int GetHashCode([DisallowNull] LambdaSyntaxDeclaration obj)
