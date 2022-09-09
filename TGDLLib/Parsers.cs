@@ -1,4 +1,5 @@
 ﻿using Sprache;
+using System.Security.Cryptography;
 using TGDLLib.Syntax;
 
 namespace TGDLLib;
@@ -17,10 +18,11 @@ internal static class Grammar
         public static readonly Parser<TypeSyntax> Type =
             from token in Token select SyntaxFactory.ParseTypeName(token);
 
-        public static readonly Parser<string> StateScope =
-            Parse.String(TokenConstants.LocalToken).Text()
-            .XOr(Parse.String(TokenConstants.GroupToken).Text())
-            .XOr(Parse.String(TokenConstants.GlobalToken).Text());
+        public static readonly Parser<StateScopeToken> StateScope =
+            Parse.String(TokenConstants.LocalToken).Return(Syntax.StateScope.Local)
+            .Or(Parse.String(TokenConstants.GroupToken).Return(Syntax.StateScope.Group))
+            .Or(Parse.String(TokenConstants.GlobalToken).Return(Syntax.StateScope.Global))
+            .Select(x => SyntaxFactory.StateScope(x));
     }
 
     internal static class Operators
@@ -49,8 +51,6 @@ internal static class Grammar
             from openQuote in Parse.Char('"')
             from content in Parse.AnyChar.Until(Parse.Char('"')).Text()
             select new LiteralExpressionSyntax(content, TGDLType.String);
-
-
 
         public static readonly Parser<LiteralExpressionSyntax> Bool = 
             from boolean in Parse.String(TokenConstants.True).XOr(Parse.String(TokenConstants.False)).Text()
@@ -131,17 +131,20 @@ internal static class Grammar
 
     // TODO Rivedere la sintassi per il corpo delle azioni / Funzioni
     public static readonly Parser<BodySyntaxDeclaration> BodySyntax =
-        from body in 
-            from openBlock in Parse.String(TokenConstants.LambdaBodyDelimiter)
-            from allowedWhitespace in Parse.WhiteSpace.Many()
-            from statements in (
-                from statement in Statements.Statement
-                from endOfStatement in Parse.LineEnd.Or(Parse.LineTerminator)
-                select statement
-            ).Many()
-            select new BodySyntaxDeclaration(statements)
-        select body;
-
+        from openToken in Parse.String(TokenConstants.LambdaBodyDelimiter)
+        from openWhitespaces in Parse.WhiteSpace.Many()
+        from statements in (
+            from statement in Statements.Statement
+            from statementEnd in Parse.LineTerminator
+            select statement
+        ).AtLeastOnce()
+        .XOr(
+            from noStatements in Parse.Not(Parse.WhiteSpace.Many().Then(x => Parse.LineTerminator))
+            from expression in Expressions.Expression
+            from expressionEnd in Parse.LineTerminator
+            select new[] { SyntaxFactory.Return(expression)}
+        )
+        select SyntaxFactory.Body(statements);
 
     public static readonly Parser<ParameterSyntaxDeclaration> ParameterSyntax =
         from type in Tokens.Type
@@ -151,95 +154,52 @@ internal static class Grammar
     public static readonly Parser<IEnumerable<ParameterSyntaxDeclaration>> ParametersSyntax =
           from firstParameter in ParameterSyntax
           from otherParameters in (
-            from delimiter in Parse.Char(TokenConstants.ParameterDelimiterToken)
+            from delimiter in Parse.Char(TokenConstants.ParameterDelimiterToken).Token()
             from otherParameter in ParameterSyntax
             select otherParameter
           ).Many()
           select new List<ParameterSyntaxDeclaration> { firstParameter }.Concat(otherParameters);
 
-    public static readonly Parser<LambdaSyntaxDeclaration> LambdaExpression =
-        from parameters in ParametersSyntax.Optional()
-        from delimiter in Parse.String(TokenConstants.LambdaBodyDelimiter)
-        from openBlock in Parse.Char(TokenConstants.BlockStart)
+    public static readonly Parser<LambdaSyntaxDeclaration> Lambda =
+        from parameters in ParametersSyntax.Token().Optional()
         from body in BodySyntax
-        select new LambdaSyntaxDeclaration(parameters.GetOrElse(Enumerable.Empty<ParameterSyntaxDeclaration>()), body);
+        select SyntaxFactory.Lambda(body, parameters.GetOrDefault());
 
-/*
-    public static readonly Parse<AttributeSyntaxDeclaration> AttributeDeclaration =
+    public static readonly Parser<AttributeSyntaxDeclaration> Attribute =
         from identifier in Tokens.Identifier
-        from assignmentOperator in Parse.Char(TokenConstants.AssignmentOperator)
-        from defaultValue in Parse.AnyChar.AtLeastOnce().Until(Parse.LineEnd)
-        select 
+        from assignmentOperator in Parse.Char(TokenConstants.AssignmentOperator).Token()
+        from initializer in Expressions.LiteralExpression
+        select SyntaxFactory.StateAttribute(identifier, initializer);
 
     public static readonly Parser<StateSyntaxDeclaration> State =
-        from scope in Tokens.StateScope.Optional()
+        from scope in (   
+            from scope in Tokens.StateScope
+            from scopeWhitespace in Parse.WhiteSpace.AtLeastOnce()
+            select scope
+        ).Optional()
         from stateKeyword in Parse.String(TokenConstants.StateToken)
+        from stateWhitespace in Parse.WhiteSpace.AtLeastOnce()
         from identifier in Tokens.Identifier
-        from openStateToken in Parse.Char(TokenConstants.BlockStart)
-        from newLine in Parse.LineEnd
-            // attribute definitions
+        from attributes in
+        (
+            from openStateToken in Parse.Char(TokenConstants.BlockStart)
+            from newLine in Parse.LineEnd
+            from attributes in (
+                from attribute in Attribute
+                from endLine in Parse.LineTerminator
+                select attribute
+            ).Token().Many()
+            select attributes
+        ).Optional()
             // action definitions
-        select new StateSyntaxDeclaration()
+        select SyntaxFactory.State(identifier, scope.GetOrDefault(), attributes.GetOrDefault());
 
 
-
-    public static readonly Parser<RequireSyntaxDeclaration> RequireSyntax =
+    public static readonly Parser<RequireSyntaxDeclaration> Require =
         from requireToken in Parse.String(TokenConstants.RequireToken)
-        from lambdas in LambdaExpression.AtLeastOnce()
-        select new RequireSyntaxDeclaration(lambdas);
-
-    public static readonly Parser<GameActionSyntaxDeclaration> GameActionSyntaxDeclaration =
-        from actionToken in Parse.String(TokenConstants.ActionToken)
-        from identifier in Tokens.Identifier
-        from openBlcok in Parse.Char(TokenConstants.BlockStart)
-        from require in RequireSyntax.Optional()
-        select new GameActionSyntaxDeclaration(identifier, require.GetOrDefault());
-*/
+        from openRequire in Parse.Char(TokenConstants.BlockStart)
+        from openNewLine in Parse.LineEnd
+        from requirements in Lambda.AtLeastOnce()
+        select new RequireSyntaxDeclaration(requirements);
 }
 
-
-public static class ParseExtensions
-{
-    public static Parser<string> Alone(string pattern)
-    {
-        var expectations = new string[] { pattern };
-        
-        return delegate (IInput i) 
-        {
-             if (!i.AtEnd)
-            {
-                IInput input = i;
-                string text = i.Source.Substring(i.Position);
-
-                var result = text.StartsWith(pattern);
-                if (result)
-                {
-                    var charAfterPattern = text.Substring(pattern.Length).FirstOrDefault();
-                    if(charAfterPattern == default || char.IsWhiteSpace(charAfterPattern))
-                        return Result.Success(pattern, input);
-                }
-
-                return Result.Failure<string>(input, $"expected {pattern}", expectations);
-            }
-
-            return Result.Failure<string>(i, "Unexpected end of input", expectations);
-        };
-    }
-/*
-    public static Parser<string> StringNotConsuming(string s)
-    {
-        if(s == null)
-        {
-            throw new ArgumentNullException(nameof(s));
-        }
-
-        return s.ToEnumerable()
-            .Select(new Func<char, Parser<char>>(Char))
-            .Aggregate(
-                Return(Enumerable.Empty<char>()), 
-                (Parser<IEnumerable<char>> a, Parser<char> p) => a.Concat(p.Once()))
-                .Named(s);
-
-            
-    }*/
-}
