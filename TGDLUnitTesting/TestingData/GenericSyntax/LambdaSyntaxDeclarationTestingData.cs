@@ -1,5 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using TGDLLib.Syntax;
+
+using sf = TGDLLib.Syntax.SyntaxFactory;
 
 namespace TGDLUnitTesting.TestingData.GenericSyntax;
 
@@ -7,7 +10,90 @@ internal class LambdaSyntaxDeclarationTestingData : ParserDataList<LambdaSyntaxD
 {
     public override List<DataUnit<string, LambdaSyntaxDeclaration>> DataList => new()
     {
-        
+        new()
+        {
+            Input = "bool Bool, player Player => 1", // TODO "Bool" need new expression parameteraccess,
+            Output = sf.Lambda(
+                sf.Body(
+                    new[]{
+                        sf.Return(sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)))
+                    }
+                ),
+                new[]{
+                    sf.Parameter(sf.PredefinedType(TGDLType.Bool), sf.Identifier("Bool")),
+                    sf.Parameter(sf.SuppliedPredefinedType(TGDLType.Player), sf.Identifier("Player"))
+                }
+            )
+        },
+        new()
+        {
+            Input = "bool Bool, player Player => return 1", // TODO "Bool" need new expression parameteraccess,
+            Output = sf.Lambda(
+                sf.Body(
+                    new[]{
+                        sf.Return(sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)))
+                    }
+                ),
+                new[]{
+                    sf.Parameter(sf.PredefinedType(TGDLType.Bool), sf.Identifier("Bool")),
+                    sf.Parameter(sf.SuppliedPredefinedType(TGDLType.Player), sf.Identifier("Player"))
+                }
+            )
+        },
+        new()
+        {
+            Input = "player Player => ", // TODO "Bool" need new expression parameteraccess,
+            Output = sf.Lambda(
+                sf.Body(
+                    new[]{
+                        sf.Return(sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)))
+                    }
+                ),
+                new[]{
+                    sf.Parameter(sf.SuppliedPredefinedType(TGDLType.Player), sf.Identifier("Player"))
+                }
+            ),
+            Test = TestType.Fail
+        },
+        new()
+        {
+            Input = "player Player => 1 + 1 ", // TODO "Bool" need new expression parameteraccess,
+            Output = sf.Lambda(
+                sf.Body(
+                    new[]{
+                        sf.Return(
+                            sf.Operation(
+                                sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)),
+                                Operation.Addition,
+                                sf.Literal("1", sf.PredefinedType(TGDLType.Decimal))
+                            )
+                        )
+                    }
+                ),
+                new[]{
+                    sf.Parameter(sf.SuppliedPredefinedType(TGDLType.Player), sf.Identifier("Player"))
+                }
+            ),
+            Test = TestType.Fail
+        },
+        new()
+        {
+            Input = @"=> 1 + 1 ", // TODO "Bool" need new expression parameteraccess,
+            Output = sf.Lambda(
+                sf.Body(
+                    new[]{
+                        sf.Return(
+                            sf.Operation(
+                                sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)),
+                                Operation.Addition,
+                                sf.Literal("1", sf.PredefinedType(TGDLType.Decimal))
+                            )
+                        )
+                    }
+                )
+            ),
+            Test = TestType.Fail
+        },
     };
 }
 
@@ -23,7 +109,7 @@ internal class LambdaSyntaxDeclarationComparer : IEqualityComparer<LambdaSyntaxD
         if(x == null || y == null) return false;
 
         // Parameters comparison
-        return !x.Parameters.Except(y.Parameters, _parameterComparer).Any()
+        return  x.Parameters.SequenceEqual(y.Parameters, _parameterComparer)
                 && _bodyComparer.Equals(x.Body, y.Body)
                 && _typeComparer.Equals(x.ReturnType, y.ReturnType);
     }
