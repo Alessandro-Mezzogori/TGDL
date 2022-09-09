@@ -2,6 +2,6 @@
 
 public class AttributeSyntaxDeclaration
 {
-    public TypeSyntaxToken Type { get; }
+    public TypeSyntax Type { get; }
     public IdentifierSyntaxToken Identifier { get; }
 }
