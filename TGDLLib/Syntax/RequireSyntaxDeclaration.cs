@@ -2,10 +2,11 @@
 
 public class RequireSyntaxDeclaration
 {
-    public IEnumerable<RequireLambdaSyntaxDeclaration> Expressions { get; }
+    // all require lambda need to be checked so that they return bool 
+    public IEnumerable<LambdaSyntaxDeclaration> Requirements { get; } 
 
-    public RequireSyntaxDeclaration(IEnumerable<RequireLambdaSyntaxDeclaration> expressions)
+    public RequireSyntaxDeclaration(IEnumerable<LambdaSyntaxDeclaration> requirements)
     {
-        Expressions = expressions;
+        Requirements = requirements;
     }
 }
