@@ -2,17 +2,22 @@
 
 public enum StateScope
 {
-    Local,
+    Local = 0, // Default
     Group,
     Global
 }
 
-public class StateScopeToken
+public class StateScopeToken : IEquatable<StateScopeToken>
 {
     public StateScope Scope { get; set; }
 
     public StateScopeToken(StateScope scope)
     {
         Scope = scope;
+    }
+
+    public bool Equals(StateScopeToken? other)
+    {
+        return other != null && other.Scope == Scope;
     }
 }
