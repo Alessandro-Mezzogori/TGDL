@@ -44,6 +44,14 @@ namespace TGDLUnitTesting.TestingData
                     new LiteralExpressionSyntax("1", TGDLType.Decimal)
                 )
             },
+            new()
+            {
+                Input = "1",
+                Output = new(
+                    new LiteralExpressionSyntax("1", TGDLType.Decimal)
+                ),
+                Test = TestType.Fail
+            },
 
         };
     }

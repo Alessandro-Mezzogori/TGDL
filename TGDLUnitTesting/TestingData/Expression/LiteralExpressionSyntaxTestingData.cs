@@ -84,7 +84,7 @@ internal class LiteralExpressionSyntaxComparer : IEqualityComparer<LiteralExpres
         if(x == null && y == null) return true;
         if(x == null || y == null) return false;
 
-        return x.Value == y.Value && _typeComparer.Equals(x.Type, y.Type); 
+        return x.Value == y.Value && x.Type.Equals(y.Type); 
     }
 
     public int GetHashCode([DisallowNull] LiteralExpressionSyntax obj)
