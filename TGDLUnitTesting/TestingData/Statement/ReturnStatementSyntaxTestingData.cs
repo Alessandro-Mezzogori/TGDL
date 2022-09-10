@@ -30,9 +30,9 @@ namespace TGDLUnitTesting.TestingData
             {
                 Input = "return 1 + 1",
                 Output = new(
-                    new OperationExpressionSyntax(
+                    new BinaryOperationExpressionSyntax(
                         new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                        Operation.Addition,
+                        OperatorKind.Addition,
                         new LiteralExpressionSyntax("1", TGDLType.Decimal)
                     )
                 )

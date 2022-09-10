@@ -1,4 +1,5 @@
 ﻿using Sprache;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using TGDLLib.Syntax;
 
@@ -28,31 +29,23 @@ internal static class Grammar
     internal static class Operators
     {
         // Left Associative 
-        public static readonly Parser<Operation> Addition = Parse.Char(TokenConstants.AdditionOperatorToken).Return(Operation.Addition).Token();
-        public static readonly Parser<Operation> Subtraction = Parse.Char(TokenConstants.SubtractionOperatorToken).Return(Operation.Subtraction).Token();
-        public static readonly Parser<Operation> Moltiplication = Parse.Char(TokenConstants.MoltiplicationOperatorToken).Return(Operation.Moltiplication).Token();
-        public static readonly Parser<Operation> Division = Parse.Char(TokenConstants.DivisionOperatorToken).Return(Operation.Division).Token();
-        public static readonly Parser<Operation> Modulo = Parse.String(TokenConstants.ModulopOperatorToken).Return(Operation.Modulo).Token();
+        public static readonly Parser<OperatorKind> Addition = Parse.Char(TokenConstants.AdditionOperatorToken).Return(OperatorKind.Addition).Token();
+        public static readonly Parser<OperatorKind> Subtraction = Parse.Char(TokenConstants.SubtractionOperatorToken).Return(OperatorKind.Subtraction).Token();
+        public static readonly Parser<OperatorKind> Moltiplication = Parse.Char(TokenConstants.MoltiplicationOperatorToken).Return(OperatorKind.Moltiplication).Token();
+        public static readonly Parser<OperatorKind> Division = Parse.Char(TokenConstants.DivisionOperatorToken).Return(OperatorKind.Division).Token();
+        public static readonly Parser<OperatorKind> Modulo = Parse.String(TokenConstants.ModulopOperatorToken).Return(OperatorKind.Modulo).Token();
 
         // Right Associative
-        public static readonly Parser<Operation> Power = Parse.Char(TokenConstants.PowerOperatorToken).Return(Operation.Power).Token();
+        public static readonly Parser<OperatorKind> Power = Parse.Char(TokenConstants.PowerOperatorToken).Return(OperatorKind.Power).Token();
 
-        // Comparison operators
+        // Comparison operators all are left associative
 
-        public static readonly Parser<ComparisonOperator> Equal = Parse.String(TokenConstants.EqualOperator).Return(ComparisonOperator.Equal).Token();
-        public static readonly Parser<ComparisonOperator> NotEqual = Parse.String(TokenConstants.NotEqualOperator).Return(ComparisonOperator.NotEqual).Token();
-        public static readonly Parser<ComparisonOperator> GreaterThan = Parse.Char(TokenConstants.GreaterThanOperator).Return(ComparisonOperator.GreaterThan).Token();
-        public static readonly Parser<ComparisonOperator> GreaterOrEqual = Parse.String(TokenConstants.GreaterOrEqualOperator).Return(ComparisonOperator.GreaterOrEqual).Token();
-        public static readonly Parser<ComparisonOperator> LessThan = Parse.Char(TokenConstants.LessThanOperator).Return(ComparisonOperator.LessThan).Token();
-        public static readonly Parser<ComparisonOperator> LessOrEqual = Parse.String(TokenConstants.LessOrEqualOperato).Return(ComparisonOperator.LessOrEqual).Token();
-
-        public static readonly Parser<ComparisonOperator> ComparisonOperators = 
-                Equal
-                .Or(NotEqual)
-                .Or(GreaterOrEqual)
-                .Or(GreaterThan)
-                .Or(LessOrEqual)
-                .Or(LessThan);
+        public static readonly Parser<OperatorKind> Equal = Parse.String(TokenConstants.EqualOperator).Return(OperatorKind.Equal).Token();
+        public static readonly Parser<OperatorKind> NotEquals = Parse.String(TokenConstants.NotEqualOperator).Return(OperatorKind.NotEqual).Token();
+        public static readonly Parser<OperatorKind> GreaterThan = Parse.Char(TokenConstants.GreaterThanOperator).Return(OperatorKind.GreaterThan).Token();
+        public static readonly Parser<OperatorKind> GreaterOrEqual = Parse.String(TokenConstants.GreaterOrEqualOperator).Return(OperatorKind.GreaterOrEqual).Token();
+        public static readonly Parser<OperatorKind> LessThan = Parse.Char(TokenConstants.LessThanOperator).Return(OperatorKind.LessThan).Token();
+        public static readonly Parser<OperatorKind> LessOrEqual = Parse.String(TokenConstants.LessOrEqualOperato).Return(OperatorKind.LessOrEqual).Token();
     }
 
     internal static class Literals
@@ -62,7 +55,7 @@ internal static class Grammar
         public static readonly Parser<LiteralExpressionSyntax> Decimal = 
             from sign in Sign.Optional()
             from dec in Parse.DecimalInvariant
-            select new LiteralExpressionSyntax(sign.IsDefined ? sign.Get() + dec : dec,TGDLType.Decimal); // TODO check if decimal includes int or only doubles
+            select new LiteralExpressionSyntax(sign.IsDefined ? sign.Get() + dec : dec,TGDLType.Decimal); 
 
         public static readonly Parser<LiteralExpressionSyntax> String = 
             from openQuote in Parse.Char('"')
@@ -77,53 +70,13 @@ internal static class Grammar
 
     internal static class Expressions
     {
-        public static readonly Parser<ExpressionSyntax> Expression =
-            Parse.Ref<ExpressionSyntax>(() => ComparisonExpression)
-            .Or(Parse.Ref<ExpressionSyntax>(() => OperationExpression))
-            .XOr(Parse.Ref(() => MemberAccessExpression))
-            .XOr(Parse.Ref(() => LiteralExpression))
-            ;
-
-
-        // TODO Redo all the parsers
-        public static readonly Parser<ExpressionSyntax> ExpressionReverse =
-            Parse.Ref<ExpressionSyntax>(() => LiteralExpression)
-            .Or(Parse.Ref(() => MemberAccessExpression))
-            .Or(Parse.Ref(() => OperationExpression))
-            .XOr(Parse.Ref(() => ComparisonExpression))
-            ;
-
-
         public static readonly Parser<LiteralExpressionSyntax> LiteralExpression =
             Literals.Decimal
             .Or(Literals.String)
-            .Or(Literals.Bool);
-            
-        public static readonly Parser<ExpressionSyntax> InnerOperation =
-            Parse.ChainRightOperator(
-                Operators.Power,
-                ExpressionReverse,
-                (op, left, right) => new OperationExpressionSyntax(left, op, right));
+            .Or(Literals.Bool)
+            .Named("Literal");
 
-        public static readonly Parser<ExpressionSyntax> Factor =
-            Parse.ChainOperator(
-                Operators.Moltiplication.Or(Operators.Division).Or(Operators.Modulo),
-                InnerOperation,
-                (op, left, right) => new OperationExpressionSyntax(left, op, right));
-
-        public static readonly Parser<ExpressionSyntax> Term =
-            Parse.ChainOperator(
-                Operators.Addition.Or(Operators.Subtraction),
-                Factor,
-                (op, left, right) => new OperationExpressionSyntax(left, op, right));
-
-        public static readonly Parser<ExpressionSyntax> OperationExpression =
-            from leftParent in Parse.Char(TokenConstants.OperationStart).Optional()
-            from expression in Term
-            from rightParent in Parse.Char(TokenConstants.OperationEnd).Optional()
-            select expression;
-
-        public static readonly Parser<AttributeAccessExpressionSyntax> MemberAccessExpression =
+        public static readonly Parser<AttributeAccessExpressionSyntax> AttributeAccessExpression =
             from identifier in (
                 from id in Tokens.Identifier
                 from memberAccessOperator in Parse.Char(TokenConstants.MemberAccessOperator)
@@ -132,11 +85,48 @@ internal static class Grammar
             from member in Tokens.Identifier
             select new AttributeAccessExpressionSyntax(identifier.GetOrElse(new IdentifierSyntaxToken(TokenConstants.ThisToken)), member);
 
-        public static readonly Parser<ComparisonExpressionSyntax> ComparisonExpression =
-            from leftOperand in ExpressionReverse
-            from comparisonOperator in Operators.ComparisonOperators
-            from rightOperand in ExpressionReverse 
-            select SyntaxFactory.Comparison(leftOperand, rightOperand, comparisonOperator);
+        public static readonly Parser<ExpressionSyntax> ValidExpressions =
+            LiteralExpression
+            .Or<ExpressionSyntax>(AttributeAccessExpression)
+            .XOr(Parse.Ref(() => Expression).InParenthesis()) // Through recursion all inner expressions will have the optional parenthesis
+            .Named("BinaryOperationInnerExpressions");
+            
+        public static readonly Parser<ExpressionSyntax> PowerTerm =
+            Parse.ChainRightOperator(
+                Operators.Power,
+                ValidExpressions,
+                (op, left, right) => SyntaxFactory.BinaryOperation(left, right, op)
+            ).Named("PowerTerm");
+
+        public static readonly Parser<ExpressionSyntax> Factor =
+            Parse.ChainOperator(
+                Operators.Moltiplication.Or(Operators.Division).Or(Operators.Modulo),
+                PowerTerm,
+                (op, left, right) => SyntaxFactory.BinaryOperation(left, right, op)
+            ).Named("Factor");
+
+        public static readonly Parser<ExpressionSyntax> AddSubTerm =
+            Parse.ChainOperator(
+                Operators.Addition.Or(Operators.Subtraction),
+                Factor,
+                (op, left, right) => SyntaxFactory.BinaryOperation(left, right, op)
+            ).Named("AddSubTerm");
+
+        public static readonly Parser<ExpressionSyntax> ComparisonTerm =
+            Parse.ChainOperator(
+                Operators.GreaterOrEqual.Or(Operators.GreaterThan).Or(Operators.LessOrEqual).Or(Operators.LessThan),
+                AddSubTerm,
+                (op, left, right) => SyntaxFactory.BinaryOperation(left, right, op)
+            ).Named("ComparisonTerm");
+            
+        public static readonly Parser<ExpressionSyntax> EqualityTerm =
+            Parse.ChainOperator(
+                Operators.Equal.Or(Operators.NotEquals),
+                ComparisonTerm,
+                (op, left, right) => SyntaxFactory.BinaryOperation(left, right, op)
+            ).Named("EqualityTerm");
+
+        public static readonly Parser<ExpressionSyntax> Expression = EqualityTerm.Named("Expression");
     }
 
     internal static class Statements
@@ -229,3 +219,18 @@ internal static class Grammar
         select new RequireSyntaxDeclaration(requirements);
 }
 
+public static class ParserExtensions
+{
+    public static Parser<T> InParenthesis<T>(this Parser<T> parser)
+    {
+        return
+            (
+                from leftParenthesis in Parse.Char(TokenConstants.OperationStart).Token()
+                from value in parser
+                from rightParenthesis in Parse.Char(TokenConstants.OperationEnd).Token()
+                select value
+            )
+            .Or(parser);
+    }
+
+}

@@ -14,9 +14,9 @@ internal class BodySyntaxDeclarationTestingData : ParserDataList<BodySyntaxDecla
             Output = new(new StatementSyntax[]
             {
                 new ReturnStatementSyntax(
-                    new OperationExpressionSyntax(
+                    new BinaryOperationExpressionSyntax(
                         new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                        Operation.Addition,
+                        OperatorKind.Addition,
                         new LiteralExpressionSyntax("1", TGDLType.Decimal)
                     )
                 )
@@ -42,9 +42,9 @@ internal class BodySyntaxDeclarationTestingData : ParserDataList<BodySyntaxDecla
             Output = new(new StatementSyntax[]
             {
                 new ReturnStatementSyntax(
-                    new OperationExpressionSyntax(
+                    new BinaryOperationExpressionSyntax(
                         new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                        Operation.Addition,
+                        OperatorKind.Addition,
                         new LiteralExpressionSyntax("1", TGDLType.Decimal)
                     )
                 )
@@ -57,9 +57,9 @@ internal class BodySyntaxDeclarationTestingData : ParserDataList<BodySyntaxDecla
             Output = new(new StatementSyntax[]
             {
                 new ReturnStatementSyntax(
-                    new OperationExpressionSyntax(
+                    new BinaryOperationExpressionSyntax(
                         new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                        Operation.Addition,
+                        OperatorKind.Addition,
                         new LiteralExpressionSyntax("1", TGDLType.Decimal)
                     )
                 )

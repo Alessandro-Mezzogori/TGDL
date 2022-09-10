@@ -1,44 +1,62 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics.CodeAnalysis;
 using TGDLLib.Syntax;
 
 namespace TGDLUnitTesting.TestingData
 {
-    internal class OperationExpressionSyntaxTestingData : ParserDataList<ExpressionSyntax>
+    internal class BinaryOperationExpressionSyntaxTestingData : ParserDataList<ExpressionSyntax>
     {
         public override List<DataUnit<string, ExpressionSyntax>> DataList => new()
         {
             new()
             {
                 Input = "1 + 2",
-                Output = new OperationExpressionSyntax(
+                Output = new BinaryOperationExpressionSyntax(
                     new LiteralExpressionSyntax("1", TGDLType.Decimal), 
-                    Operation.Addition, 
+                    OperatorKind.Addition, 
+                    new LiteralExpressionSyntax("2", TGDLType.Decimal)
+                ),
+            },
+            new()
+            {
+                Input = "(1)",
+                Output = new LiteralExpressionSyntax("1", TGDLType.Decimal), 
+            },
+            new()
+            {
+                Input = "(1) + (2)",
+                Output = new BinaryOperationExpressionSyntax(
+                    new LiteralExpressionSyntax("1", TGDLType.Decimal), 
+                    OperatorKind.Addition, 
+                    new LiteralExpressionSyntax("2", TGDLType.Decimal)
+                ),
+            },
+            new()
+            {
+                Input = "(this.access) + (2)",
+                Output = new BinaryOperationExpressionSyntax(
+                    new AttributeAccessExpressionSyntax(new("this"), new("access")), 
+                    OperatorKind.Addition, 
                     new LiteralExpressionSyntax("2", TGDLType.Decimal)
                 ),
             },
             new()
             {
                 Input = "(3 + 2)",
-                Output = new OperationExpressionSyntax(
+                Output = new BinaryOperationExpressionSyntax(
                     new LiteralExpressionSyntax("3", TGDLType.Decimal), 
-                    Operation.Addition, 
+                    OperatorKind.Addition, 
                     new LiteralExpressionSyntax("2", TGDLType.Decimal)
                 ),
             },
             new()
             {
                 Input = "3 + (1 + 2)",
-                Output = new OperationExpressionSyntax(
+                Output = new BinaryOperationExpressionSyntax(
                     new LiteralExpressionSyntax("3", TGDLType.Decimal), 
-                    Operation.Addition, 
-                    new OperationExpressionSyntax(
+                    OperatorKind.Addition, 
+                    new BinaryOperationExpressionSyntax(
                         new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                        Operation.Addition,
+                        OperatorKind.Addition,
                         new LiteralExpressionSyntax("2", TGDLType.Decimal)
                     )
                 ),
@@ -46,12 +64,12 @@ namespace TGDLUnitTesting.TestingData
             new()
             {
                 Input = "3 - (1 + 2)",
-                Output = new OperationExpressionSyntax(
+                Output = new BinaryOperationExpressionSyntax(
                     new LiteralExpressionSyntax("3", TGDLType.Decimal), 
-                    Operation.Subtraction, 
-                    new OperationExpressionSyntax(
+                    OperatorKind.Subtraction, 
+                    new BinaryOperationExpressionSyntax(
                         new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                        Operation.Addition,
+                        OperatorKind.Addition,
                         new LiteralExpressionSyntax("2", TGDLType.Decimal)
                     )
                 ),
@@ -59,12 +77,12 @@ namespace TGDLUnitTesting.TestingData
             new()
             {
                 Input = "-3 - (1 - 2)",
-                Output = new OperationExpressionSyntax(
+                Output = new BinaryOperationExpressionSyntax(
                     new LiteralExpressionSyntax("-3", TGDLType.Decimal), 
-                    Operation.Subtraction, 
-                    new OperationExpressionSyntax(
+                    OperatorKind.Subtraction, 
+                    new BinaryOperationExpressionSyntax(
                         new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                        Operation.Subtraction,
+                        OperatorKind.Subtraction,
                         new LiteralExpressionSyntax("2", TGDLType.Decimal)
                     )
                 ),
@@ -72,16 +90,16 @@ namespace TGDLUnitTesting.TestingData
             new()
             {
                 Input = "3 - (1 - 2 + 2)",
-                Output = new OperationExpressionSyntax(
+                Output = new BinaryOperationExpressionSyntax(
                     new LiteralExpressionSyntax("3", TGDLType.Decimal), 
-                    Operation.Subtraction, 
-                    new OperationExpressionSyntax(
-                        new OperationExpressionSyntax(
+                    OperatorKind.Subtraction, 
+                    new BinaryOperationExpressionSyntax(
+                        new BinaryOperationExpressionSyntax(
                             new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                            Operation.Subtraction,
+                            OperatorKind.Subtraction,
                             new LiteralExpressionSyntax("2", TGDLType.Decimal)
                         ),
-                        Operation.Addition,
+                        OperatorKind.Addition,
                         new LiteralExpressionSyntax ("2", TGDLType.Decimal)
                     )
                 ),
@@ -89,15 +107,15 @@ namespace TGDLUnitTesting.TestingData
             new()
             {
                 Input = "3 + (1 - (2 + 1))",
-                Output = new OperationExpressionSyntax(
+                Output = new BinaryOperationExpressionSyntax(
                     new LiteralExpressionSyntax("3", TGDLType.Decimal), 
-                    Operation.Addition, 
-                    new OperationExpressionSyntax(
+                    OperatorKind.Addition, 
+                    new BinaryOperationExpressionSyntax(
                         new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                        Operation.Subtraction,
-                        new OperationExpressionSyntax( 
+                        OperatorKind.Subtraction,
+                        new BinaryOperationExpressionSyntax( 
                             new LiteralExpressionSyntax("2", TGDLType.Decimal),
-                            Operation.Addition,
+                            OperatorKind.Addition,
                             new LiteralExpressionSyntax("1", TGDLType.Decimal)
                         )
                     )
@@ -106,15 +124,15 @@ namespace TGDLUnitTesting.TestingData
             new()
             {
                 Input = "3 / (1 * (2 mod 1))",
-                Output = new OperationExpressionSyntax(
+                Output = new BinaryOperationExpressionSyntax(
                     new LiteralExpressionSyntax("3", TGDLType.Decimal), 
-                    Operation.Division, 
-                    new OperationExpressionSyntax(
+                    OperatorKind.Division, 
+                    new BinaryOperationExpressionSyntax(
                         new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                        Operation.Moltiplication,
-                        new OperationExpressionSyntax( 
+                        OperatorKind.Moltiplication,
+                        new BinaryOperationExpressionSyntax( 
                             new LiteralExpressionSyntax("2", TGDLType.Decimal),
-                            Operation.Modulo,
+                            OperatorKind.Modulo,
                             new LiteralExpressionSyntax("1", TGDLType.Decimal)
                         )
                     )
@@ -123,25 +141,25 @@ namespace TGDLUnitTesting.TestingData
             new()
             {
                 Input = "3 / 2 / 1 )",
-                Output = new OperationExpressionSyntax(
-                    new OperationExpressionSyntax(
+                Output = new BinaryOperationExpressionSyntax(
+                    new BinaryOperationExpressionSyntax(
                         new LiteralExpressionSyntax("3", TGDLType.Decimal), 
-                        Operation.Division, 
+                        OperatorKind.Division, 
                         new LiteralExpressionSyntax("2", TGDLType.Decimal)
                     ),
-                    Operation.Division,
+                    OperatorKind.Division,
                     new LiteralExpressionSyntax("1", TGDLType.Decimal)
                 ),
             },
             new()
             {
                 Input = "3 ^ 2 ^ 1",
-                Output = new OperationExpressionSyntax(
+                Output = new BinaryOperationExpressionSyntax(
                     new LiteralExpressionSyntax("3", TGDLType.Decimal),
-                    Operation.Power,
-                    new OperationExpressionSyntax(
+                    OperatorKind.Power,
+                    new BinaryOperationExpressionSyntax(
                         new LiteralExpressionSyntax("2", TGDLType.Decimal),
-                        Operation.Power,
+                        OperatorKind.Power,
                         new LiteralExpressionSyntax("1", TGDLType.Decimal)
                     )
                 )
@@ -149,20 +167,20 @@ namespace TGDLUnitTesting.TestingData
             new()
             {
                 Input = "1 - 3 ^ 2 ^ 1 mod 2",
-                Output = new OperationExpressionSyntax(
+                Output = new BinaryOperationExpressionSyntax(
                     new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                    Operation.Subtraction,
-                    new OperationExpressionSyntax(
-                        new OperationExpressionSyntax(
+                    OperatorKind.Subtraction,
+                    new BinaryOperationExpressionSyntax(
+                        new BinaryOperationExpressionSyntax(
                             new LiteralExpressionSyntax("3", TGDLType.Decimal),
-                            Operation.Power,
-                            new OperationExpressionSyntax(
+                            OperatorKind.Power,
+                            new BinaryOperationExpressionSyntax(
                                 new LiteralExpressionSyntax("2", TGDLType.Decimal),
-                                Operation.Power,
+                                OperatorKind.Power,
                                 new LiteralExpressionSyntax("1", TGDLType.Decimal)
                             )
                         ),
-                        Operation.Modulo,
+                        OperatorKind.Modulo,
                         new LiteralExpressionSyntax("2", TGDLType.Decimal)
                     )
                 )
@@ -170,12 +188,12 @@ namespace TGDLUnitTesting.TestingData
             new()
             {
                 Input = "this.access ^ 1 ^ 2",
-                Output = new OperationExpressionSyntax(
+                Output = new BinaryOperationExpressionSyntax(
                     new AttributeAccessExpressionSyntax(new("this"), new("access")),
-                    Operation.Power,
-                    new OperationExpressionSyntax(
+                    OperatorKind.Power,
+                    new BinaryOperationExpressionSyntax(
                         new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                        Operation.Power,
+                        OperatorKind.Power,
                         new LiteralExpressionSyntax("2", TGDLType.Decimal)
                   )
                 )
@@ -183,15 +201,14 @@ namespace TGDLUnitTesting.TestingData
 
         };
     }
-
-    internal class OperationExpressionSyntaxComparer : IEqualityComparer<ExpressionSyntax>
+    internal class BinaryOperationExpressionSyntaxComparer : IEqualityComparer<ExpressionSyntax>
     {
         private readonly ExpressionSyntaxComparer _comparer = new();
         public bool Equals(ExpressionSyntax? x, ExpressionSyntax? y)
         {
             if(x == null && y == null) return true;
             if(x == null || y == null) return false;
-            if (x is not OperationExpressionSyntax xOp || y is not OperationExpressionSyntax yOp) return false;
+            if (x is not BinaryOperationExpressionSyntax xOp || y is not BinaryOperationExpressionSyntax yOp) return false;
 
             return _comparer.Equals(xOp.LeftOperand, yOp.LeftOperand) &&
                     xOp.Operation == yOp.Operation &&

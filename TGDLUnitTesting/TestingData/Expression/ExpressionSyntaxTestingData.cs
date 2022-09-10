@@ -1,7 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using TGDLLib.Syntax;
 using TGDLUnitTesting.TestingData.GenericSyntax;
-using Xunit.Sdk;
+
+using sf = TGDLLib.Syntax.SyntaxFactory;
 
 namespace TGDLUnitTesting.TestingData
 {
@@ -12,12 +13,12 @@ namespace TGDLUnitTesting.TestingData
             new()
             {
                 Input = "data.access",
-                Output = new AttributeAccessExpressionSyntax(new("data"), new("access"))
+                Output = sf.AttributeAccess(new("data"), new("access"))
             },
             new()
             {
                 Input = "access",
-                Output = new AttributeAccessExpressionSyntax(new("this"), new("access"))
+                Output = sf.AttributeAccess(new("this"), new("access"))
             },
             new()
             {
@@ -28,18 +29,37 @@ namespace TGDLUnitTesting.TestingData
             new()
             {
                 Input = "1",
-                Output = new LiteralExpressionSyntax("1", TGDLType.Decimal),
+                Output = sf.Literal("1", TGDLType.Decimal),
             },
             new()
             {
                 Input = "1 + 2",
-                Output = new OperationExpressionSyntax(
+                Output = sf.BinaryOperation(
                     new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                    Operation.Addition,
-                    new LiteralExpressionSyntax("2", TGDLType.Decimal)
+                    new LiteralExpressionSyntax("2", TGDLType.Decimal),
+                    OperatorKind.Addition
                 )
-            }
+            },
+            new()
+            {
+                Input = "1 + 1 > 1", // TODO comparison operators have lower precedence
+                Output = sf.BinaryOperation(
+                    sf.BinaryOperation(
+                        sf.Literal("1", TGDLType.Decimal),
+                        sf.Literal("1", TGDLType.Decimal),
+                        OperatorKind.Addition
+                    ),
+                    sf.Literal("1", TGDLType.Decimal),
+                    OperatorKind.GreaterThan 
+                )
+            },
+
         };
+
+        public void test()
+        {
+            bool test = 1 + 1 > 2;
+        }
     }
 
     internal class ExpressionSyntaxComparer : IEqualityComparer<ExpressionSyntax>
@@ -67,19 +87,12 @@ namespace TGDLUnitTesting.TestingData
 
                 return new MemberAccessExpressionSyntaxComparer().Equals(xAccess, yAccess);
             }
-            else if(x is OperationExpressionSyntax)
+            else if(x is BinaryOperationExpressionSyntax)
             {
-                var xOperation = (OperationExpressionSyntax)x;
-                var yOperation = (OperationExpressionSyntax)y;
+                var xOperation = (BinaryOperationExpressionSyntax)x;
+                var yOperation = (BinaryOperationExpressionSyntax)y;
 
-                return new OperationExpressionSyntaxComparer().Equals(xOperation, yOperation);
-            }
-            else if(x is ComparisonExpressionSyntax)
-            {
-                var xComparison = (ComparisonExpressionSyntax)x;
-                var yComparison = (ComparisonExpressionSyntax)y;
-
-                return new OperationExpressionSyntaxComparer().Equals(xComparison, yComparison); 
+                return new BinaryOperationExpressionSyntaxComparer().Equals(xOperation, yOperation);
             }
 
             throw new NotImplementedException();

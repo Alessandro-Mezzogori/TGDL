@@ -7,7 +7,7 @@ namespace TGDLUnitTesting;
 
 internal static class TestingHelpers 
 {
-    public static void TestParsingDataUnit<TOutput>(DataUnit<string, TOutput> unit, Parser<TOutput> parser, Func<TOutput, TOutput, bool> comparer)
+    public static void TestParsingDataUnit<TOutput>(IDataUnit<string, TOutput> unit, Parser<TOutput> parser, Func<TOutput, TOutput, bool> comparer)
         where TOutput: notnull
     {
         IResult<TOutput> result = ParseUnit(unit, parser);
@@ -29,7 +29,7 @@ internal static class TestingHelpers
         }
     }
 
-    public static void TestParsingDataUnit<TOutput>(DataUnit<string, TOutput> unit, Parser<TOutput> parser, IEqualityComparer<TOutput>? comparer)
+    public static void TestParsingDataUnit<TOutput>(IDataUnit<string, TOutput> unit, Parser<TOutput> parser, IEqualityComparer<TOutput>? comparer)
         where TOutput: notnull
     {
         comparer ??= EqualityComparer<TOutput>.Default;
@@ -53,7 +53,7 @@ internal static class TestingHelpers
         }
     }
 
-    private static IResult<TOutput> ParseUnit<TOutput>(DataUnit<string, TOutput> unit, Parser<TOutput> parser) where TOutput : notnull
+    private static IResult<TOutput> ParseUnit<TOutput>(IDataUnit<string, TOutput> unit, Parser<TOutput> parser) where TOutput : notnull
     {
         var result = parser.TryParse(unit.Input);
         if (!result.WasSuccessful && unit.Test != TestType.Fail)

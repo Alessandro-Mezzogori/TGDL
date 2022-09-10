@@ -62,10 +62,10 @@ internal class LambdaSyntaxDeclarationTestingData : ParserDataList<LambdaSyntaxD
                 sf.Body(
                     new[]{
                         sf.Return(
-                            sf.Operation(
+                            sf.BinaryOperation(
                                 sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)),
                                 sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)),
-                                Operation.Addition
+                                OperatorKind.Addition
                             )
                         )
                     }
@@ -83,10 +83,10 @@ internal class LambdaSyntaxDeclarationTestingData : ParserDataList<LambdaSyntaxD
                 sf.Body(
                     new[]{
                         sf.Return(
-                            sf.Operation(
+                            sf.BinaryOperation(
                                 sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)),
                                 sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)),
-                                Operation.Addition
+                                OperatorKind.Addition
                             )
                         )
                     }

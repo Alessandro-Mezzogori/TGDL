@@ -16,7 +16,7 @@ namespace TGDLUnitTesting
         [Theory, ClassData(typeof(MemberAccessExpressionSyntaxTestingData))]
         public void MemberAccessExpressionSyntaxTest(DataUnit<string, AttributeAccessExpressionSyntax> unit)
         {
-            TestingHelpers.TestParsingDataUnit(unit, Grammar.Expressions.MemberAccessExpression, new MemberAccessExpressionSyntaxComparer());
+            TestingHelpers.TestParsingDataUnit(unit, Grammar.Expressions.AttributeAccessExpression, new MemberAccessExpressionSyntaxComparer());
         }
 
         [Theory, ClassData(typeof(ExpressionSyntaxTestingData))]
@@ -26,24 +26,30 @@ namespace TGDLUnitTesting
            
         }
 
-        [Theory, ClassData(typeof(OperationExpressionSyntaxTestingData))]
-        public void OperationExpressionSyntaxTest(DataUnit<string, ExpressionSyntax> unit)
+        [Theory, ClassData(typeof(BinaryOperationExpressionSyntaxTestingData))]
+        public void MathOperationExpressionSyntaxTest(DataUnit<string, ExpressionSyntax> unit)
         {
             TestingHelpers.TestParsingDataUnit(
                 unit,
-                Grammar.Expressions.OperationExpression,
-                new OperationExpressionSyntaxComparer()
+                Grammar.Expressions.Expression,
+                new ExpressionSyntaxComparer()
             );
         }
 
-        [Theory, ClassData(typeof(ComparisonExpressionSyntaxTestingData))]
-        public void ComparisonExpressionSyntaxTest(DataUnit<string, ComparisonExpressionSyntax> unit)
+        [Theory, ClassData(typeof(ComparisonBinaryExpressionSyntaxTestingData))]
+        public void ComparisonOperationExpressionSyntaxTest(DataUnit<string, BinaryOperationExpressionSyntax> unit)
         {
             TestingHelpers.TestParsingDataUnit(
                 unit,
-                Grammar.Expressions.ComparisonExpression,
-                new ComparisonExpressionSyntaxComparer()
+                Grammar.Expressions.Expression,
+                new ExpressionSyntaxComparer()
             );
+        }
+
+        [Theory, ClassData(typeof(EqualityBinaryOperationExpressionSyntaxTestingData))]
+        public void EqualityExpressionSyntaxTest(DataUnit<string, ExpressionSyntax> unit)
+        {
+            TestingHelpers.TestParsingDataUnit(unit, Grammar.Expressions.Expression, new ExpressionSyntaxComparer());
         }
     }
 }

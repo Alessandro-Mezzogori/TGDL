@@ -112,14 +112,9 @@ public class SyntaxFactory
         return new ReturnStatementSyntax(expression);
     }
 
-    public static OperationExpressionSyntax Operation(ExpressionSyntax left, ExpressionSyntax right, Operation op)
+    public static BinaryOperationExpressionSyntax BinaryOperation(ExpressionSyntax left, ExpressionSyntax right, OperatorKind op)
     {
-        return new OperationExpressionSyntax(left, op, right);
-    }
-
-    public static ComparisonExpressionSyntax Comparison(ExpressionSyntax left, ExpressionSyntax right, ComparisonOperator op)
-    {
-        return new ComparisonExpressionSyntax(left, right, op);
+        return new BinaryOperationExpressionSyntax(left, op, right);
     }
 
     public static AttributeAccessExpressionSyntax AttributeAccess(IdentifierSyntaxToken target, IdentifierSyntaxToken attribute)
