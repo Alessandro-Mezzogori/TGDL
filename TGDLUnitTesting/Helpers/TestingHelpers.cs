@@ -1,4 +1,5 @@
 ﻿using Sprache;
+using System.Data;
 using TGDLUnitTesting.TestingData;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -11,6 +12,9 @@ internal static class TestingHelpers
         where TOutput: notnull
     {
         IResult<TOutput> result = ParseUnit(unit, parser);
+
+
+        Assert.True(unit.Test != TestType.Fail && unit.Output is not null);
         switch (unit.Test)
         {
             case TestType.Equal:
@@ -34,24 +38,33 @@ internal static class TestingHelpers
     {
         comparer ??= EqualityComparer<TOutput>.Default;
 
-        IResult<TOutput> result = ParseUnit(unit, parser);
-        switch (unit.Test)
+        try
         {
-            case TestType.Equal:
-                Assert.True(result.WasSuccessful);
-                Assert.Equal(unit.Output, result.Value, comparer);
-                break;
-            case TestType.NotEqual:
-                Assert.True(result.WasSuccessful);
-                Assert.NotEqual(unit.Output, result.Value, comparer);
-                break;
-            case TestType.Fail:
-                Assert.False(result.WasSuccessful);
-                break;
-            default:
-                throw new NotImplementedException();
+            IResult<TOutput> result = ParseUnit(unit, parser);
+            switch (unit.Test)
+            {
+                case TestType.Equal:
+                    Assert.True(result.WasSuccessful);
+                    Assert.Equal(unit.Output, result.Value, comparer);
+                    break;
+                case TestType.NotEqual:
+                    Assert.True(result.WasSuccessful);
+                    Assert.NotEqual(unit.Output, result.Value, comparer);
+                    break;
+                case TestType.Fail:
+                    Assert.False(result.WasSuccessful);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
-    }
+        catch(ParseException e)
+        {
+            if (unit.Test != TestType.Fail)
+                throw e;
+            return;
+        }
+   }
 
     private static IResult<TOutput> ParseUnit<TOutput>(IDataUnit<string, TOutput> unit, Parser<TOutput> parser) where TOutput : notnull
     {

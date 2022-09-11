@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using TGDLLib.Syntax;
 
+using sf = TGDLLib.Syntax.SyntaxFactory;
+
 namespace TGDLUnitTesting.TestingData
 {
     internal class BinaryOperationExpressionSyntaxTestingData : ParserDataList<ExpressionSyntax>
@@ -10,112 +12,116 @@ namespace TGDLUnitTesting.TestingData
             new()
             {
                 Input = "1 + 2",
-                Output = new BinaryOperationExpressionSyntax(
-                    new LiteralExpressionSyntax("1", TGDLType.Decimal), 
-                    OperatorKind.Addition, 
-                    new LiteralExpressionSyntax("2", TGDLType.Decimal)
+                Output = sf.BinaryOperation(
+                    sf.Literal("1", TGDLType.Decimal), 
+                    sf.Literal("2", TGDLType.Decimal),
+                    OperationKind.Addition
                 ),
             },
             new()
             {
                 Input = "(1)",
-                Output = new LiteralExpressionSyntax("1", TGDLType.Decimal), 
+                Output = sf.Literal("1", TGDLType.Decimal), 
             },
             new()
             {
                 Input = "(1) + (2)",
-                Output = new BinaryOperationExpressionSyntax(
-                    new LiteralExpressionSyntax("1", TGDLType.Decimal), 
-                    OperatorKind.Addition, 
-                    new LiteralExpressionSyntax("2", TGDLType.Decimal)
+                Output = sf.BinaryOperation(
+                    sf.Literal("1", TGDLType.Decimal), 
+                    sf.Literal("2", TGDLType.Decimal),
+                    OperationKind.Addition
                 ),
             },
             new()
             {
                 Input = "(this.access) + (2)",
-                Output = new BinaryOperationExpressionSyntax(
-                    new AttributeAccessExpressionSyntax(new("this"), new("access")), 
-                    OperatorKind.Addition, 
-                    new LiteralExpressionSyntax("2", TGDLType.Decimal)
+                Output =  sf.BinaryOperation(
+                    sf.BinaryOperation(
+                        sf.IdentifierName("this"), 
+                        sf.IdentifierName("access"),
+                        OperationKind.AttributeAccess
+                    ),
+                    sf.Literal("2", TGDLType.Decimal),
+                    OperationKind.Addition
                 ),
             },
             new()
             {
                 Input = "(3 + 2)",
-                Output = new BinaryOperationExpressionSyntax(
-                    new LiteralExpressionSyntax("3", TGDLType.Decimal), 
-                    OperatorKind.Addition, 
-                    new LiteralExpressionSyntax("2", TGDLType.Decimal)
+                Output = sf.BinaryOperation(
+                    sf.Literal("3", TGDLType.Decimal), 
+                    sf.Literal("2", TGDLType.Decimal),
+                    OperationKind.Addition 
                 ),
             },
             new()
             {
                 Input = "3 + (1 + 2)",
-                Output = new BinaryOperationExpressionSyntax(
-                    new LiteralExpressionSyntax("3", TGDLType.Decimal), 
-                    OperatorKind.Addition, 
-                    new BinaryOperationExpressionSyntax(
-                        new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                        OperatorKind.Addition,
-                        new LiteralExpressionSyntax("2", TGDLType.Decimal)
-                    )
+                Output = sf.BinaryOperation(
+                    sf.Literal("3", TGDLType.Decimal), 
+                    sf.BinaryOperation(
+                        sf.Literal("1", TGDLType.Decimal),
+                        sf.Literal("2", TGDLType.Decimal),
+                        OperationKind.Addition
+                    ),
+                    OperationKind.Addition
                 ),
             },
             new()
             {
                 Input = "3 - (1 + 2)",
-                Output = new BinaryOperationExpressionSyntax(
-                    new LiteralExpressionSyntax("3", TGDLType.Decimal), 
-                    OperatorKind.Subtraction, 
-                    new BinaryOperationExpressionSyntax(
-                        new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                        OperatorKind.Addition,
-                        new LiteralExpressionSyntax("2", TGDLType.Decimal)
-                    )
+                Output = sf.BinaryOperation(
+                    sf.Literal("3", TGDLType.Decimal), 
+                    sf.BinaryOperation(
+                        sf.Literal("1", TGDLType.Decimal),
+                        sf.Literal("2", TGDLType.Decimal),
+                        OperationKind.Addition
+                    ),
+                    OperationKind.Subtraction
                 ),
             },
             new()
             {
                 Input = "-3 - (1 - 2)",
-                Output = new BinaryOperationExpressionSyntax(
-                    new LiteralExpressionSyntax("-3", TGDLType.Decimal), 
-                    OperatorKind.Subtraction, 
-                    new BinaryOperationExpressionSyntax(
-                        new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                        OperatorKind.Subtraction,
-                        new LiteralExpressionSyntax("2", TGDLType.Decimal)
-                    )
+                Output = sf.BinaryOperation(
+                    sf.Literal("-3", TGDLType.Decimal), 
+                    sf.BinaryOperation(
+                        sf.Literal("1", TGDLType.Decimal),
+                        sf.Literal("2", TGDLType.Decimal),
+                        OperationKind.Subtraction
+                    ),
+                    OperationKind.Subtraction
                 ),
             },
             new()
             {
                 Input = "3 - (1 - 2 + 2)",
-                Output = new BinaryOperationExpressionSyntax(
-                    new LiteralExpressionSyntax("3", TGDLType.Decimal), 
-                    OperatorKind.Subtraction, 
-                    new BinaryOperationExpressionSyntax(
-                        new BinaryOperationExpressionSyntax(
-                            new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                            OperatorKind.Subtraction,
-                            new LiteralExpressionSyntax("2", TGDLType.Decimal)
+                Output = sf.BinaryOperation(
+                    sf.Literal("3", TGDLType.Decimal), 
+                    sf.BinaryOperation(
+                        sf.BinaryOperation(
+                            sf.Literal("1", TGDLType.Decimal),
+                            sf.Literal("2", TGDLType.Decimal),
+                            OperationKind.Subtraction
                         ),
-                        OperatorKind.Addition,
-                        new LiteralExpressionSyntax ("2", TGDLType.Decimal)
-                    )
+                        sf.Literal("2", TGDLType.Decimal),
+                        OperationKind.Addition
+                    ),
+                    OperationKind.Subtraction
                 ),
             },
-            new()
+            new() // TODO convert with SyntaxFactory
             {
                 Input = "3 + (1 - (2 + 1))",
                 Output = new BinaryOperationExpressionSyntax(
                     new LiteralExpressionSyntax("3", TGDLType.Decimal), 
-                    OperatorKind.Addition, 
+                    OperationKind.Addition, 
                     new BinaryOperationExpressionSyntax(
                         new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                        OperatorKind.Subtraction,
+                        OperationKind.Subtraction,
                         new BinaryOperationExpressionSyntax( 
                             new LiteralExpressionSyntax("2", TGDLType.Decimal),
-                            OperatorKind.Addition,
+                            OperationKind.Addition,
                             new LiteralExpressionSyntax("1", TGDLType.Decimal)
                         )
                     )
@@ -126,13 +132,13 @@ namespace TGDLUnitTesting.TestingData
                 Input = "3 / (1 * (2 mod 1))",
                 Output = new BinaryOperationExpressionSyntax(
                     new LiteralExpressionSyntax("3", TGDLType.Decimal), 
-                    OperatorKind.Division, 
+                    OperationKind.Division, 
                     new BinaryOperationExpressionSyntax(
                         new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                        OperatorKind.Moltiplication,
+                        OperationKind.Moltiplication,
                         new BinaryOperationExpressionSyntax( 
                             new LiteralExpressionSyntax("2", TGDLType.Decimal),
-                            OperatorKind.Modulo,
+                            OperationKind.Modulo,
                             new LiteralExpressionSyntax("1", TGDLType.Decimal)
                         )
                     )
@@ -144,10 +150,10 @@ namespace TGDLUnitTesting.TestingData
                 Output = new BinaryOperationExpressionSyntax(
                     new BinaryOperationExpressionSyntax(
                         new LiteralExpressionSyntax("3", TGDLType.Decimal), 
-                        OperatorKind.Division, 
+                        OperationKind.Division, 
                         new LiteralExpressionSyntax("2", TGDLType.Decimal)
                     ),
-                    OperatorKind.Division,
+                    OperationKind.Division,
                     new LiteralExpressionSyntax("1", TGDLType.Decimal)
                 ),
             },
@@ -156,10 +162,10 @@ namespace TGDLUnitTesting.TestingData
                 Input = "3 ^ 2 ^ 1",
                 Output = new BinaryOperationExpressionSyntax(
                     new LiteralExpressionSyntax("3", TGDLType.Decimal),
-                    OperatorKind.Power,
+                    OperationKind.Power,
                     new BinaryOperationExpressionSyntax(
                         new LiteralExpressionSyntax("2", TGDLType.Decimal),
-                        OperatorKind.Power,
+                        OperationKind.Power,
                         new LiteralExpressionSyntax("1", TGDLType.Decimal)
                     )
                 )
@@ -169,36 +175,52 @@ namespace TGDLUnitTesting.TestingData
                 Input = "1 - 3 ^ 2 ^ 1 mod 2",
                 Output = new BinaryOperationExpressionSyntax(
                     new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                    OperatorKind.Subtraction,
+                    OperationKind.Subtraction,
                     new BinaryOperationExpressionSyntax(
                         new BinaryOperationExpressionSyntax(
                             new LiteralExpressionSyntax("3", TGDLType.Decimal),
-                            OperatorKind.Power,
+                            OperationKind.Power,
                             new BinaryOperationExpressionSyntax(
                                 new LiteralExpressionSyntax("2", TGDLType.Decimal),
-                                OperatorKind.Power,
+                                OperationKind.Power,
                                 new LiteralExpressionSyntax("1", TGDLType.Decimal)
                             )
                         ),
-                        OperatorKind.Modulo,
+                        OperationKind.Modulo,
                         new LiteralExpressionSyntax("2", TGDLType.Decimal)
                     )
                 )
             },
-            new()
+            new() // TODO remove this. support ?
             {
                 Input = "this.access ^ 1 ^ 2",
-                Output = new BinaryOperationExpressionSyntax(
-                    new AttributeAccessExpressionSyntax(new("this"), new("access")),
-                    OperatorKind.Power,
-                    new BinaryOperationExpressionSyntax(
-                        new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                        OperatorKind.Power,
-                        new LiteralExpressionSyntax("2", TGDLType.Decimal)
-                  )
+                Output = sf.BinaryOperation(
+                    sf.BinaryOperation(
+                        sf.IdentifierName("this"), 
+                        sf.IdentifierName("access"),
+                        OperationKind.AttributeAccess
+                    ),
+                    sf.BinaryOperation(
+                        sf.Literal("1", TGDLType.Decimal),
+                        sf.Literal("2", TGDLType.Decimal),
+                        OperationKind.Power
+                    ),
+                    OperationKind.Power
                 )
-            }
-
+            },
+            new()
+            {
+                Input = "test.a.b",
+                Output = sf.BinaryOperation(
+                    sf.BinaryOperation(
+                        sf.IdentifierName("test"),
+                        sf.IdentifierName("a"),
+                        OperationKind.AttributeAccess
+                    ),
+                    sf.IdentifierName("b"),
+                    OperationKind.AttributeAccess
+                )
+            },
         };
     }
     internal class BinaryOperationExpressionSyntaxComparer : IEqualityComparer<ExpressionSyntax>

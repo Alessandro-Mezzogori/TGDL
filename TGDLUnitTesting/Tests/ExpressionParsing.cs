@@ -13,12 +13,6 @@ namespace TGDLUnitTesting
             TestingHelpers.TestParsingDataUnit(unit, Grammar.Expressions.LiteralExpression, new LiteralExpressionSyntaxComparer());
         }
 
-        [Theory, ClassData(typeof(MemberAccessExpressionSyntaxTestingData))]
-        public void MemberAccessExpressionSyntaxTest(DataUnit<string, AttributeAccessExpressionSyntax> unit)
-        {
-            TestingHelpers.TestParsingDataUnit(unit, Grammar.Expressions.AttributeAccessExpression, new MemberAccessExpressionSyntaxComparer());
-        }
-
         [Theory, ClassData(typeof(ExpressionSyntaxTestingData))]
         public void ExpressionSyntaxTest(DataUnit<string, ExpressionSyntax> unit)
         {

@@ -16,13 +16,11 @@ internal class LiteralExpressionSyntaxTestingData : ParserDataList<LiteralExpres
         new()
         {
             Input = "a1",
-            Output = new("1", TGDLType.Decimal),
             Test = TestType.Fail
         },
         new()
         {
             Input = "textbeforenumber1.0",
-            Output = new("1.0", TGDLType.Decimal),
             Test = TestType.Fail
         },
         new()
@@ -53,19 +51,16 @@ internal class LiteralExpressionSyntaxTestingData : ParserDataList<LiteralExpres
         new()
         {
             Input = "truefalse",
-            Output = new("", TGDLType.Decimal),
             Test = TestType.Fail
         },
         new()
         {
             Input = "false2",
-            Output = new("", TGDLType.Decimal),
             Test = TestType.Fail
         },
         new()
         {
             Input = "atruetrue",
-            Output = new("", TGDLType.Decimal),
             Test = TestType.Fail
         },
         new() // logic error but parsing wise it is ok and it returns 1

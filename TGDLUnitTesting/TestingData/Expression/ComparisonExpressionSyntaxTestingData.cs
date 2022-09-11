@@ -15,7 +15,7 @@ internal class ComparisonBinaryExpressionSyntaxTestingData : ParserDataList<Bina
             Output = sf.BinaryOperation(
                 sf.Literal("1", TGDLType.Decimal),
                 sf.Literal("1", TGDLType.Decimal),
-                OperatorKind.GreaterThan
+                OperationKind.GreaterThan
             )
         },
         new()
@@ -24,7 +24,7 @@ internal class ComparisonBinaryExpressionSyntaxTestingData : ParserDataList<Bina
             Output = sf.BinaryOperation(
                 sf.Literal("1", TGDLType.Decimal),
                 sf.Literal("1", TGDLType.Decimal),
-                OperatorKind.LessThan
+                OperationKind.LessThan
             )
         },
         new()
@@ -33,7 +33,7 @@ internal class ComparisonBinaryExpressionSyntaxTestingData : ParserDataList<Bina
             Output = sf.BinaryOperation(
                 sf.Literal("1", TGDLType.Decimal),
                 sf.Literal("1", TGDLType.Decimal),
-                OperatorKind.GreaterOrEqual
+                OperationKind.GreaterOrEqual
             )
         },
         new()
@@ -42,7 +42,7 @@ internal class ComparisonBinaryExpressionSyntaxTestingData : ParserDataList<Bina
             Output = sf.BinaryOperation(
                 sf.Literal("1", TGDLType.Decimal),
                 sf.Literal("1", TGDLType.Decimal),
-                OperatorKind.LessOrEqual
+                OperationKind.LessOrEqual
             )
         },
         new()
@@ -52,10 +52,10 @@ internal class ComparisonBinaryExpressionSyntaxTestingData : ParserDataList<Bina
                 sf.BinaryOperation(
                     sf.Literal("1", TGDLType.Decimal),
                     sf.Literal("1", TGDLType.Decimal),
-                    OperatorKind.Addition
+                    OperationKind.Addition
                 ),
                 sf.Literal("1", TGDLType.Decimal),
-                OperatorKind.GreaterThan
+                OperationKind.GreaterThan
             )
         },
         new()
@@ -64,7 +64,7 @@ internal class ComparisonBinaryExpressionSyntaxTestingData : ParserDataList<Bina
             Output = sf.BinaryOperation(
                 sf.Literal("1", TGDLType.Decimal),
                 sf.Literal("1", TGDLType.Decimal),
-                OperatorKind.GreaterThan
+                OperationKind.GreaterThan
             )
         },
         new()
@@ -73,7 +73,7 @@ internal class ComparisonBinaryExpressionSyntaxTestingData : ParserDataList<Bina
             Output = sf.BinaryOperation(
                 sf.Literal("1", TGDLType.Decimal),
                 sf.Literal("1", TGDLType.Decimal),
-                OperatorKind.GreaterThan
+                OperationKind.GreaterThan
             )
         },
         new()
@@ -82,7 +82,7 @@ internal class ComparisonBinaryExpressionSyntaxTestingData : ParserDataList<Bina
             Output = sf.BinaryOperation(
                 sf.Literal("1", TGDLType.Decimal),
                 sf.Literal("1", TGDLType.Decimal),
-                OperatorKind.GreaterThan
+                OperationKind.GreaterThan
             )
         },
         new()
@@ -91,7 +91,7 @@ internal class ComparisonBinaryExpressionSyntaxTestingData : ParserDataList<Bina
             Output = sf.BinaryOperation(
                 sf.Literal("1", TGDLType.Decimal),
                 sf.Literal("1", TGDLType.Decimal),
-                OperatorKind.LessThan
+                OperationKind.LessThan
             )
         },
         new()
@@ -100,7 +100,7 @@ internal class ComparisonBinaryExpressionSyntaxTestingData : ParserDataList<Bina
             Output = sf.BinaryOperation(
                 sf.Literal("1", TGDLType.Decimal),
                 sf.Literal("1", TGDLType.Decimal),
-                OperatorKind.LessOrEqual
+                OperationKind.LessOrEqual
             )
         },
         new()
@@ -109,7 +109,7 @@ internal class ComparisonBinaryExpressionSyntaxTestingData : ParserDataList<Bina
             Output = sf.BinaryOperation(
                 sf.Literal("1", TGDLType.Decimal),
                 sf.Literal("1", TGDLType.Decimal),
-                OperatorKind.GreaterOrEqual
+                OperationKind.GreaterOrEqual
             )
         },
     };

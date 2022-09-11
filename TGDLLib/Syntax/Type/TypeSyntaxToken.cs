@@ -12,7 +12,6 @@ public enum TGDLType
     BoardCell
 }
 
-
 public abstract class TypeSyntax 
 {
     public bool IsDeclaredType { get; protected set; } = false;

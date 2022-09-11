@@ -15,7 +15,7 @@ internal class EqualityBinaryOperationExpressionSyntaxTestingData : ParserDataLi
             Output = sf.BinaryOperation(
                 sf.Literal("1", TGDLType.Decimal),
                 sf.Literal("1", TGDLType.Decimal),
-                OperatorKind.Equal
+                OperationKind.Equal
             )
         },
         new()
@@ -24,18 +24,20 @@ internal class EqualityBinaryOperationExpressionSyntaxTestingData : ParserDataLi
             Output = sf.BinaryOperation(
                 sf.Literal("1", TGDLType.Decimal),
                 sf.Literal("1", TGDLType.Decimal),
-                OperatorKind.NotEqual
+                OperationKind.NotEqual
             )
         },
+        /*
         new()
         {
             Input = "1 == this.attribute",
             Output = sf.BinaryOperation(
                 sf.Literal("1", TGDLType.Decimal),
                 sf.AttributeAccess(sf.Identifier("this"), sf.Identifier("attribute")),
-                OperatorKind.Equal
+                OperationKind.Equal
             )
         },
+        */
 
         new()
         {
@@ -43,7 +45,7 @@ internal class EqualityBinaryOperationExpressionSyntaxTestingData : ParserDataLi
             Output = sf.BinaryOperation(
                 sf.Literal("1", TGDLType.Decimal),
                 sf.Literal("1", TGDLType.Decimal),
-                OperatorKind.Equal
+                OperationKind.Equal
             )
         },
         new()
@@ -52,7 +54,7 @@ internal class EqualityBinaryOperationExpressionSyntaxTestingData : ParserDataLi
             Output = sf.BinaryOperation(
                 sf.Literal("1", TGDLType.Decimal),
                 sf.Literal("1", TGDLType.Decimal),
-                OperatorKind.NotEqual
+                OperationKind.NotEqual
             )
         },
         new()
@@ -62,14 +64,14 @@ internal class EqualityBinaryOperationExpressionSyntaxTestingData : ParserDataLi
                 sf.BinaryOperation(
                     sf.Literal("2", TGDLType.Decimal),
                     sf.Literal("1", TGDLType.Decimal),
-                    OperatorKind.GreaterThan
+                    OperationKind.GreaterThan
                 ),
                 sf.BinaryOperation(
                     sf.Literal("1", TGDLType.Decimal),
                     sf.Literal("2", TGDLType.Decimal),
-                    OperatorKind.LessThan
+                    OperationKind.LessThan
                 ),
-                OperatorKind.Equal
+                OperationKind.Equal
             )
         },
         new()
@@ -80,17 +82,17 @@ internal class EqualityBinaryOperationExpressionSyntaxTestingData : ParserDataLi
                     sf.BinaryOperation(
                         sf.Literal("1", TGDLType.Decimal),
                         sf.Literal("2", TGDLType.Decimal),
-                        OperatorKind.Addition
+                        OperationKind.Addition
                     ),
                     sf.Literal("1", TGDLType.Decimal),
-                    OperatorKind.GreaterThan
+                    OperationKind.GreaterThan
                 ),
                 sf.BinaryOperation(
                     sf.Literal("1", TGDLType.Decimal),
                     sf.Literal("2", TGDLType.Decimal),
-                    OperatorKind.LessThan
+                    OperationKind.LessThan
                 ),
-                OperatorKind.Equal
+                OperationKind.Equal
             )
         },
     };

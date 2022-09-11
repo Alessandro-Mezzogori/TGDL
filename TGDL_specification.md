@@ -15,6 +15,7 @@
     - [Decks](#decks)
   - [Board](#board)
 - [Cose da fare](#cose-da-fare)
+  - [Interprete / Programma](#interprete--programma)
 
 ## Keywords
 - player: references a specific player 
@@ -194,3 +195,9 @@ a board can start of as static and be modified by the actions taken by the playe
   - la lambda é definita tramite operatore =>
   - un qualsiasi altro codice é definito con operatore di default :
   - se ha solo uno statement esso é anche il return
+  
+## Interprete / Programma
+The parsing in my prototype program is done following:
+1. Syntax parsing: extract pure syntax information without checking beyond correct structure
+2. Syntax validation: checks the correctness of the typed syntax ( expression types corresponding, invalid operations, ect...)
+3. Syntax Translation: translate the syntax constructs in data structures in c#

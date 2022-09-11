@@ -8,10 +8,10 @@ public class ParameterSyntaxDeclaration
     public TypeSyntax Type { get; set; }
 
     // Identifier
-    public IdentifierSyntaxToken Identifier { get; set; }
+    public IdentifierToken Identifier { get; set; }
 
     
-    public ParameterSyntaxDeclaration(TypeSyntax type, IdentifierSyntaxToken identifier)
+    public ParameterSyntaxDeclaration(TypeSyntax type, IdentifierToken identifier)
     {
         Type = type;
         Identifier = identifier;

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using TGDLLib.Syntax;
+using TGDLLib.Syntax.Expressions;
 using TGDLUnitTesting.TestingData.GenericSyntax;
 
 using sf = TGDLLib.Syntax.SyntaxFactory;
@@ -13,17 +14,20 @@ namespace TGDLUnitTesting.TestingData
             new()
             {
                 Input = "data.access",
-                Output = sf.AttributeAccess(new("data"), new("access"))
+                Output = sf.BinaryOperation(
+                    sf.IdentifierName("data"),
+                    sf.IdentifierName("access"),
+                    OperationKind.AttributeAccess
+                )
             },
             new()
             {
                 Input = "access",
-                Output = sf.AttributeAccess(new("this"), new("access"))
+                Output = sf.IdentifierName("access")
             },
             new()
             {
                 Input = "data.",
-                Output = new(),
                 Test = TestType.Fail
             },
             new()
@@ -37,7 +41,7 @@ namespace TGDLUnitTesting.TestingData
                 Output = sf.BinaryOperation(
                     new LiteralExpressionSyntax("1", TGDLType.Decimal),
                     new LiteralExpressionSyntax("2", TGDLType.Decimal),
-                    OperatorKind.Addition
+                    OperationKind.Addition
                 )
             },
             new()
@@ -47,19 +51,14 @@ namespace TGDLUnitTesting.TestingData
                     sf.BinaryOperation(
                         sf.Literal("1", TGDLType.Decimal),
                         sf.Literal("1", TGDLType.Decimal),
-                        OperatorKind.Addition
+                        OperationKind.Addition
                     ),
                     sf.Literal("1", TGDLType.Decimal),
-                    OperatorKind.GreaterThan 
+                    OperationKind.GreaterThan 
                 )
             },
 
         };
-
-        public void test()
-        {
-            bool test = 1 + 1 > 2;
-        }
     }
 
     internal class ExpressionSyntaxComparer : IEqualityComparer<ExpressionSyntax>
@@ -80,12 +79,12 @@ namespace TGDLUnitTesting.TestingData
                 return _typeComparer.Equals(xLiteral.Type, yLiteral.Type) 
                     && xLiteral.Value == yLiteral.Value;
             }
-            else if(x is AttributeAccessExpressionSyntax)
+            else if(x is IdentifierNameExpressionSyntax)
             {
-                var xAccess = (AttributeAccessExpressionSyntax)x;
-                var yAccess = (AttributeAccessExpressionSyntax)y;
+                var xIdentifier = (IdentifierNameExpressionSyntax)x;
+                var yIdentifier = (IdentifierNameExpressionSyntax)y;
 
-                return new MemberAccessExpressionSyntaxComparer().Equals(xAccess, yAccess);
+                return xIdentifier.Equals(yIdentifier);
             }
             else if(x is BinaryOperationExpressionSyntax)
             {

@@ -65,7 +65,7 @@ internal class LambdaSyntaxDeclarationTestingData : ParserDataList<LambdaSyntaxD
                             sf.BinaryOperation(
                                 sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)),
                                 sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)),
-                                OperatorKind.Addition
+                                OperationKind.Addition
                             )
                         )
                     }
@@ -86,7 +86,7 @@ internal class LambdaSyntaxDeclarationTestingData : ParserDataList<LambdaSyntaxD
                             sf.BinaryOperation(
                                 sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)),
                                 sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)),
-                                OperatorKind.Addition
+                                OperationKind.Addition
                             )
                         )
                     }

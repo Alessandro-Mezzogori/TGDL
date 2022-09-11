@@ -5,7 +5,7 @@ public static class TokenConstants
     public const char ParameterDelimiterToken = ',';
     public const string LambdaBodyDelimiter = "=>";
 
-    public const char MemberAccessOperator = '.';
+    public const char AttributeAccessOperator = '.';
 
     public const char AssignmentOperator = '=';
     public const char AdditionOperatorToken = '+';

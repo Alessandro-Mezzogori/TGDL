@@ -1,15 +1,15 @@
 ﻿namespace TGDLLib.Syntax;
 
-public class IdentifierSyntaxToken : IEquatable<IdentifierSyntaxToken>
+public class IdentifierToken : IEquatable<IdentifierToken>
 {
     public string Identifier { get; set; }
 
-    public IdentifierSyntaxToken(string identifier)
+    public IdentifierToken(string identifier)
     {
         Identifier = identifier;
     }
 
-    public bool Equals(IdentifierSyntaxToken? other)
+    public bool Equals(IdentifierToken? other)
     {
         return other != null && Identifier == other.Identifier;
     }

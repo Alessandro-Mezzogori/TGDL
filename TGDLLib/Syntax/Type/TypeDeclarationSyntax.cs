@@ -5,9 +5,9 @@ public class TypeDeclarationSyntax : IEquatable<TypeDeclarationSyntax>
     // identificatore per il tipo di oggetto dichiarato
     // identificatore per il nome dell'oggeto dichiarato
     public TGDLType Type { get; }
-    public IdentifierSyntaxToken TypeIdentifier { get; }
+    public IdentifierToken TypeIdentifier { get; }
 
-    public TypeDeclarationSyntax(TGDLType type, IdentifierSyntaxToken typeIdentifier)
+    public TypeDeclarationSyntax(TGDLType type, IdentifierToken typeIdentifier)
     {
         Type = type;
         TypeIdentifier = TypeIdentifier;
@@ -21,7 +21,7 @@ public class TypeDeclarationSyntax : IEquatable<TypeDeclarationSyntax>
 
 public class StateTypeDeclarationSyntax : TypeDeclarationSyntax
 {
-    public StateTypeDeclarationSyntax(IdentifierSyntaxToken typeIdentifier) 
+    public StateTypeDeclarationSyntax(IdentifierToken typeIdentifier) 
         : base(TGDLType.State, typeIdentifier)
     {
     }

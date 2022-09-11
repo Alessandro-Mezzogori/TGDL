@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics.CodeAnalysis;
 using TGDLLib.Syntax;
+
+using sf = TGDLLib.Syntax.SyntaxFactory;
 
 namespace TGDLUnitTesting.TestingData
 {
@@ -16,24 +13,28 @@ namespace TGDLUnitTesting.TestingData
             {
                 Input = "return this.test",
                 Output = new(
-                    new AttributeAccessExpressionSyntax(new("this"), new("test"))
+                    sf.BinaryOperation(
+                        sf.IdentifierName("this"),
+                        sf.IdentifierName("test"),
+                        OperationKind.AttributeAccess
+                    )
                 )
             },
             new()
             {
                 Input = "return test",
                 Output = new(
-                    new AttributeAccessExpressionSyntax(new("this"), new("test"))
+                    sf.IdentifierName("test")
                 )
             },
             new()
             {
                 Input = "return 1 + 1",
                 Output = new(
-                    new BinaryOperationExpressionSyntax(
-                        new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                        OperatorKind.Addition,
-                        new LiteralExpressionSyntax("1", TGDLType.Decimal)
+                    sf.BinaryOperation(
+                        sf.Literal("1", TGDLType.Decimal),
+                        sf.Literal("1", TGDLType.Decimal),
+                        OperationKind.Addition
                     )
                 )
             },
@@ -41,15 +42,12 @@ namespace TGDLUnitTesting.TestingData
             {
                 Input = "return 1",
                 Output = new(
-                    new LiteralExpressionSyntax("1", TGDLType.Decimal)
+                    sf.Literal("1", TGDLType.Decimal)
                 )
             },
             new()
             {
                 Input = "1",
-                Output = new(
-                    new LiteralExpressionSyntax("1", TGDLType.Decimal)
-                ),
                 Test = TestType.Fail
             },
 

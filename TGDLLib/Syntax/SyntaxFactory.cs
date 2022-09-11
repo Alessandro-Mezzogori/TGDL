@@ -1,12 +1,23 @@
 ﻿using System.Data;
+using TGDLLib.Syntax.Expressions;
 
 namespace TGDLLib.Syntax;
 
 public class SyntaxFactory
 {
-    public static IdentifierSyntaxToken Identifier(string identifier)
+    public static IdentifierToken Identifier(string identifier)
     {
-        return new IdentifierSyntaxToken(identifier);
+        return new IdentifierToken(identifier);
+    }
+
+    public static IdentifierNameExpressionSyntax IdentifierName(IdentifierToken identifier)
+    {
+        return new IdentifierNameExpressionSyntax(identifier);
+    }
+
+    public static IdentifierNameExpressionSyntax IdentifierName(string identifier)
+    {
+        return IdentifierName(Identifier(identifier));
     }
 
     public static TypeSyntax ParseTypeName(string type)
@@ -58,12 +69,12 @@ public class SyntaxFactory
         return new DeclaredTypeSyntax(type);
     }
 
-    public static TypeDeclarationSyntax TypeDeclaration(TGDLType type, IdentifierSyntaxToken typeIdenfitier)
+    public static TypeDeclarationSyntax TypeDeclaration(TGDLType type, IdentifierToken typeIdenfitier)
     {
         return new TypeDeclarationSyntax(type, typeIdenfitier);
     }
 
-    public static TypeDeclarationSyntax StateTypeDeclaration(IdentifierSyntaxToken typeIdentifier)
+    public static TypeDeclarationSyntax StateTypeDeclaration(IdentifierToken typeIdentifier)
     {
         return TypeDeclaration(TGDLType.State, typeIdentifier);
     }
@@ -73,7 +84,7 @@ public class SyntaxFactory
         return new LiteralExpressionSyntax(value, type);
     }
 
-    public static AttributeSyntaxDeclaration StateAttribute(IdentifierSyntaxToken identifier, LiteralExpressionSyntax initializeValue)
+    public static AttributeSyntaxDeclaration StateAttribute(IdentifierToken identifier, LiteralExpressionSyntax initializeValue)
     {
         return new AttributeSyntaxDeclaration(identifier, initializeValue);
     }
@@ -83,7 +94,7 @@ public class SyntaxFactory
         return new StateScopeToken(scope);
     } 
 
-    public static StateSyntaxDeclaration State(IdentifierSyntaxToken identifier, StateScopeToken? scope = null, IEnumerable<AttributeSyntaxDeclaration>? attributes = null)
+    public static StateSyntaxDeclaration State(IdentifierToken identifier, StateScopeToken? scope = null, IEnumerable<AttributeSyntaxDeclaration>? attributes = null)
     {
         scope ??= SyntaxFactory.StateScope(Syntax.StateScope.Local);
         attributes ??= Enumerable.Empty<AttributeSyntaxDeclaration>();
@@ -96,7 +107,7 @@ public class SyntaxFactory
         return new LambdaSyntaxDeclaration(parameters, body);
     }
 
-    public static ParameterSyntaxDeclaration Parameter(TypeSyntax type, IdentifierSyntaxToken identifier)
+    public static ParameterSyntaxDeclaration Parameter(TypeSyntax type, IdentifierToken identifier)
     {
         return new ParameterSyntaxDeclaration(type, identifier);
     }
@@ -112,14 +123,9 @@ public class SyntaxFactory
         return new ReturnStatementSyntax(expression);
     }
 
-    public static BinaryOperationExpressionSyntax BinaryOperation(ExpressionSyntax left, ExpressionSyntax right, OperatorKind op)
+    public static BinaryOperationExpressionSyntax BinaryOperation(ExpressionSyntax left, ExpressionSyntax right, OperationKind op)
     {
         return new BinaryOperationExpressionSyntax(left, op, right);
-    }
-
-    public static AttributeAccessExpressionSyntax AttributeAccess(IdentifierSyntaxToken target, IdentifierSyntaxToken attribute)
-    {
-        return new AttributeAccessExpressionSyntax(target, attribute);
     }
 
     public static LiteralExpressionSyntax Literal(string value, PredefinedTypeSyntax type)
