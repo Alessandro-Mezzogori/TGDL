@@ -1,6 +1,7 @@
 ﻿namespace TGDLLib.Syntax;
 public enum OperationKind
 {
+    // binary operations
     Addition,
     Subtraction,
     Moltiplication,
@@ -13,10 +14,18 @@ public enum OperationKind
     LessOrEqual,
     Equal,
     NotEqual,
+    Not,
+    And,
+    Or,
 
+    // unary operations
+    Plus,
+    Minus,
+    
+    // other expression types
     Literal,
     Identifier,
-    AttributeAccess,
+    Dot,
 }
 
 public abstract class ExpressionSyntax

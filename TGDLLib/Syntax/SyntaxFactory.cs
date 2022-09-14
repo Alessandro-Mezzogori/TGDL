@@ -1,5 +1,7 @@
 ﻿using System.Data;
+using System.Reflection.Metadata.Ecma335;
 using TGDLLib.Syntax.Expressions;
+using TGDLLib.Syntax.Statements;
 
 namespace TGDLLib.Syntax;
 
@@ -84,9 +86,9 @@ public class SyntaxFactory
         return new LiteralExpressionSyntax(value, type);
     }
 
-    public static AttributeSyntaxDeclaration StateAttribute(IdentifierToken identifier, LiteralExpressionSyntax initializeValue)
+    public static UnaryExpressionSyntax Unary(ExpressionSyntax operand, OperationKind operation)
     {
-        return new AttributeSyntaxDeclaration(identifier, initializeValue);
+        return new UnaryExpressionSyntax(operand, operation);
     }
 
     public static StateScopeToken StateScope(StateScope scope)
@@ -94,12 +96,23 @@ public class SyntaxFactory
         return new StateScopeToken(scope);
     } 
 
-    public static StateSyntaxDeclaration State(IdentifierToken identifier, StateScopeToken? scope = null, IEnumerable<AttributeSyntaxDeclaration>? attributes = null)
+    public static StateSyntaxDeclaration State(IdentifierToken identifier, StateScopeToken? scope = null, IEnumerable<AssignmentStatementSyntax>? attributes = null)
     {
         scope ??= SyntaxFactory.StateScope(Syntax.StateScope.Local);
-        attributes ??= Enumerable.Empty<AttributeSyntaxDeclaration>();
+        attributes ??= Enumerable.Empty<AssignmentStatementSyntax>();
         return new StateSyntaxDeclaration(identifier, attributes, scope);
     }
+
+    public static AssignmentStatementSyntax StateAttribute(IdentifierNameExpressionSyntax identifier, ExpressionSyntax initializer)
+    {
+        return Assignment(identifier, initializer);
+    }
+
+    public static AssignmentStatementSyntax StateAttribute(string identifier, ExpressionSyntax initializer)
+    {
+        return StateAttribute(IdentifierName(identifier), initializer);
+    }
+
 
     public static LambdaSyntaxDeclaration Lambda(BodySyntaxDeclaration body, IEnumerable<ParameterSyntaxDeclaration>? parameters = null)
     {
@@ -121,6 +134,11 @@ public class SyntaxFactory
     public static ReturnStatementSyntax Return(ExpressionSyntax expression)
     {
         return new ReturnStatementSyntax(expression);
+    }
+
+    public static AssignmentStatementSyntax Assignment(ExpressionSyntax identifier, ExpressionSyntax initializer)
+    {
+        return new AssignmentStatementSyntax(identifier, initializer);
     }
 
     public static BinaryOperationExpressionSyntax BinaryOperation(ExpressionSyntax left, ExpressionSyntax right, OperationKind op)
