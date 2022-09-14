@@ -34,6 +34,14 @@ public class ExpressionTester : TGDLBaseVisitor<ExpressionSyntax>
         if (dec != null)
             return SyntaxFactory.Literal(dec.GetText(), TGDLType.Decimal);
 
+        var str = context.STRING();
+        if (str != null)
+            return SyntaxFactory.Literal(str.GetText(), TGDLType.String);
+
+        var @bool = context.BOOL();
+        if (@bool != null)
+            return SyntaxFactory.Literal(@bool.GetText(), TGDLType.Bool);
+
         throw new NotImplementedException("Literal");
     }
 

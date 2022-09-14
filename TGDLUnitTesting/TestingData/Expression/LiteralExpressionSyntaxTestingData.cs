@@ -15,11 +15,6 @@ internal class LiteralExpressionSyntaxTestingData : ParserDataList<LiteralExpres
         },
         new()
         {
-            Input = "a1",
-            Test = TestType.Fail
-        },
-        new()
-        {
             Input = "textbeforenumber1.0",
             Test = TestType.Fail
         },
@@ -36,7 +31,7 @@ internal class LiteralExpressionSyntaxTestingData : ParserDataList<LiteralExpres
         new() // TODO more test for strings
         {
             Input = "\"string\"",
-            Output = new("string", TGDLType.String)
+            Output = new("\"string\"", TGDLType.String)
         },
         new()
         {

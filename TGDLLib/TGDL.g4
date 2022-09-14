@@ -55,6 +55,8 @@ primary
 
 literal
     : DECIMAL
+    | STRING
+	| BOOL
     ;
 
 
@@ -94,11 +96,14 @@ OR          : '||'  ;
 
 DOT         : '.'   ;
 
+// TOKENS
 
 // Keywords
 
 // types
 DECIMAL : NUMBER ('.' NUMBER)?;
+STRING: '"' (~["\\\r\n] | EscapeSequence)* '"';
+BOOL:	'true' | 'false';
 IDENTIFIER: LETTER LETTERORDIGIT* ;
 
 fragment NUMBER  :   DIGIT+  ;
@@ -106,6 +111,16 @@ fragment LETTERORDIGIT:  LETTER | DIGIT;
 fragment DIGIT   :   [0-9]   ;
 fragment LETTER  :   [a-zA-Z];
 
-WHITESPACE : [ \t\r\n\u000C]+ -> channel(HIDDEN);
+fragment EscapeSequence
+    : '\\' [btnfr"'\\]
+    | '\\' ([0-3]? [0-7])? [0-7]
+    | '\\' 'u'+ HexDigit HexDigit HexDigit HexDigit
+    ;
+
+fragment HexDigit
+    : [0-9a-fA-F]
+    ;
+
+WHITESPACE : [ \t\r\n\u000C]+ -> skip;//channel(HIDDEN);
 
 // fragments

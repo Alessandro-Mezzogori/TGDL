@@ -11,7 +11,7 @@ public class ExpressionParsing
     [Theory, ClassData(typeof(LiteralExpressionSyntaxTestingData))]
     public void LiteralExpressionSyntaxTests(DataUnit<string, LiteralExpressionSyntax> unit)
     {
-        ParseTests.Test(unit, x => x.expression(), x => new ExpressionTester().Visit(x), new ExpressionSyntaxComparer());
+        ParseTests.Test(unit, x => x.literal(), x => new ExpressionTester().Visit(x), new ExpressionSyntaxComparer());
     }
 
     [Theory, ClassData(typeof(ExpressionSyntaxTestingData))]
@@ -58,6 +58,9 @@ public static class ParseTests
         {
             if (unit.Test != TestType.Fail)
                 throw new ArgumentException("unit.Output can only be null if Test = TestType.Fail");
+
+            // TODO create exceptin for parsing thrown by visitors
+            // should have the context / expression, type, message ect...
 
             Assert.True(parser.NumberOfSyntaxErrors > 0);
             // TODO ErrorListener to show syntax errors;
