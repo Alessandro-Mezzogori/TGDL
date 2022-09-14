@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using TGDLLib.Syntax;
-
+using TGDLLib.Syntax.Statements;
 using sf = TGDLLib.Syntax.SyntaxFactory;
 
 namespace TGDLUnitTesting.TestingData.GenericSyntax;
@@ -43,13 +43,13 @@ internal class StateSyntaxDeclarationTestingData : ParserDataList<StateSyntaxDec
         },
         new()
         {
-            Input = "state test:\r\n\tattr = 1",
+            Input = "state test:\r\n\t attr = 1\r\n",
             Output = sf.State(
                 sf.Identifier("test"),
-                attributes: new AttributeSyntaxDeclaration[]
+                attributes: new AssignmentStatementSyntax[]
                 {
                     sf.StateAttribute(
-                        sf.Identifier("attr"), 
+                        sf.IdentifierName("attr"), 
                         sf.Literal("1", TGDLType.Decimal)
                     )
                 }
@@ -57,17 +57,17 @@ internal class StateSyntaxDeclarationTestingData : ParserDataList<StateSyntaxDec
         },
         new()
         {
-            Input = "state test:\r\n\tattr = 1\r\nsecond = true",
+            Input = "state test:\r\n\tattr = 1\r\n second = true\r\n",
             Output = sf.State(
                 sf.Identifier("test"),
-                attributes: new AttributeSyntaxDeclaration[]
+                attributes: new AssignmentStatementSyntax[]
                 {
                     sf.StateAttribute(
-                        sf.Identifier("attr"), 
+                        sf.IdentifierName("attr"), 
                         sf.Literal("1", TGDLType.Decimal)
                     ),
                     sf.StateAttribute(
-                        sf.Identifier("second"), 
+                        sf.IdentifierName("second"), 
                         sf.Literal("true", TGDLType.Bool)
                     )
                 }
@@ -78,14 +78,14 @@ internal class StateSyntaxDeclarationTestingData : ParserDataList<StateSyntaxDec
             Input = "state test:\r\n\tattr = 1\r\n\tsecond=true",
             Output = sf.State(
                 sf.Identifier("test"),
-                attributes: new AttributeSyntaxDeclaration[]
+                attributes: new AssignmentStatementSyntax[]
                 {
                     sf.StateAttribute(
-                        sf.Identifier("attr"), 
+                        sf.IdentifierName("attr"), 
                         sf.Literal("1", TGDLType.Decimal)
                     ),
                     sf.StateAttribute(
-                        sf.Identifier("second"), 
+                        sf.IdentifierName("second"), 
                         sf.Literal("true", TGDLType.Bool)
                     )
                 }
@@ -96,18 +96,18 @@ internal class StateSyntaxDeclarationTestingData : ParserDataList<StateSyntaxDec
              Input = "state test:\r\n\tattr = \"test\"\r\n\tsecond=true\r\n\tthird=false",
             Output = sf.State(
                 sf.Identifier("test"),
-                attributes: new AttributeSyntaxDeclaration[]
+                attributes: new AssignmentStatementSyntax[]
                 {
                     sf.StateAttribute(
-                        sf.Identifier("attr"), 
+                        sf.IdentifierName("attr"), 
                         sf.Literal("test", TGDLType.String)
                     ),
                     sf.StateAttribute(
-                        sf.Identifier("second"), 
+                        sf.IdentifierName("second"), 
                         sf.Literal("true", TGDLType.Bool)
                     ),
                     sf.StateAttribute(
-                        sf.Identifier("third"), 
+                        sf.IdentifierName("third"), 
                         sf.Literal("false", TGDLType.Bool)
                     )
 
@@ -119,7 +119,7 @@ internal class StateSyntaxDeclarationTestingData : ParserDataList<StateSyntaxDec
 
 internal class StateSyntaxDeclarationComparer : IEqualityComparer<StateSyntaxDeclaration>
 {
-    private readonly AttributeSyntaxDeclarationComparer _attributeComparer = new();
+    private readonly AssignmentStatementSyntaxComparer _attributeComparer = new();
     public bool Equals(StateSyntaxDeclaration? x, StateSyntaxDeclaration? y)
     {
         if (x == null && y == null) return true;

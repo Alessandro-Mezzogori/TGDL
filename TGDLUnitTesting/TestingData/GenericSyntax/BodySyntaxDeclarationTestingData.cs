@@ -10,7 +10,7 @@ internal class BodySyntaxDeclarationTestingData : ParserDataList<BodySyntaxDecla
     {
         new()
         {
-            Input = "=> return 1 + 1",
+            Input = @"=> return 1 + 1",
             Output = new(new StatementSyntax[]
             {
                 new ReturnStatementSyntax(

@@ -16,7 +16,7 @@ namespace TGDLUnitTesting.TestingData
                     sf.BinaryOperation(
                         sf.IdentifierName("this"),
                         sf.IdentifierName("test"),
-                        OperationKind.AttributeAccess
+                        OperationKind.Dot
                     )
                 )
             },

@@ -11,6 +11,41 @@ namespace TGDLUnitTesting.TestingData
         {
             new()
             {
+                Input = "1 + 2 * (3 + 1)",
+                Output = sf.BinaryOperation(
+                    sf.Literal("1", TGDLType.Decimal), 
+                    sf.BinaryOperation(
+                        sf.Literal("2", TGDLType.Decimal),
+                        sf.BinaryOperation(
+                            sf.Literal("3", TGDLType.Decimal),
+                            sf.Literal("1", TGDLType.Decimal),
+                            OperationKind.Addition
+                        ),
+                        OperationKind.Moltiplication
+                    ),
+                    OperationKind.Addition
+                ),
+            },
+            new()
+            {
+                Input = "1 + 2 * 3 + 1",
+                Output = sf.BinaryOperation(
+                    sf.BinaryOperation(
+                        sf.Literal("1", TGDLType.Decimal),
+                        sf.BinaryOperation(
+                            sf.Literal("2", TGDLType.Decimal),
+                            sf.Literal("3", TGDLType.Decimal),
+                            OperationKind.Moltiplication
+                        ),
+                        OperationKind.Addition
+                    ),
+                    sf.Literal("1", TGDLType.Decimal),
+                    OperationKind.Addition
+                ),
+            },
+
+            new()
+            {
                 Input = "1 + 2",
                 Output = sf.BinaryOperation(
                     sf.Literal("1", TGDLType.Decimal), 
@@ -39,7 +74,7 @@ namespace TGDLUnitTesting.TestingData
                     sf.BinaryOperation(
                         sf.IdentifierName("this"), 
                         sf.IdentifierName("access"),
-                        OperationKind.AttributeAccess
+                        OperationKind.Dot
                     ),
                     sf.Literal("2", TGDLType.Decimal),
                     OperationKind.Addition
@@ -84,7 +119,10 @@ namespace TGDLUnitTesting.TestingData
             {
                 Input = "-3 - (1 - 2)",
                 Output = sf.BinaryOperation(
-                    sf.Literal("-3", TGDLType.Decimal), 
+                    sf.Unary(
+                        sf.Literal("3", TGDLType.Decimal),
+                        OperationKind.Minus
+                    ),
                     sf.BinaryOperation(
                         sf.Literal("1", TGDLType.Decimal),
                         sf.Literal("2", TGDLType.Decimal),
@@ -129,7 +167,7 @@ namespace TGDLUnitTesting.TestingData
             },
             new()
             {
-                Input = "3 / (1 * (2 mod 1))",
+                Input = "3 / (1 * (2 % 1))",
                 Output = new BinaryOperationExpressionSyntax(
                     new LiteralExpressionSyntax("3", TGDLType.Decimal), 
                     OperationKind.Division, 
@@ -172,7 +210,7 @@ namespace TGDLUnitTesting.TestingData
             },
             new()
             {
-                Input = "1 - 3 ^ 2 ^ 1 mod 2",
+                Input = "1 - 3 ^ 2 ^ 1 % 2",
                 Output = new BinaryOperationExpressionSyntax(
                     new LiteralExpressionSyntax("1", TGDLType.Decimal),
                     OperationKind.Subtraction,
@@ -198,7 +236,7 @@ namespace TGDLUnitTesting.TestingData
                     sf.BinaryOperation(
                         sf.IdentifierName("this"), 
                         sf.IdentifierName("access"),
-                        OperationKind.AttributeAccess
+                        OperationKind.Dot
                     ),
                     sf.BinaryOperation(
                         sf.Literal("1", TGDLType.Decimal),
@@ -215,10 +253,10 @@ namespace TGDLUnitTesting.TestingData
                     sf.BinaryOperation(
                         sf.IdentifierName("test"),
                         sf.IdentifierName("a"),
-                        OperationKind.AttributeAccess
+                        OperationKind.Dot
                     ),
                     sf.IdentifierName("b"),
-                    OperationKind.AttributeAccess
+                    OperationKind.Dot
                 )
             },
         };

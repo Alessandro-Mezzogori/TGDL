@@ -5,7 +5,6 @@
         Equal,
         NotEqual,
         Fail,
-        ParsingFail,
     }
 
     public interface IDataUnit<out TInput, out TOutput>

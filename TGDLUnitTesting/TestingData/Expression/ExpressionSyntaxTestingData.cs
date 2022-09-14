@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using TGDLLib.Syntax;
 using TGDLLib.Syntax.Expressions;
+using TGDLUnitTesting.TestingData.Expression;
 using TGDLUnitTesting.TestingData.GenericSyntax;
 
 using sf = TGDLLib.Syntax.SyntaxFactory;
@@ -17,7 +18,7 @@ namespace TGDLUnitTesting.TestingData
                 Output = sf.BinaryOperation(
                     sf.IdentifierName("data"),
                     sf.IdentifierName("access"),
-                    OperationKind.AttributeAccess
+                    OperationKind.Dot
                 )
             },
             new()
@@ -92,6 +93,13 @@ namespace TGDLUnitTesting.TestingData
                 var yOperation = (BinaryOperationExpressionSyntax)y;
 
                 return new BinaryOperationExpressionSyntaxComparer().Equals(xOperation, yOperation);
+            }
+            else if(x is UnaryExpressionSyntax)
+            {
+                var xUnary = (UnaryExpressionSyntax)x;
+                var yUnary = (UnaryExpressionSyntax)y;
+
+                return new UnaryExpressionSyntaxComparer().Equals(xUnary, yUnary);
             }
 
             throw new NotImplementedException();
