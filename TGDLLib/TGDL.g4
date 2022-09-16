@@ -16,20 +16,33 @@ action  :
 
 require :
         ;
-
-lambda  :
-        ;
-
-parameter   :
-            ;
-
-body    :
-        ;
-
-stat    :
-        ;
-
 */
+
+lambda  
+    : (parameter | parameter ',')* body
+    ;
+
+parameter: type IDENTIFIER  ;
+    
+type
+    : token=BOOL_TYPE
+    | token=DECIMAL_TYPE
+    | token=STRING_TYPE
+    | token=BOARD_TYPE
+    | token=BOARDCELL_TYPE
+    | token=PLAYER_TYPE
+    | token=IDENTIFIER
+    ;
+
+body
+    : '=>' (statement | LINEEND statement+)
+    ;
+
+statement
+    : RETURN expression EOL             #returnStament
+    | expression ASSIGN expression EOL  #assignmentStatement
+    | expression EOL                    #expressionStatement
+    ;
 
 expression
     : primary
@@ -56,20 +69,13 @@ primary
 literal
     : DECIMAL
     | STRING
-	| BOOL
+	| BOOL 
     ;
 
 
 identifier
     : IDENTIFIER
     ;
-
-// conditinoalOR
-// conditionalAnd
-
-// chain does not work
-
-// all operations possible
 
 
 /* Lexer Rules */
@@ -95,16 +101,39 @@ AND         : '&&'  ;
 OR          : '||'  ;
 
 DOT         : '.'   ;
+ASSIGN      : '='   ;
 
 // TOKENS
 
 // Keywords
 
-// types
+RETURN      : 'return'  ;
+IF          : 'if'      ;
+
+
+// types values
 DECIMAL : NUMBER ('.' NUMBER)?;
 STRING: '"' (~["\\\r\n] | EscapeSequence)* '"';
 BOOL:	'true' | 'false';
+
+// types
+DECIMAL_TYPE:   'decimal'   ;
+BOOL_TYPE   :   'bool'      ;
+STRING_TYPE :   'string'    ;
+
+// supplied types
+BOARDCELL_TYPE  : 'cell'    ;
+BOARD_TYPE      : 'board'   ;
+PLAYER_TYPE     : 'player'  ;
+
+// generic tokens
+//EOL: ( LINEEND | EOF);
 IDENTIFIER: LETTER LETTERORDIGIT* ;
+
+EOL: ';'    ;
+LINEEND
+    : '\r'? '\n' 
+    | '\r';
 
 fragment NUMBER  :   DIGIT+  ;
 fragment LETTERORDIGIT:  LETTER | DIGIT;
