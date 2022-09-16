@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Reflection.Metadata.Ecma335;
+using System.Runtime.CompilerServices;
 using TGDLLib.Syntax.Expressions;
 using TGDLLib.Syntax.Statements;
 
@@ -56,19 +57,14 @@ public class SyntaxFactory
         return new SuppliedPredefinedTypeSyntax(type);
     }
 
-    public static SuppliedPredefinedTypeSyntax SuppliedPredfinedType(string type)
+    public static DeclaredTypeSyntax DeclaredType(IdentifierToken declaredType)
     {
-        if (type == "state") return SuppliedPredefinedType(TGDLType.State);
-        if (type == "player") return SuppliedPredefinedType(TGDLType.Player);
-        if (type == "board") return SuppliedPredefinedType(TGDLType.Board);
-        if (type == "boardCell") return SuppliedPredefinedType(TGDLType.BoardCell);
-
-        throw new ArgumentException($"{nameof(type)}: {type} is not a supplied predefined type"); 
+        return new DeclaredTypeSyntax(declaredType);
     }
 
-    public static DeclaredTypeSyntax DeclaredType(TypeDeclarationSyntax type)
+    public static DeclaredTypeSyntax DeclaredType(string declaredType)
     {
-        return new DeclaredTypeSyntax(type);
+        return DeclaredType(Identifier(declaredType));
     }
 
     public static TypeDeclarationSyntax TypeDeclaration(TGDLType type, IdentifierToken typeIdenfitier)
@@ -101,6 +97,11 @@ public class SyntaxFactory
         scope ??= SyntaxFactory.StateScope(Syntax.StateScope.Local);
         attributes ??= Enumerable.Empty<AssignmentStatementSyntax>();
         return new StateSyntaxDeclaration(identifier, attributes, scope);
+    }
+
+    public static ExpressionStatement Expression(ExpressionSyntax expression)
+    {
+        return new ExpressionStatement(expression);
     }
 
     public static AssignmentStatementSyntax StateAttribute(IdentifierNameExpressionSyntax identifier, ExpressionSyntax initializer)

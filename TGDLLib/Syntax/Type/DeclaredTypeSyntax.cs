@@ -2,8 +2,8 @@
 
 public class DeclaredTypeSyntax : TypeSyntax, IEquatable<DeclaredTypeSyntax>
 {
-    public TypeDeclarationSyntax DeclaredType { get; }
-    public DeclaredTypeSyntax(TypeDeclarationSyntax declaredType)
+    public IdentifierToken DeclaredType { get; }
+    public DeclaredTypeSyntax(IdentifierToken declaredType)
     {
         IsDeclaredType = true;
         DeclaredType = declaredType;
