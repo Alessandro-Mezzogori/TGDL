@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using TGDLLib.Syntax;
+using TGDLLib.Syntax.Statements;
 
 namespace TGDLUnitTesting.TestingData;
 
@@ -56,6 +57,7 @@ internal class StatementSyntaxComparer : IEqualityComparer<StatementSyntax>
 
         if (ComparerHelpers.CompareIfType(x, y, out var resultReturn, new ReturnStatementSyntaxComparer())) return resultReturn;
         if (ComparerHelpers.CompareIfType(x, y, out var resultAssignment, new AssignmentStatementSyntaxComparer())) return resultAssignment;
+        if (ComparerHelpers.CompareIfType(x, y, out var resultExpression, new ExpressionStatementComparer())) return resultExpression;
 
         throw new NotImplementedException();
     }

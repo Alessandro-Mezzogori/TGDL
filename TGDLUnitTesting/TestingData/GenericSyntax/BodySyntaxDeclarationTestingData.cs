@@ -1,8 +1,11 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using TGDLLib.Syntax;
+using TGDLLib.Syntax.Statements;
 using TGDLUnitTesting.TestingData;
 
 namespace TGDLUnitTesting;
+
+using sf = SyntaxFactory;
 
 internal class BodySyntaxDeclarationTestingData : ParserDataList<BodySyntaxDeclaration>
 {
@@ -10,14 +13,14 @@ internal class BodySyntaxDeclarationTestingData : ParserDataList<BodySyntaxDecla
     {
         new()
         {
-            Input = @"=> return 1 + 1",
-            Output = new(new StatementSyntax[]
+            Input = @"=> return 1 + 1;",
+            Output = sf.Body(new StatementSyntax[]
             {
-                new ReturnStatementSyntax(
-                    new BinaryOperationExpressionSyntax(
-                        new LiteralExpressionSyntax("1", TGDLType.Decimal),
-                        OperationKind.Addition,
-                        new LiteralExpressionSyntax("1", TGDLType.Decimal)
+                sf.Return(
+                    sf.BinaryOperation(
+                        sf.Literal("1", TGDLType.Decimal),
+                        sf.Literal("1", TGDLType.Decimal),
+                        OperationKind.Addition
                     )
                 )
             })
@@ -26,7 +29,7 @@ internal class BodySyntaxDeclarationTestingData : ParserDataList<BodySyntaxDecla
         {
             Input = @"=>
                         ",
-            Output = new(new StatementSyntax[0]),
+            Output = sf.Body(new StatementSyntax[0]),
             Test = TestType.Fail
         },
         new() // Edge case, should i allow it ? 
@@ -38,7 +41,7 @@ internal class BodySyntaxDeclarationTestingData : ParserDataList<BodySyntaxDecla
         new() // Edge case, should i allow it ? 
         {
             Input = @"=>
-                        return 1 + 1",
+                        return 1 + 1;",
             Output = new(new StatementSyntax[]
             {
                 new ReturnStatementSyntax(
@@ -53,10 +56,9 @@ internal class BodySyntaxDeclarationTestingData : ParserDataList<BodySyntaxDecla
         new() // Edge case, should i allow it ? 
         {
             Input = @"=>
-                        1 + 1",
-            Output = new(new StatementSyntax[]
-            {
-                new ReturnStatementSyntax(
+                        1 + 1;",
+            Output = new(new StatementSyntax[]{
+                new ExpressionStatement(
                     new BinaryOperationExpressionSyntax(
                         new LiteralExpressionSyntax("1", TGDLType.Decimal),
                         OperationKind.Addition,

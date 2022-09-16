@@ -12,11 +12,11 @@ internal class LambdaSyntaxDeclarationTestingData : ParserDataList<LambdaSyntaxD
     {
         new()
         {
-            Input = "bool Bool, player Player => 1", // TODO "Bool" need new expression parameteraccess,
+            Input = "bool Bool, player Player => 1;", // TODO "Bool" need new expression parameteraccess,
             Output = sf.Lambda(
                 sf.Body(
                     new[]{
-                        sf.Return(sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)))
+                        sf.Expression(sf.Literal("1", sf.PredefinedType(TGDLType.Decimal)))
                     }
                 ),
                 new[]{
@@ -27,7 +27,7 @@ internal class LambdaSyntaxDeclarationTestingData : ParserDataList<LambdaSyntaxD
         },
         new()
         {
-            Input = "bool Bool, player Player => return 1", // TODO "Bool" need new expression parameteraccess,
+            Input = "bool Bool, player Player => return 1;", // TODO "Bool" need new expression parameteraccess,
             Output = sf.Lambda(
                 sf.Body(
                     new[]{
