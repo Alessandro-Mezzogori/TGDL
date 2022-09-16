@@ -18,6 +18,29 @@ require :
         ;
 */
 
+// players
+// board
+// state modifiers
+// global state
+// state
+// state scopes
+// attribute
+
+state
+    :   scope=(LOCAL | GLOBAL | GROUP)? 
+        STATE 
+        IDENTIFIER 
+        (':' statement* action*  )?   
+    ;
+
+action
+    :   ACTION 
+        IDENTIFIER
+        (':' 
+            blockToken=(EFFECT | TRIGGERS | REQUIRE) ':' lambda+  
+        )?
+    ;
+
 lambda  
     : (parameter | parameter ',')* body
     ;
@@ -35,13 +58,13 @@ type
     ;
 
 body
-    : '=>' (statement | LINEEND statement+)
+    : '=>' (statement | NEWLINE statement+)
     ;
 
 statement
-    : RETURN expression EOL             #returnStament
-    | expression ASSIGN expression EOL  #assignmentStatement
-    | expression EOL                    #expressionStatement
+    : RETURN expression NEWLINE             #returnStament
+    | expression ASSIGN expression NEWLINE  #assignmentStatement
+    | expression NEWLINE                    #expressionStatement
     ;
 
 expression
@@ -82,7 +105,6 @@ identifier
 
 // number
 
-
 // operators
 PLUS        : '+'   ;   
 MINUS       : '-'   ;
@@ -109,6 +131,15 @@ ASSIGN      : '='   ;
 
 RETURN      : 'return'  ;
 IF          : 'if'      ;
+LOCAL       : 'local'   ;
+GLOBAL      : 'global'  ;
+GROUP       : 'group'   ;
+STATE       : 'state'   ;
+ACTION      : 'action'  ;
+REQUIRE     : 'require' ;
+TRIGGERS    : 'triggers';
+EFFECT      : 'effect'  ;
+
 
 
 // types values
@@ -117,9 +148,9 @@ STRING: '"' (~["\\\r\n] | EscapeSequence)* '"';
 BOOL:	'true' | 'false';
 
 // types
-DECIMAL_TYPE:   'decimal'   ;
-BOOL_TYPE   :   'bool'      ;
-STRING_TYPE :   'string'    ;
+DECIMAL_TYPE    : 'decimal'   ;
+BOOL_TYPE       : 'bool'      ;
+STRING_TYPE     : 'string'    ;
 
 // supplied types
 BOARDCELL_TYPE  : 'cell'    ;
@@ -130,10 +161,17 @@ PLAYER_TYPE     : 'player'  ;
 //EOL: ( LINEEND | EOF);
 IDENTIFIER: LETTER LETTERORDIGIT* ;
 
-EOL: ';'    ;
-LINEEND
-    : '\r'? '\n' 
-    | '\r';
+// EOL: ';'    ;
+NEWLINE
+    : '\r' '\n'
+    | '\n' 
+    | '\r'
+    ;
+
+WHITESPACE : [ \t\r\n\u000C]+ -> channel(HIDDEN);
+//WHITESPACE : [ \t\u000C]+ -> channel(HIDDEN);
+
+// fragments
 
 fragment NUMBER  :   DIGIT+  ;
 fragment LETTERORDIGIT:  LETTER | DIGIT;
@@ -150,6 +188,3 @@ fragment HexDigit
     : [0-9a-fA-F]
     ;
 
-WHITESPACE : [ \t\r\n\u000C]+ -> skip;//channel(HIDDEN);
-
-// fragments

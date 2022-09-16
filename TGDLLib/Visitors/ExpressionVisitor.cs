@@ -24,8 +24,8 @@ public override ExpressionSyntax VisitLiteral([NotNull] TGDLParser.LiteralContex
 
     var str = context.STRING();
     if (str != null)
-        return SyntaxFactory.Literal(str.GetText(), TGDLType.String);
-
+        return SyntaxFactory.Literal(str.GetText().Trim('\"'), TGDLType.String);
+    
     var @bool = context.BOOL();
     if (@bool != null)
         return SyntaxFactory.Literal(@bool.GetText(), TGDLType.Bool);

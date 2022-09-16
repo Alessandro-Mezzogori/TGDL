@@ -31,7 +31,7 @@ internal class LiteralExpressionSyntaxTestingData : ParserDataList<LiteralExpres
         new() // TODO more test for strings
         {
             Input = "\"string\"",
-            Output = new("\"string\"", TGDLType.String)
+            Output = new("string", TGDLType.String)
         },
         new()
         {

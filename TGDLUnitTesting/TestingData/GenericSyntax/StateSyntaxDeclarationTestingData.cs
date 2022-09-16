@@ -43,7 +43,7 @@ internal class StateSyntaxDeclarationTestingData : ParserDataList<StateSyntaxDec
         },
         new()
         {
-            Input = "state test:\r\n\t attr = 1\r\n",
+            Input = "state test:\r\n\t attr = 1;",
             Output = sf.State(
                 sf.Identifier("test"),
                 attributes: new AssignmentStatementSyntax[]
@@ -57,25 +57,7 @@ internal class StateSyntaxDeclarationTestingData : ParserDataList<StateSyntaxDec
         },
         new()
         {
-            Input = "state test:\r\n\tattr = 1\r\n second = true\r\n",
-            Output = sf.State(
-                sf.Identifier("test"),
-                attributes: new AssignmentStatementSyntax[]
-                {
-                    sf.StateAttribute(
-                        sf.IdentifierName("attr"), 
-                        sf.Literal("1", TGDLType.Decimal)
-                    ),
-                    sf.StateAttribute(
-                        sf.IdentifierName("second"), 
-                        sf.Literal("true", TGDLType.Bool)
-                    )
-                }
-            )
-        },
-        new()
-        {
-            Input = "state test:\r\n\tattr = 1\r\n\tsecond=true",
+            Input = "state test:\r\n\tattr = 1;\r\n second = true;\r\n",
             Output = sf.State(
                 sf.Identifier("test"),
                 attributes: new AssignmentStatementSyntax[]
@@ -93,7 +75,25 @@ internal class StateSyntaxDeclarationTestingData : ParserDataList<StateSyntaxDec
         },
         new()
         {
-             Input = "state test:\r\n\tattr = \"test\"\r\n\tsecond=true\r\n\tthird=false",
+            Input = "state test:\r\n\tattr = 1;\r\n\tsecond=true;",
+            Output = sf.State(
+                sf.Identifier("test"),
+                attributes: new AssignmentStatementSyntax[]
+                {
+                    sf.StateAttribute(
+                        sf.IdentifierName("attr"), 
+                        sf.Literal("1", TGDLType.Decimal)
+                    ),
+                    sf.StateAttribute(
+                        sf.IdentifierName("second"), 
+                        sf.Literal("true", TGDLType.Bool)
+                    )
+                }
+            )
+        },
+        new()
+        {
+             Input = "state test:\r\n\tattr = \"test\";\r\n\tsecond=true;\r\n\tthird=false;",
             Output = sf.State(
                 sf.Identifier("test"),
                 attributes: new AssignmentStatementSyntax[]
@@ -110,7 +110,6 @@ internal class StateSyntaxDeclarationTestingData : ParserDataList<StateSyntaxDec
                         sf.IdentifierName("third"), 
                         sf.Literal("false", TGDLType.Bool)
                     )
-
                 }
             )
         },

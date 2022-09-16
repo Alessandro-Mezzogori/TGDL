@@ -13,7 +13,7 @@ internal class BodySyntaxDeclarationTestingData : ParserDataList<BodySyntaxDecla
     {
         new()
         {
-            Input = @"=> return 1 + 1;",
+            Input = "=> return 1 + 1",
             Output = sf.Body(new StatementSyntax[]
             {
                 sf.Return(
@@ -40,8 +40,7 @@ internal class BodySyntaxDeclarationTestingData : ParserDataList<BodySyntaxDecla
         },
         new() // Edge case, should i allow it ? 
         {
-            Input = @"=>
-                        return 1 + 1;",
+            Input = "=>\r\nreturn 1 + 1",
             Output = new(new StatementSyntax[]
             {
                 new ReturnStatementSyntax(
@@ -55,8 +54,7 @@ internal class BodySyntaxDeclarationTestingData : ParserDataList<BodySyntaxDecla
         },
         new() // Edge case, should i allow it ? 
         {
-            Input = @"=>
-                        1 + 1;",
+            Input = "=> 1 + 1",
             Output = new(new StatementSyntax[]{
                 new ExpressionStatement(
                     new BinaryOperationExpressionSyntax(

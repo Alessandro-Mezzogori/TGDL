@@ -25,7 +25,7 @@ public class SyntaxParsing
     [Theory, ClassData(typeof(StateSyntaxDeclarationTestingData))]
     public void StateSyntaxDeclarationTest(DataUnit<string, StateSyntaxDeclaration> unit)
     {
-        Assert.Fail("Not Implemented");
+        ParseTests.Test(unit, parser => parser.state(), tree => new StateVisior().Visit(tree), new StateSyntaxDeclarationComparer());
     }
 
     [Theory, ClassData(typeof(LambdaSyntaxDeclarationTestingData))]
