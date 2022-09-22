@@ -22,6 +22,7 @@
     - [Triggers](#triggers)
     - [Requires](#requires)
     - [Effects](#effects)
+    - [Global and Named](#global-and-named)
     - [Phases](#phases)
   - [State](#state)
     - [Attributes](#attributes)
@@ -44,6 +45,7 @@
   - [Action](#action)
     - [Action Phase](#action-phase)
   - [State Modifier ( or Playables )](#state-modifier--or-playables-)
+  - [State Modifier ( or Playables )](#state-modifier--or-playables--1)
     - [Decks](#decks)
   - [Board](#board-1)
 - [Cose da fare](#cose-da-fare)
@@ -139,12 +141,97 @@ a stamentent is a combination of clauses and expressions that end with a semicol
   - an assignemnt can be chained to perform an initialization of the declared variable or state attribute
   
 ## Actions
+actions are a combination of instructions set by the user that are run on a trigger.
+
+example:
+```
+action <action>
+{
+  input   { }
+  require { }
+  trigger { }
+  effect  { }
+}
+```
 
 ### Inputs
+An action input are the constructs that will be used troughtout the action definition and execution
+
 ### Triggers
+A trigger is a body of statementes than when evalueted true will launch the corresponding effects
+
+```
+trigger 
+{
+  <statements>
+}
+```
+
 ### Requires
+A requirement is a condition or body of condition that must be satisfied so that the corresponding effect can be applied
+
+```
+require
+{
+  <statements>
+}
+```
+
 ### Effects
+An effect is a body of statements or statement that interacts with the inputs
+```
+effect
+{
+  <statements>
+}
+```
+
+### Global and Named
+Triggers, requires and effects can be associated to a shared subgroup through the name funcionality
+
+```
+trigger [for <identifier>] {}
+require [for <identifier>] {}
+effect [for <identifier>] {}
+```
+
+A named require, trigger or effect will interact only with the require, triggers or effects within the same subgroup.
+An identifier can be assigned to **multiple** triggers, require and effects if needed.
+
+Global action triggers, requires and effects are not named and can interact with the named counterparts, 
+establishing a gerarchical hierarchy between the two.
+A global trigger, require or effect is global to where it is defined ( action, phase ):
+- global trigger: starts the execution of the global effect
+- global require: filters the input / blocks the execution if no input satisfies the conditions 
+To prevent code duplication and encourage use of naming when possible, the global action triggers, requires and effects can reference 
+the named counterparts trough their identifier and boolean operations (not, and, or, nand, xor).
+
+```
+require for A {}
+require for A {}
+require for B {}
+require { A and B} // satisfied when both A and B are satisfied
+```
+
 ### Phases
+Phases are introduces for multi effect actions with different requirements and / or triggers.
+A phase declaration can only contain trigger, require and effect ( both named and global for that phase)
+
+
+a phase is declared like in the following example.
+```
+phase
+{
+  trigger { }
+  require { }
+  effect { }
+}
+```
+
+phases ( and actions ) have the option of a specifier in the following list that changes the behaviour of the effects:
+- choice <n>: not applicable to a callable action, asks a player to choose n effects that have satisfied requires
+- sequence: effects are executed in order of definition
+- simultaneos ( experimental )
 
 ## State
 ### Attributes
@@ -271,7 +358,7 @@ phase <name> [<rule>]
 
 Rules:
 - choice < n >: select n effects between all the effects with satisfied requires 
-- simultanous ( experimental ): all effects happen at the same time no updating is done until the end of all effects
+## State Modifier ( or Playables )
 - sequence ( default ): is the default, the effects are executed in the order of definition ( of the effect keyword, the require keyword can be in any order)
 
 ## State Modifier ( or Playables )
