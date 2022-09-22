@@ -73,12 +73,12 @@ expression
     // expression . (identifier|methodCall)
     // | methodcall
     | prefix=(PLUS | MINUS) expression   
-    | prefix=NOT expression     
     | <assoc=right> expression bop=POW expression  
     | expression bop=(MOL | DIV | MOD) expression   
     | expression bop=(PLUS | MINUS ) expression        
     | expression bop=(LESSEQUAL | GREATEREQUAL | LESS | GREATER) expression 
     | expression bop=(EQUAL | NOTEQUAL) expression   
+    | prefix=NOT expression 
     | expression bop=AND expression
     | expression bop=OR expression
     ;
