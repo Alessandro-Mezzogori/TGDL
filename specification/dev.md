@@ -17,4 +17,4 @@
     1.  rimangono fino alla fine del turno
     2.  rimangono per X turni ( o per X giri)
     3.  rimangono fino alla fine della partita
-17. 
+17. require, trigger, effect for same identifier interaction ( AND or OR)
