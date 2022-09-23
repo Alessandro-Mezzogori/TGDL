@@ -24,11 +24,18 @@
     - [Effects](#effects)
     - [Global and Named](#global-and-named)
     - [Phases](#phases)
+    - [Action Fail](#action-fail)
   - [State](#state)
     - [Attributes](#attributes)
-    - [Actions](#actions-1)
+    - [Value Substate](#value-substate)
+    - [Action Substate](#action-substate)
     - [Scopes](#scopes)
-    - [Global State](#global-state)
+      - [Local](#local)
+      - [Groupis](#groupis)
+      - [Global](#global)
+    - [Transferability](#transferability)
+      - [Local states](#local-states)
+      - [Group states](#group-states)
   - [State Modifiers](#state-modifiers)
   - [Stackables](#stackables)
   - [Placeable](#placeable)
@@ -155,7 +162,14 @@ action <action>
 ```
 
 ### Inputs
-An action input are the constructs that will be used troughtout the action definition and execution
+An action input are the constructs that will be used troughtout the action definition and execution.
+It works trough method dependency injection following the subsequent rules:
+1. if its a supplied type it will be supplied from the translation / interpreter
+2. if its a declared type it will be asked to the user to choose (if the require are satisfied else no choice is given and the action fails, check action fail):
+3. if its a Predefined types it will ask the user to choose ( if possible restrict the values so that it will always satisfy the require, or give an indication when satisfied)
+
+**Attention**: every action in the action substate of a specific state has as automatic input its value substate ( this could generate a name conflict if an input
+has the same identifier of an attribute of its value substate)
 
 ### Triggers
 A trigger is a body of statementes than when evalueted true will launch the corresponding effects
@@ -233,11 +247,85 @@ phases ( and actions ) have the option of a specifier in the following list that
 - sequence: effects are executed in order of definition
 - simultaneos ( experimental )
 
+### Action Fail
+An action fail happens when a require is not satisfied, it follows the defined fail policy that can be declared in the default section.
+
+
 ## State
+A state is a construct to describe values and actions related to eachothers such as roles.
+a state is divided in two substates, the value substate and the action substate.
+
 ### Attributes
-### Actions
+A state attribute is defined as a variable declaration (and optionally an assignment) inside the state declaration
+
+```
+state <state>
+{
+  <type> <identifier> = <default> or <none>;
+  <type> <identifier> = <default> or <none>;
+}
+```
+
+the **none** keyword rapresents the absence of an assigned value to an attribute and it is the default for every type if assigned a default initializer value.
+
+### Value Substate
+the value substate contains the state attributes which the state actions or other state actions can use.
+it is implicitly defined as the set of attributes defined in the state declaration ( if no attribute is declared then the value state is empty ).
+
+### Action Substate
+The action substate is the set of all defined action inside a state declaration.
+It can be accessed and/or modified by any other action or pseudo-action if the state containing the action substate is not decared with the **sealed** keyword.
+
 ### Scopes
-### Global State
+State scopes change the behaviour and attachment of a state to a player
+
+#### Local
+```
+local state <state>
+```
+the local scope is the default scope, they are transferrable state with a unique instance for each player that it was assigned it.
+
+local states are the meat of a TGDL program and manage abstractions such as roles, default player actions, ect...
+
+#### Groupis 
+```
+group state <state>
+```
+the group scope defines a state that has one instance assigned to a subgroup of players.
+players can be assigned or removed from the group state trough a transfer.
+
+group states serve the purpose of having values or actions shared between a subset of players 
+
+**WARNING:** at the moment only one instance of a defined group state is allowed due to syntax restrictions in defining multiple instances 
+
+#### Global
+```
+global state <state>
+```
+the global scope defines a state that has only one instance and cannot be assigned to any player, the ownership of the global state is the game itself.
+a global state defines values and actions that encompass values outside of the players but that can be influenced from them in some shape o form.
+
+an example of a global state use case is the presence of global parameters that dictate the flow of the game, the parameters have no attached player to them
+but the are still a part of the game.
+
+global states are a supplied type, **no other identifier can be the same as a global state name**
+
+### Transferability
+
+#### Local states
+local states can be transferred from a player to another player trough the **transfer** operation.
+The transfer keeps the value state constant during the transfer opereration ( a special trigger can be setup to reset/change the value substate on transfer to another player ).
+
+the player that acquired the state can now access the state substates, on the other hand the other player has lost the rights to access the substates of the transferred state
+
+#### Group states
+a group states cannot be transferred as a local state, the transfer operations change the attachments of players to the group states.
+players can be removed or attached to a group state, acquiring the access to its substates.
+
+actions can be specified with special triggers ( on remove and on attach ) to perform actions on the respective removal or attachment of a player to the group state
+( this special trigger, can be specialized with a state name to trigger only when attached or deattached from that specific state )
+
+**WARNING:** the special triggers are available to local states as well
 
 ## State Modifiers
 
