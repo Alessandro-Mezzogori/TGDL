@@ -18,3 +18,6 @@
     2.  rimangono per X turni ( o per X giri)
     3.  rimangono fino alla fine della partita
 17. require, trigger, effect for same identifier interaction ( AND or OR)
+18. is boardcell connected syntax 
+19. movement definition syntax
+20. definition for change of setup / mechanics correlated to player number

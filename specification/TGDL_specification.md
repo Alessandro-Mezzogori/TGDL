@@ -3,6 +3,7 @@
 ## Table of Contents
 - [Tabletop Game Description Language](#tabletop-game-description-language)
   - [Table of Contents](#table-of-contents)
+- [Language primitives](#language-primitives)
 - [Types](#types)
   - [Predefined types](#predefined-types)
   - [Supplied predefined types](#supplied-predefined-types)
@@ -46,22 +47,20 @@
     - [Hex cell type](#hex-cell-type)
     - [Square cell type](#square-cell-type)
     - [Adjacency cell type](#adjacency-cell-type)
+  - [Board Changes](#board-changes)
+  - [Group Changes](#group-changes)
+- [Movement](#movement)
+  - [Default terms](#default-terms)
+  - [Defining movement](#defining-movement)
 - [Defaults](#defaults)
 - [Keywords](#keywords)
-    - [Syntax](#syntax)
-    - [Selectors](#selectors)
-  - [Definitions](#definitions)
-    - [Player](#player)
-    - [State](#state-1)
-      - [Scope Modifiers](#scope-modifiers)
-  - [Action](#action)
-    - [Action Phase](#action-phase)
   - [State Modifier ( or Playables )](#state-modifier--or-playables-)
-  - [State Modifier ( or Playables )](#state-modifier--or-playables--1)
     - [Decks](#decks)
-  - [Board](#board-1)
-- [Cose da fare](#cose-da-fare)
   - [Interprete / Programma](#interprete--programma)
+
+# Language primitives
+- identifier: sequence of letters or numbers starting with a letter;
+
 
 # Types 
 
@@ -398,6 +397,10 @@ for coordinates in both column and row orientation the origin hex is the one in 
 <img src="images/board/hex_col_coords.png" />
 </span>
 
+distance is defined as the following = abs(x_1 - x_0 + y_1 - y_0)
+
+
+
 examples with a defined boardcell
 ```
 boardcell h 
@@ -485,11 +488,90 @@ group < name > hex col
 </tr>
 </table>
 
+by default all hexagons are adjcency with their neighbors, it is possible do modify the adjancency rules in a group using the adjacency keyword and the correspective coordinates
+```
+group <name> hex col
+{
+  h,h,h;
+  h,h,h;
+  h,h,h;
+
+  adjency
+  {
+    (0,0) -> (2,2); // for one way adjacency
+    (0,0) <-> (2,2); // for two way adjacency
+    (0,0) 1 <-> 3 (2,2); // specify distance between adjacencies ( default is 1)
+    (0,0) x-> (0,1); // one way removal of adjacency
+    (0,0) x-x (0,1); // two way removal of adjacency 
+  }
+}
+```
+
+a line in a hex group is defined as a segment exiting a face or border of the hexagon
+
+<img src="board/../images/board/hex_row_lines.png"/>
 
 ### Square cell type
+square cell has the same distance, line, coordinates and adjacency rules of an hex type cell with the following exceptions:
+- there are only 4 lines numbered 0 ( to top ), 1 ( to right), 2 ( to bottom ), 3 (to left)
+- there are no orientations distinctions
+- square cells have two type of default adjcency: **around** or **sides**
 
 ### Adjacency cell type
+adjacency cell types are different from both hex and square types in that they can rapresent any kind of board by using a graph notation:
+- nodes are the cells
+- edges are the adjacency and define the distance between the nodes that connect
 
+in an adjacency cell type group there is no concept of line or coordinates, just of distance and adjancency.
+
+```
+group <name> adjency
+{
+  <id1> -> 3 <id2> 
+}
+```
+
+## Board Changes
+
+
+## Group Changes
+
+# Movement 
+Movement is the act of removing a placeable from a boarder cell and placing in another boardercell.
+Custom movements can be defined trough default terms and movement operators. with an action-like syntax
+
+## Default terms
+generic terms valid for any type of cells:
+- adjacent <n>: a movement executed trough the adjacency for n times
+- distance <n>: a movement executed for n distance
+- jump <identifier>: jumps to the subject to the specific cell ( identifier can be a group name, the player will decide where it will end up inside the group )
+
+square and hex type movements:
+- line <number> <n>: movement in the direction of line <line> for <n> steps
+- coord <x> <y>: jumps to coordinate
+
+modifiers:
+- max <n>: modifies n to be an interval from 0 to n
+- min <n>: modifies n to be an interval from n and up
+
+## Defining movement
+Movements can be defined like in the following example 
+
+```
+movement chess_rook 
+{
+  input
+  {
+    decimal line1;
+    decimal line2;
+  }
+  effect
+  {
+    line line1 2;
+    line line2 1;
+  }
+}
+```
 
 # Defaults
 
@@ -520,88 +602,7 @@ group < name > hex col
 - random -> random funciton that returns a number from 0 to n non compres
 - setup: allows different setups related to the number of players
 - modifier
-- \\\\ is a comment
-
-### Syntax
-- `players <number of players> or <min>-<max>`
-- `player <number>` (specific player) or `player` ( all players )
-- `[global] or [local [group]] or [owned] state` defines a state with a scope modifier, default modifier is local
-- `turn <state>`
-- `setup <num players> or <min>-<max>`: used to specify specific rules correlated to the number of players 
-  can be used inside a state definition like the following
-  ```
-  local/global state <state>:
-    counter: 0
-
-    action shared:
-      counter = counter + 1
-
-    setup 2-3:
-      action shared:
-        counter = counter + 2
-  ```
-
-### Selectors
-- **external**: specifies that the state is external to the local or owned state, referes to a state attached to another player
-
-## Definitions
-
-### Player
-**player** is defined as an acting person or a group
-
-a player can be in a group, it inherits all the state that are attached to the group.
-
-### State
-**state** is defined as 
-- action state: set of all rules that apply to the state and its childrens
-- can be global or local
-- every local state is a children of another local state or of the global state
-
-state mutable but not directly assignable
-
-
-#### Scope Modifiers
-- **global**: specifies state not associated with a player/players, should contain parameters needed to move the game forward ( player turn ect... )
-- **local**: attached to a player, can be transferred to another player
-- **owned**: attached to a player, cannot be transffered to a player ( subset of local ) ( maybe not needed )
-- **group**: should be used with local or owned, only one is created and shared with all attached players 
-
-local and owned state can be associated with a role and must be assigned to a player, when assigning a role to a player 
-
-the assignnment creates a new copy of the state with its default value state ( new reference ).
-
-to transfer a state from player A to player B it must be used the keyword 
-`transfer state from a to b.`
-transfering a state changes the ownership of that state without modifying the value state.
-
-## Action
-An action can be defined with 3 constructs:
-- Requirements: a requirement can be one of the following:
-  - an action
-  - a specific state ( condition, ex. **needs fridge** to store food)
-- Triggers:
-  - an action
-  - a state change
-- State changes: a state change is anything that changes a specific state
-  - Cost: a obbligatory state change that must be satisfied for the other state changes to take place
-  
-multiple requirements are in OR with eachother, the requirements inside one require block are in AND with eachother
-
-### Action Phase 
-An action phase is a set of effects with their optional require that is characterized by a specific rule
-
-Syntax:
-```
-phase <name> [<rule>]
-{
-  
-}
-```
-
-Rules:
-- choice < n >: select n effects between all the effects with satisfied requires 
-## State Modifier ( or Playables )
-- sequence ( default ): is the default, the effects are executed in the order of definition ( of the effect keyword, the require keyword can be in any order)
+- // is a comment
 
 ## State Modifier ( or Playables )
 Abstraction for everything that could be played such  as cards
@@ -667,30 +668,6 @@ Defines a state modifier called potatoes.
 
 a state modifier needs 
 
-## Board 
-There can be multiple or no boards either globals or locals ( interaction gated to one player )
-
-Boards can be either:
-- static, defined in code or in another file 
-- dynamic, defined trough the gameplay
-
-a board can start of as static and be modified by the actions taken by the players  effectively becoming dynamic.
-
-# Cose da fare
-- tenere lambda come nome
-- require block:
-  - piú require lambdas
-  - lambda é una funzione cui nome é data in automatico in referenza al block in cui é stata definita:
-      ```
-        require:
-          this.test is not none                   // unique name <state>.<action>.<require>.<number>
-          x => x.access less than 3               // i require sono messi in una lista di espressioni sono valutate tutte
-          y, x => y.access greater than x.access  // puó accedere ai parametri dell'azione a cui é associata
-      ```
-  - la lambda é definita tramite operatore =>
-  - un qualsiasi altro codice é definito con operatore di default :
-  - se ha solo uno statement esso é anche il return
-  
 ## Interprete / Programma
 The parsing in my prototype program is done following:
 1. Syntax parsing: extract pure syntax information without checking beyond correct structure
