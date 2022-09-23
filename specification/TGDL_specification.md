@@ -391,8 +391,7 @@ in row orientation a line from left to right equals a row from left to right.
 
 for coordinates in both column and row orientation the origin hex is the one in the upper left (0,0)
 - in rows the first number is the row and the second is the position of the hex in the row from the left 
-  ![](images/board/hex_row_coords.png)
-- incols the first number is the column and the second is the position fo the hex in the column from the top ![](images/board/hex_col_coords.png)
+- incols the first number is the column and the second is the position fo the hex in the column from the top
 
 <span>
 <img src="images/board/hex_row_coords.png" />
