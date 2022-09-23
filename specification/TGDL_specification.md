@@ -21,11 +21,13 @@
 - [Actions](#actions)
   - [Inputs](#inputs)
   - [Triggers](#triggers)
+    - [Callable](#callable)
   - [Requires](#requires)
   - [Effects](#effects)
   - [Global and Named](#global-and-named)
   - [Phases](#phases)
   - [Action Fail](#action-fail)
+  - [Action priority](#action-priority)
 - [State](#state)
   - [Attributes](#attributes)
   - [Value Substate](#value-substate)
@@ -124,6 +126,7 @@ logic operations only allow **boolean** values and as result **bool** type
 ### Generic operations
 generic operations don't fall under a specific category:
 - state attribute access: '<state>.<attribute>'
+- is operation: `<construct> is <type>`: returns a boolean value, true if the construct is of type otherwise false
 
 ## Unary Operations
 A unary operation is defines as an expression that involves one operand and one operator, the following are supported in TGDL:
@@ -150,6 +153,7 @@ a stamentent is a combination of clauses and expressions that end with a semicol
 - assignment: `<attribute or variable> = <expression>;`
 - declaration: `<type> <attribute or variable>;`
   - an assignemnt can be chained to perform an initialization of the declared variable or state attribute
+- if: `if expression {}`
   
 # Actions
 actions are a combination of instructions set by the user that are run on a trigger.
@@ -182,6 +186,42 @@ A trigger is a body of statementes than when evalueted true will launch the corr
 trigger 
 {
   <statements>
+}
+```
+
+possible triggers are:
+- `movement <movement>`
+- ``
+
+### Callable
+callable is a specialized trigger that allows action to be called in other state actions with the following syntax:
+
+```
+action <triggerable>
+{
+  input 
+  {
+    decimal a;
+    <state> s;
+  }
+  trigger { callable; }
+}
+
+action <action>
+{
+  effect 
+  {
+    call <triggerable> with 
+    {
+      a = 1;
+    } // will call with one of the inputs already supplied, what is missing will be asked in the defaults modes
+
+    call <triggerable> with
+    {
+      a = 1;
+      s = <state>;
+    } // will call with all parameters specified even declared or supplied types
+  }
 }
 ```
 
@@ -254,6 +294,18 @@ phases ( and actions ) have the option of a specifier in the following list that
 ## Action Fail
 An action fail happens when a require is not satisfied, it follows the defined fail policy that can be declared in the default section.
 
+## Action priority 
+As default the actions are executed in the same order as they are defined in the file, that equals a priority of value 0.
+An action priority can be changed trough the keyword `priority <decimal>` that assigns a arbitrary priority to the action.
+a lower number or means a lower priority and viceversa a higher number means an higher priority
+
+example:
+```
+action low_prio priority -10 {}
+action default_prio {}
+action default_prio_spec priority 0 {}
+action high_prio priority 10 {}
+```
 
 # State
 A state is a construct to describe values and actions related to eachothers such as roles.
@@ -539,6 +591,11 @@ group <name> adjency
 # Movement 
 Movement is the act of removing a placeable from a boarder cell and placing in another boardercell.
 Custom movements can be defined trough default terms and movement operators. with an action-like syntax
+
+any movement must follow the following pattern:
+```
+<placeable> <movement> <parameters>
+```
 
 ## Default terms
 generic terms valid for any type of cells:

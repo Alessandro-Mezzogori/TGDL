@@ -1,7 +1,3 @@
-1. input per callable
-2. come chiamare le azioni da altre azioni
-3. blocchi decidere il look
-4. ordine di trigger delle azioni 
 5. definire algoritmi di distanza per hex e square
 6. definire the player flow
 7. specifica meglio definita per trigger
@@ -19,5 +15,5 @@
     3.  rimangono fino alla fine della partita
 17. require, trigger, effect for same identifier interaction ( AND or OR)
 18. is boardcell connected syntax 
-19. movement definition syntax
+19. adjacency checks 
 20. definition for change of setup / mechanics correlated to player number
