@@ -43,18 +43,20 @@
 - [Stackables](#stackables)
 - [Placeable](#placeable)
 - [Players](#players)
+  - [Turns](#turns)
 - [Board](#board)
   - [Boardcells](#boardcells)
   - [Groups](#groups-1)
     - [Hex cell type](#hex-cell-type)
     - [Square cell type](#square-cell-type)
     - [Adjacency cell type](#adjacency-cell-type)
+    - [Border Cells](#border-cells)
   - [Board Changes](#board-changes)
   - [Group Changes](#group-changes)
 - [Movement](#movement)
   - [Default terms](#default-terms)
   - [Defining movement](#defining-movement)
-- [Defaults](#defaults)
+- [Goals](#goals)
 - [Keywords](#keywords)
   - [State Modifier ( or Playables )](#state-modifier--or-playables-)
     - [Decks](#decks)
@@ -62,7 +64,8 @@
 
 # Language primitives
 - identifier: sequence of letters or numbers starting with a letter;
-
+- comments: a comment is everything till the end of line character from the double slash characters `\\` 
+  - they are ignored and are only for informing, documenting or in general leaving messages inside the code
 
 # Types 
 
@@ -154,7 +157,11 @@ a stamentent is a combination of clauses and expressions that end with a semicol
 - declaration: `<type> <attribute or variable>;`
   - an assignemnt can be chained to perform an initialization of the declared variable or state attribute
 - if: `if expression {}`
-  
+- while: `while expression {}`
+- turn: `pass expression;`
+
+anything that isn't an expression or a body is a clause (ex. return, =, if, while, pass, ...).
+
 # Actions
 actions are a combination of instructions set by the user that are run on a trigger.
 
@@ -191,7 +198,11 @@ trigger
 
 possible triggers are:
 - `movement <movement>`
-- ``
+- `<state>.action` ( < state > can not be in input )
+- `specific lambda function that returns a boolean`
+- `callable`
+- `change <state>.value`
+- `<state>.<action>.<phase>` 
 
 ### Callable
 callable is a specialized trigger that allows action to be called in other state actions with the following syntax:
@@ -390,9 +401,43 @@ actions can be specified with special triggers ( on remove and on attach ) to pe
 # Placeable
 
 # Players
+A player is defined as a decimal, every state has a hidden state attribute called `player` that corresponds to the player to which the state is attached to.
+
+## Turns
+A turn defines who is the active player ( in most games who is taking the actions, there are games where it's permitted to act out of turn like magic the gathering ).
+
+to define the passing of turns there are two main ways:
+- using directly the turn statement `pass <decimal returning expression>;`
+- defining actions in the global state that call the turn statement 
+
+example for global turn action
+```
+players 4;
+
+global state turn_controller
+{
+  action default_turn
+  {
+    input
+    {
+      activePlayer ap;
+    }
+    trigger
+    {
+      any action 1
+    }
+    effect
+    {
+      pass ap + 1;
+    }
+  }
+}
+```
+
 
 # Board
 the board is the construct used to rapresent something that can be interacted with by the players trough placing tokens, claiming cells or other actions.
+it is globally defined, meaning there is only one instance of the board in the entire game, a board can have attributes.
 
 ## Boardcells
 a boardcell is a specialized state-like definition trough the **boardcell** keyword, it can have multiple instances of the same declaration like local states and players.
@@ -413,8 +458,9 @@ a board contains groups of boardcells, every group can contain only one type of 
 - square cells
 - adjacency
 
-all the groups can contain the blank cell (used only for spacing is an empty space) used in the group declaration with the keyword `b`
+like the board, a group is globally defined and can have attributes
 
+all the groups can contain the blank cell (used only for spacing is an empty space) used in the group declaration with the keyword `b`
 the cell type is used to define default terms like **line**, **distance**, **adjancency** and **coordinates**,  
 
 Example
@@ -583,6 +629,25 @@ group <name> adjency
 }
 ```
 
+### Border Cells
+A border cells is a cell that connects to another group cell.
+
+The definition syntax is the same as a the adjacency list, because the bordercells list is a glorified adjacency list starting off as empty 
+
+```
+board
+{
+  group first {}
+  group second {}
+  boardcells
+  {
+    <first.cell> -> <second.cell>
+    <first.cell> <-> <second.cell>
+  }
+}
+```
+
+
 ## Board Changes
 
 
@@ -630,7 +695,18 @@ movement chess_rook
 }
 ```
 
-# Defaults
+# Goals
+Goals are specific actions that will terminate the game if the global effect is triggered.
+The syntax is the same as a state action, it supports naming and phases:
+```
+goal <id>
+{
+  input {}
+  require {}
+  trigger {}
+  effect {}
+}
+```
 
 # Keywords
 - player: references a specific player 
@@ -704,7 +780,6 @@ Example:
 deck main:
   potatoes [x 1]
 ```
-
 
 Example:
 ```

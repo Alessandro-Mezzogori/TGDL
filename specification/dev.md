@@ -1,19 +1,18 @@
-5. definire algoritmi di distanza per hex e square
-6. definire the player flow
-7. specifica meglio definita per trigger
-8. definire comments
-9. TM -> milestones and awards
-10. definizione dei placeable
-11. definizinoe stackable
-12. turno e cambio dei turni del giocatore
-13. turn phases and game phases
-14. eccezioni alle regole
-15. definizioni per le espansioni
-16. azioni perpetue
+7. specifica meglio definita per trigger ( bisogno di esempi pratici)
+21. trigger modifiers
+11. definizione dei placeable
+12. definizinoe stackable
+13. definire the player flow
+14. turno e cambio dei turni del giocatore
+15. turn phases and game phases
+16. eccezioni alle regole
+17. azioni perpetue
     1.  rimangono fino alla fine del turno
     2.  rimangono per X turni ( o per X giri)
     3.  rimangono fino alla fine della partita
-17. require, trigger, effect for same identifier interaction ( AND or OR)
 18. is boardcell connected syntax 
 19. adjacency checks 
-20. definition for change of setup / mechanics correlated to player number
+21. array support
+22. while support
+23. out of turn actions ( require special expression)
+20. definition for change of setup / mechanics correlated to player number -> can be defined trough new copying and changing the relevant information ( una rottura )
