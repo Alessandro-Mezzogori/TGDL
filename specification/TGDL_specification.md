@@ -10,7 +10,7 @@
   - [Input types](#input-types)
 - [Expressions](#expressions)
   - [Binary Operations](#binary-operations)
-    - [Math Operations](#math-operations)
+    - [Math Operation](#math-operation)
     - [Comparison Operations](#comparison-operations)
     - [Equality Operations](#equality-operations)
     - [Logic Operations](#logic-operations)
@@ -21,6 +21,9 @@
 - [Actions](#actions)
   - [Inputs](#inputs)
   - [Triggers](#triggers)
+    - [Placeable Movement Events](#placeable-movement-events)
+    - [State Action Events](#state-action-events)
+    - [State Attribute Events](#state-attribute-events)
     - [Callable](#callable)
   - [Requires](#requires)
   - [Effects](#effects)
@@ -40,6 +43,7 @@
     - [Local states](#local-states)
   - [Group states](#group-states)
 - [State Modifiers](#state-modifiers)
+- [Stack](#stack)
 - [Stackables](#stackables)
 - [Placeable](#placeable)
 - [Players](#players)
@@ -58,9 +62,6 @@
   - [Defining movement](#defining-movement)
 - [Goals](#goals)
 - [Keywords](#keywords)
-  - [State Modifier ( or Playables )](#state-modifier--or-playables-)
-    - [Decks](#decks)
-  - [Interprete / Programma](#interprete--programma)
 
 # Language primitives
 - identifier: sequence of letters or numbers starting with a letter;
@@ -97,7 +98,7 @@ Every type of expression defines the result type and legal operands.
 A binary operation is defined as an expression that involves two operands and one operators.
 they are left associative by default, if otherwise it will noted as such.
 
-### Math Operations
+### Math Operation
 Math operations only allow **decimal** operands and as result a **decimal** type:
 - addition: `<operand> + <operand>`
 - substraction: `<operand> - <operand>`
@@ -186,23 +187,30 @@ It works trough method dependency injection following the subsequent rules:
 **Attention**: every action in the action substate of a specific state has as automatic input its value substate ( this could generate a name conflict if an input
 has the same identifier of an attribute of its value substate)
 
+Inputs can be accessed from requires and effects
+
 ## Triggers
-A trigger is a body of statementes than when evalueted true will launch the corresponding effects
+A trigger is a body of statementes than when evalueated true will launch the corresponding effects
 
 ```
-trigger 
+trigger <trigger event> [<params>]
 {
   <statements>
 }
 ```
 
-possible triggers are:
+possible triggers events are:
 - `movement <movement>`
 - `<state>.action` ( < state > can not be in input )
-- `specific lambda function that returns a boolean`
 - `callable`
 - `change <state>.value`
 - `<state>.<action>.<phase>` 
+
+the inputs accessible from the trigger body depend on the specified trigger event, every event should define which attributes it allows access
+
+### Placeable Movement Events
+### State Action Events
+### State Attribute Events
 
 ### Callable
 callable is a specialized trigger that allows action to be called in other state actions with the following syntax:
@@ -237,7 +245,10 @@ action <action>
 ```
 
 ## Requires
-A requirement is a condition or body of condition that must be satisfied so that the corresponding effect can be applied
+A requirement is a condition or body of condition that must be satisfied so that the corresponding effect can be applied.
+it is defined as a body that **must** return a boolean value to evalueate the require:
+- true = requirement satisfied
+- false = requirement not satisfied
 
 ```
 require
@@ -395,6 +406,8 @@ actions can be specified with special triggers ( on remove and on attach ) to pe
 **WARNING:** the special triggers are available to local states as well
 
 # State Modifiers
+
+# Stack
 
 # Stackables
 
@@ -736,72 +749,3 @@ goal <id>
 - setup: allows different setups related to the number of players
 - modifier
 - // is a comment
-
-## State Modifier ( or Playables )
-Abstraction for everything that could be played such  as cards
-
-Definition:
-```
-state modifier <identifier>:
-  [playable by <state [, state, state]> ]
-  [
-    require [for <effect_id>]:
-      <require lambda>
-  ]
-  [
-    effect [for <effect_id>]:
-      <action lambda>
-  ]
-```
-
-A state modifier can access all the states given trough the lambdas and to the state given
-by the **playable by** statement.
-
-A state modifer can add, remove, lock or unlock methods from a given state like any other action lambda
-
-When drawn they are attached to a player.
-
-They can be played only if the attached player has at least one of the state in the playble by statement
-
-### Decks
-Decks are a constructor for holding and drawing ( using a specific algorithm or randomly ) a state modifier,
-a state modifier can have multiple copies of itself in a single deck
-
-Definition
-```
-deck <identifier>:
-  [
-    <list of state modifiers> [x <number_in_deck>]
-  ]
-```
-
-Example:
-```
-deck main:
-  potatoes [x 1]
-```
-
-Example:
-```
-state player_state:
-  ...
-
-state modifier potatoes:
-  playable by player_state
-  require:
-    _ => player.plants >= 2
-  effect:
-  _ =>
-    player_state.plants = player_state.plants - 2
-    player_state.money_production = player_state.money_production + 2
-```
-
-Defines a state modifier called potatoes.
-
-a state modifier needs 
-
-## Interprete / Programma
-The parsing in my prototype program is done following:
-1. Syntax parsing: extract pure syntax information without checking beyond correct structure
-2. Syntax validation: checks the correctness o the typed syntax ( expression types corresponding, invalid operations, ect...)
-3. Syntax Translation: translate the syntax constructs in data structures in c#
