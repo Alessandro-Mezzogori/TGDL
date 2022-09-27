@@ -8,6 +8,7 @@
   - [Predefined types](#predefined-types)
   - [Supplied predefined types](#supplied-predefined-types)
   - [Input types](#input-types)
+  - [None Value](#none-value)
 - [Expressions](#expressions)
   - [Binary Operations](#binary-operations)
     - [Math Operation](#math-operation)
@@ -89,6 +90,14 @@ Inputs types are choosen by the player or players when required in an action the
 ( **Experimental: input types can be supplied from another action in a callable** )
 - local and group states
 - boardcell
+
+## None Value
+`none` is a special value that any type can have and it indicates the absence of the value for that specific attribute ( unassigned )
+
+the none value behaves differently than normal types in comparisons:
+- if two attributes with none value are confronted they will always be different `attribute1 = attribute2 => falls if attribute1 and attribute2 are none`
+- an attribute with none value is equals to a none literal `attribute == none -> true if attribute is none`
+- a none literal is equals to another none literal `none == none => true`
 
 # Expressions 
 An expression is a combination of one operator and one or more operands.
@@ -626,6 +635,7 @@ a line in a hex group is defined as a segment exiting a face or border of the he
 square cell has the same distance, line, coordinates and adjacency rules of an hex type cell with the following exceptions:
 - there are only 4 lines numbered 0 ( to top ), 1 ( to right), 2 ( to bottom ), 3 (to left)
 - there are no orientations distinctions
+- coordinates have origin (0,0) at top left, the first number is the row the second is the column.
 - square cells have two type of default adjcency: **around** or **sides**
 
 ### Adjacency cell type
