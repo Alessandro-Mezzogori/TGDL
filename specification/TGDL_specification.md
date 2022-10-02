@@ -9,6 +9,7 @@
   - [Supplied predefined types](#supplied-predefined-types)
   - [Input types](#input-types)
   - [None Value](#none-value)
+  - [Lists](#lists)
 - [Expressions](#expressions)
   - [Binary Operations](#binary-operations)
     - [Math Operation](#math-operation)
@@ -23,7 +24,7 @@
   - [Inputs](#inputs)
   - [Triggers](#triggers)
     - [Placeable Movement Events](#placeable-movement-events)
-    - [State Action Events](#state-action-events)
+    - [State Events](#state-events)
     - [State Attribute Events](#state-attribute-events)
     - [Callable](#callable)
   - [Requires](#requires)
@@ -61,6 +62,9 @@
 - [Movement](#movement)
   - [Default terms](#default-terms)
   - [Defining movement](#defining-movement)
+  - [Board checks](#board-checks)
+    - [Adjacent places](#adjacent-places)
+    - [Connected place](#connected-place)
 - [Goals](#goals)
 - [Keywords](#keywords)
 
@@ -98,6 +102,15 @@ the none value behaves differently than normal types in comparisons:
 - if two attributes with none value are confronted they will always be different `attribute1 = attribute2 => falls if attribute1 and attribute2 are none`
 - an attribute with none value is equals to a none literal `attribute == none -> true if attribute is none`
 - a none literal is equals to another none literal `none == none => true`
+
+## Lists
+List are a set of multiple instances of the same type that are aggregated under a single named variable.
+
+Declaration: `type[] <list_name>`
+Access to a single instance: `<list_name>[decimal]` (if a number with a decimal part is inserted, the decimal is ignored)
+List Lenght: `<list_name>.lenght`
+Inserting: `<list_name>[decimal] = <instance>` to append `<list_name>[<list_name>.lenght] = <instance>`
+Initialization: `type[] <list_name> = { <instance>, <instance2>, <instance3> };` ( can be empty to initializes an empty list)
 
 # Expressions 
 An expression is a combination of one operator and one or more operands.
@@ -217,8 +230,31 @@ possible triggers events are:
 
 the inputs accessible from the trigger body depend on the specified trigger event, every event should define which attributes it allows access
 
+events:
+- state
+  - attribute change {} 
+  - action triggered {}
+- placeable
+  - on placement
+  - on removal
+  - on movement
+- stackable
+  - on drawn
+  - on discarded
+  - on kept
+- stack
+  - on draw card
+  - on shuffle
+  - on reshuffle
+  - on put card
+  - on discard
+- tur
+  - on turn activation
+  - on turn disactivation
+  - on turn phase change
+
 ### Placeable Movement Events
-### State Action Events
+### State Events
 ### State Attribute Events
 
 ### Callable
@@ -673,7 +709,6 @@ board
 
 ## Board Changes
 
-
 ## Group Changes
 
 # Movement 
@@ -716,6 +751,26 @@ movement chess_rook
     line line2 1;
   }
 }
+```
+
+every movement function is checked if it is allowed, if the movement is not allowed it is not displayed
+
+## Board checks
+
+### Adjacent places
+this check is used to interact with cell or placeable nearby to a specific cell or other placeable
+```
+placeable/boardcell adj placeable/boardcell -> returns a boolean value
+```
+
+checks if a placeable or boardcell has beside a placeable or boardcell of the given type
+
+to get all adjacent boardcells to a boardcell an hidden attribute is provided called **adjcents**
+
+### Connected place
+this is check is used to interact with connected cells ( cells that have a path between them )
+```
+placeable/boardcell connect placeable/boardcell
 ```
 
 # Goals
