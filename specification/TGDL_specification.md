@@ -10,6 +10,8 @@
   - [Input types](#input-types)
   - [None Value](#none-value)
   - [Lists](#lists)
+  - [Type checking](#type-checking)
+  - [Type casting](#type-casting)
 - [Expressions](#expressions)
   - [Binary Operations](#binary-operations)
     - [Math Operation](#math-operation)
@@ -22,6 +24,7 @@
 - [Statement](#statement)
 - [Actions](#actions)
   - [Inputs](#inputs)
+    - [Input Filters](#input-filters)
   - [Triggers](#triggers)
     - [Placeable Movement Events](#placeable-movement-events)
     - [State Events](#state-events)
@@ -44,12 +47,15 @@
   - [Transferability](#transferability)
     - [Local states](#local-states)
   - [Group states](#group-states)
-- [State Modifiers](#state-modifiers)
+- [Interactables](#interactables)
+  - [Placeable](#placeable)
+  - [Stackables](#stackables)
 - [Stack](#stack)
-- [Stackables](#stackables)
-- [Placeable](#placeable)
 - [Players](#players)
+  - [Starting player](#starting-player)
+  - [Winner selection and game end](#winner-selection-and-game-end)
   - [Turns](#turns)
+    - [Turn phase](#turn-phase)
 - [Board](#board)
   - [Boardcells](#boardcells)
   - [Groups](#groups-1)
@@ -111,6 +117,16 @@ Access to a single instance: `<list_name>[decimal]` (if a number with a decimal 
 List Lenght: `<list_name>.lenght`
 Inserting: `<list_name>[decimal] = <instance>` to append `<list_name>[<list_name>.lenght] = <instance>`
 Initialization: `type[] <list_name> = { <instance>, <instance2>, <instance3> };` ( can be empty to initializes an empty list)
+
+## Type checking
+Type checking is done trough the `is` keyword: `<attribute> is <type>` is a type checkign expression and will return true if the attribute
+is of type `<type>`, otherwise return false
+
+## Type casting
+type casting is used to change an attribute from a type to another type, it is done trough the `as` keyword `<type> id = <val> as <type>`
+the as expression has two possible returns:
+- the variable with the new type if it is allowed
+- none if the variable is not allowed to be of the new type
 
 # Expressions 
 An expression is a combination of one operator and one or more operands.
@@ -181,6 +197,8 @@ a stamentent is a combination of clauses and expressions that end with a semicol
   - an assignemnt can be chained to perform an initialization of the declared variable or state attribute
 - if: `if expression {}`
 - while: `while expression {}`
+  - break: exits the while without evalueting the expression
+  - continue: goes to next iteration (it evalueates the expression, if false exits)
 - turn: `pass expression;`
 
 anything that isn't an expression or a body is a clause (ex. return, =, if, while, pass, ...).
@@ -199,6 +217,8 @@ action <action>
 }
 ```
 
+any of the actions can be deactived or activated trough the allowed attributge associated with an action `<state>.<action>.allowed = <boolean>;`
+
 ## Inputs
 An action input are the constructs that will be used troughtout the action definition and execution.
 It works trough method dependency injection following the subsequent rules:
@@ -209,7 +229,85 @@ It works trough method dependency injection following the subsequent rules:
 **Attention**: every action in the action substate of a specific state has as automatic input its value substate ( this could generate a name conflict if an input
 has the same identifier of an attribute of its value substate)
 
-Inputs can be accessed from requires and effects
+### Input Filters
+Input filters can be defined using a block after the input statement that returns a boolean value, true if the current examined value passes the filters or false if it does not pass the filter.
+
+an input filter reduces the possible selections from all the instances of a certain type to a specfici subtype satisfying the given filter
+
+```
+input <type> <name>
+{
+  <statements>
+}
+
+// alternative input filter declaration
+input <type> <name>
+{
+  filter [<type> <name>]
+  {
+
+  }
+}
+```
+
+alternative filter declaration uses the filter keyword ( only accessible in the input context block ) that defines a filter for the 
+specific type, used generally for list filters ( see input filters for list ), and a generic filter that derives the type and name of the
+object to filter on from the input parameters.
+
+multiple filters mapped on the same type will be evalueated one after the other, if one fails the input fails.
+
+an example can be of an action that can be applied only on states with higher points
+```
+state player_state
+{
+  decimal points = 0;
+
+  action on_higher_points
+  {
+    input player_state other
+    {
+      return other.points > points;
+    }
+  }
+}
+```
+
+**WARNING INPUT FILTER FOR LIST**
+to have better control on a list, its input filters need two separate definitions one to filter for the instances that will go in the list
+and one to filter if the list is in an allowed state or if the input will fail.
+
+**ATTENTION input lists cannot be used with predefined types**
+
+```
+state example 
+{
+  decimal points = 0;
+}
+
+action list_input
+{
+  input example[] examples 
+  {
+    filter example ex 
+    {
+      return ex < 10 and ex > 0;
+    }
+    filter
+    {
+      return examples.lenght < 3 and examples.lenght > 0;
+    }
+  }
+}
+```
+
+first the filter for a single example type is run so that the player can choose between one of the choices,
+after every selection made by the users the generic filter runs to check if the lists fails the check thus failing the input
+
+**ATTENTION** to get all of a non literal type in a list the **all** keyword can be appened to the input statement, if a all keyword is used
+there should no input filters.
+the all keyword bypasses the need for a player to select the input
+
+
 
 ## Triggers
 A trigger is a body of statementes than when evalueated true will launch the corresponding effects
@@ -248,7 +346,7 @@ events:
   - on reshuffle
   - on put card
   - on discard
-- tur
+- turn
   - on turn activation
   - on turn disactivation
   - on turn phase change
@@ -290,15 +388,19 @@ action <action>
 ```
 
 ## Requires
-A requirement is a condition or body of condition that must be satisfied so that the corresponding effect can be applied.
-it is defined as a body that **must** return a boolean value to evalueate the require:
+A require block is used to allow or disallow an action, it can contain two other tags (input and condition)
+the input tag defines what the condition will use as input ( like the effect block in an action )
+the condition block is defined as a body that **must** return a boolean value:
 - true = requirement satisfied
 - false = requirement not satisfied
+
+condition can be named but there **must be** a unnamed condition that is the only thing that will run.
 
 ```
 require
 {
-  <statements>
+  input {}
+  condition {}
 }
 ```
 
@@ -450,16 +552,33 @@ actions can be specified with special triggers ( on remove and on attach ) to pe
 
 **WARNING:** the special triggers are available to local states as well
 
-# State Modifiers
+# Interactables 
+interactables are objects that abstract the concept of interaction with the player trough phisical objects like tokens, cards, ect...
+
+```
+interactable <name> [<type>|<type>,<type>,...]
+```
+
+## Placeable
+Placeable is a type of interatable, it interacts with boardcells and board groups
+Placeable have specialized triggers to enhance their functions (defined in the respective section reletaed to action triggers):
+
+a placeable stores a reference to the boardcell that it occupies ( if not placed the boardcells is none ).
+and viceversa a boardcells stores the reference to all the placeable placed on itself trough a placeable list
+
+## Stackables
+
 
 # Stack
 
-# Stackables
-
-# Placeable
-
 # Players
 A player is defined as a decimal, every state has a hidden state attribute called `player` that corresponds to the player to which the state is attached to.
+
+## Starting player
+the starting player is always the player numbered 0.
+
+## Winner selection and game end
+`winner <player> [,<player>]*`: sets the winner or winners for the game and afterwards ends the program
 
 ## Turns
 A turn defines who is the active player ( in most games who is taking the actions, there are games where it's permitted to act out of turn like magic the gathering ).
@@ -492,6 +611,24 @@ global state turn_controller
 }
 ```
 
+### Turn phase
+a turn can be defined with the following syntax:
+```
+turn <turn>
+{
+  phase <phase>
+  {
+    trigger {}
+    effect {}
+  }
+  ...
+}
+```
+every turn can have multiple phases, if no phase is defined the turn will only have one phase with **default** as the name.
+each phase can have triggers to start it, global inputs ( all of some type, board, global states) and an effect 
+
+a phase if has a callable trigger can be called to activate that phase effect and switch the turn phase to the called `call <turn>.<phase>`.
+a turn can be started from its first phase trough the call keyword `call <turn>`, this will deactivate the active turn and activate the selected turn 
 
 # Board
 the board is the construct used to rapresent something that can be interacted with by the players trough placing tokens, claiming cells or other actions.
@@ -510,13 +647,25 @@ boardcell <cellname>
 
 the concept of boardcell is abstracted by its geometrical nature that is defined by the group type
 
+boardcells have two implicit attributes:
+- `board`: reference to the global board
+- `group`: reference to the group in which they are attached
+
+to do group manipulation or other that requires a specific group, type checking and casting can be used
+```
+if(<boardcell>.group is <group>)
+{
+  <group> <id> = <boardcell>.grop as <group>;
+}
+``` 
+
 ## Groups
 a board contains groups of boardcells, every group can contain only one type of cell between the following:
 - hex cells
 - square cells
 - adjacency
 
-like the board, a group is globally defined and can have attributes
+like the board, a group is globally defined and can have attributes ( they are declaration and assignement statement inside the group beside the group boardcells definition)
 
 all the groups can contain the blank cell (used only for spacing is an empty space) used in the group declaration with the keyword `b`
 the cell type is used to define default terms like **line**, **distance**, **adjancency** and **coordinates**,  
@@ -777,7 +926,7 @@ placeable/boardcell connect placeable/boardcell
 Goals are specific actions that will terminate the game if the global effect is triggered.
 The syntax is the same as a state action, it supports naming and phases:
 ```
-goal <id>
+goal <id> [priority]
 {
   input {}
   require {}
@@ -785,6 +934,7 @@ goal <id>
   effect {}
 }
 ```
+goals can have a priority, the higher priority goals will be run before the lower priority goals
 
 # Keywords
 - player: references a specific player 
