@@ -1,0 +1,107 @@
+game "scacchi";
+
+players 2;
+
+boardcell sq
+{
+
+}
+
+board
+{
+   group square grid
+   {
+        sq,sq,sq,sq,sq,sq,sq,sq;
+        sq,sq,sq,sq,sq,sq,sq,sq;
+        sq,sq,sq,sq,sq,sq,sq,sq;
+        sq,sq,sq,sq,sq,sq,sq,sq;
+        sq,sq,sq,sq,sq,sq,sq,sq;
+        sq,sq,sq,sq,sq,sq,sq,sq;
+        sq,sq,sq,sq,sq,sq,sq,sq;
+        sq,sq,sq,sq,sq,sq,sq,sq;
+   } 
+}
+
+setup
+{
+   input board b;
+
+   effect
+   {
+      
+   }
+}
+
+interactable king placeable
+{
+
+}
+
+movement king_move
+{
+
+}
+
+interactable queen placeable
+{
+
+}
+
+movement queen_move
+{
+
+}
+
+interactable bishop placeable
+{
+
+}
+
+movement bishop_move
+{
+
+}
+
+interactable tower placeable
+{
+
+}
+
+movement tower_move
+{
+
+}
+
+interactable knight placeable
+{
+
+}
+
+movement knight_move
+{
+   effect
+   {
+      
+   }
+}
+
+interactable pawn placeable
+{
+}
+
+movement pawn_move
+{   
+}
+
+movement pawn_attack
+{
+}
+
+state player_state
+{
+   action move_piece
+   {
+      input {}
+
+   }
+}
