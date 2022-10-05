@@ -1,5 +1,11 @@
 game "scacchi";
 
+// movimenti
+// cattura
+// restrizione sul movimento del re
+// situazione di scacco
+// scacco matto
+
 players 2;
 
 boardcell sq
@@ -9,6 +15,7 @@ boardcell sq
 
 board
 {
+   boardcell[] 
    group square grid
    {
         sq,sq,sq,sq,sq,sq,sq,sq;
@@ -28,80 +35,241 @@ setup
 
    effect
    {
+      player_state ps0 = player_state assign to player 0;
+      player_state ps1 = player_state assign to player 1;
+
+      // white player 0 board setup
+      place new rook(owner = ps0) on b.group[0][7];
+      // knight
+      place new bishop(owner = ps0) on b.group[2][7];
+      // queen
+      place new king(owner = ps0) on b.group[4][7]
+      place new bishop(owner = ps0) on b.group[5][7];
+      // knight
+      place new rook(owner = ps0) on b.group[7][7];
       
+      // pawn line
+
+      
+      // black player 1 board setup
    }
 }
 
-interactable king placeable
+local state player_state
 {
+   bool in_check = false;
+   boardcell[] enemy_vision = {};
+   
+   action update_vision
+   {
+      trigger player_state action // trigger when player completes action 
+      {
+         // return event.player != this.player
+         return event.state != this;
+      }
+      
+      input interactable[] pieces // all the enemy pieces automatic input
+      {
+         filter interactable piece
+         {
+            return !is_of_player(piece, this);
+         }
+      }
+      effect
+      {
+         enemy_vision.clear();
+         
+         // get all the enemy vision
+         decimal index = 0;
+         while(index < pieces.lenght)
+         {
+            interactable piece = pieces[i];
+            boardcell[] enemy_vision = {};
+            if(piece is rook)
+               enemy_vision.append(rook_vision(piece as rook));
+            else if(piece is bishop)
+               enemy_vision.append(bishop_vision(piece as bishop));
+            else if(piece is king)
+               enemy_vision.append((king_vision(piece as king));
 
+            index += 1;
+         }
+
+         // check if the king is inside the enemy vision -> if yes go in check state
+         
+         // TODO maybe use king.boardcell to check if it is inside the enemy_vision ( trough the non player inputs )
+         index = 0;
+         while(index < enemy_vision.lenght)
+         {
+            if(enemy_vision[index].placeables.lenght > 0 )
+            {
+               interactable temp = enemy_vision[index];
+               if(temp is king && (temp as king).owner == this)
+               {
+                  in_check = true;
+                  break;
+               }
+            }
+
+            index += 1;
+         }
+
+      }
+   }
+
+   action move_rook
+   {
+      input rook r { return r.owner == this; }
+      effect 
+      {
+         boardcell[] vision = rook_vision(r);
+
+         // king under check 
+         // pinned 
+         // no legal move
+         if(vision.lenght == 0)
+            fail "no possible moves";
+
+         // select destination 
+         input boardcell dest { return vision contains dest; }
+
+         // capture piece
+         if(dest.placeables.lenght > 0)
+         {
+            dest.placeables.clear(); // capture placeable if not king 
+         }
+         
+         move r to dest;
+      }
+   }
+
+   action move_bishop
+   {
+      input bishop b { return b.owner == this; }
+      effect 
+      {
+         boardcell[] vision = bishop_vision(b);
+
+         if(vision.lenght == 0)
+            fail "no possible moves";
+
+         input boardcell dst { return vision contains dst; }
+
+         if(dst.placeables.lenght > 0)
+            dst.placeables.clear();
+         move b to dst;
+      }
+   }
 }
 
-movement king_move
+interactable rook placeable
 {
-
-}
-
-interactable queen placeable
-{
-
-}
-
-movement queen_move
-{
-
+   player_state owner = none;
 }
 
 interactable bishop placeable
 {
-
+   player_state owner = none;
 }
 
-movement bishop_move
+interactable king placeable
 {
-
+   player_state owner = none;
 }
 
-interactable tower placeable
+verb rook_vision 
 {
-
-}
-
-movement tower_move
-{
-
-}
-
-interactable knight placeable
-{
-
-}
-
-movement knight_move
-{
-   effect
+   input rook r;
+   effect 
    {
+      boardcell[] vision = {};
+
+      vision.append(line_till_obstruction(r.boardcell, r.owner, 1, 0));
+      vision.append(line_till_obstruction(r.boardcell, r.owner, -1, 0));
+      vision.append(line_till_obstruction(r.boardcell, r.owner, 0, 1));
+      vision.append(line_till_obstruction(r.boardcell, r.owner, 0, -1));
       
+      return vision;
    }
 }
 
-interactable pawn placeable
+verb bishop_vision
 {
-}
-
-movement pawn_move
-{   
-}
-
-movement pawn_attack
-{
-}
-
-state player_state
-{
-   action move_piece
+   input bishop b;
+   effect 
    {
-      input {}
+      boardcell[] vision = {};
 
+      vision.append(line_till_obstruction(b.boardcell, b.owner, 1, 1));
+      vision.append(line_till_obstruction(b.boardcell, b.owner, 1, -1));
+      vision.append(line_till_obstruction(b.boardcell, b.owner, -1, 1));
+      vision.append(line_till_obstruction(b.boardcell, b.owner, -1, -1));
+      
+      return vision;
+   }
+}
+
+verb king_vision
+{
+   input king k;
+   effect
+   {
+      // non supera gli ostacoli
+      // non puó andare in spazi che sono in visione di altri pezzi 
+   }
+}
+
+verb line_till_obstruction
+{
+   input boardcell src;
+   input player_state moving;
+   input decimal x;
+   input decimal y;
+   effect
+   {
+      group g = src.group;
+      boardcell c = g[src.x + x][src.y + y];
+      boardcell[] line = {};
+      while(c != none && c.placeables.lenght == 0){
+         line.add(c);
+         c = g[c.x + x][c.y + y];
+      }
+
+      // add the first boardcell with another piece on it 
+      if(c != none && is_of_player(c.placeables[0], moving))
+      {
+         line.add(c);
+      }
+
+      return line; // infer return type is list of boardcell
+   }
+}
+
+verb is_of_player
+{
+   input interactable piece;
+   input player_state ps;
+   effect 
+   {
+      if(piece is rook)
+         return (piece as rook).owner != moving;
+      if(piece is bishop)
+         return (piece as bishop).owner != moving;
+      if(piece is king)
+         return (piece as king).owner != moving;
+      
+      return false;
+   }
+}
+
+verb next_cell
+{
+   input boardcell c;
+   input decimal x;
+   input decimal y;
+
+   effect 
+   {
+      return c.group[c.x + x][c.y + y];
    }
 }

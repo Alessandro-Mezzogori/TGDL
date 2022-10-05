@@ -36,6 +36,8 @@
   - [Phases](#phases)
   - [Action Fail](#action-fail)
   - [Action priority](#action-priority)
+  - [Action transaction](#action-transaction)
+    - [Action Failures](#action-failures)
 - [State](#state)
   - [Attributes](#attributes)
   - [Value Substate](#value-substate)
@@ -72,6 +74,8 @@
     - [Adjacent places](#adjacent-places)
     - [Connected place](#connected-place)
 - [Goals](#goals)
+- [Setup](#setup)
+- [Verbs](#verbs)
 - [Keywords](#keywords)
 
 # Language primitives
@@ -113,7 +117,7 @@ the none value behaves differently than normal types in comparisons:
 List are a set of multiple instances of the same type that are aggregated under a single named variable.
 
 Declaration: `type[] <list_name>`
-Access to a single instance: `<list_name>[decimal]` (if a number with a decimal part is inserted, the decimal is ignored)
+Access to a single instance: `<list_name>[decimal]` (if a number with a decimal part is inserted, the decimal is ignored), when an out of index access is done it returns none
 List Lenght: `<list_name>.lenght`
 Inserting: `<list_name>[decimal] = <instance>` to append `<list_name>[<list_name>.lenght] = <instance>`
 Initialization: `type[] <list_name> = { <instance>, <instance2>, <instance3> };` ( can be empty to initializes an empty list)
@@ -331,7 +335,7 @@ the inputs accessible from the trigger body depend on the specified trigger even
 events:
 - state
   - attribute change {} 
-  - action triggered {}
+  - action {}
 - placeable
   - on placement
   - on removal
@@ -476,6 +480,18 @@ action default_prio_spec priority 0 {}
 action high_prio priority 10 {}
 ```
 
+## Action transaction
+a player action creates a tree of changes trough its effects and the effects of the triggered actions called a transaction.
+if a transaction has failures all the transaction is cancelled and its effects are reverted
+
+### Action Failures
+an action fails when a it reaches a failure statement:
+- `fail "message";` -> fails the entirety of the transaction
+- `cancel [<effect>] "message"` -> 
+  - if no effect is specified fails only the global effect and stops all the triggers from activating ( and reverts the triggers that activated with the before keyword )
+  - if an effect is specified it fails that specific effect
+  - if `all` is specified for effects the entire action fails without propagating backwards to the trigger action 
+
 # State
 A state is a construct to describe values and actions related to eachothers such as roles.
 a state is divided in two substates, the value substate and the action substate.
@@ -509,7 +525,6 @@ State scopes change the behaviour and attachment of a state to a player
 local state <state>
 ```
 the local scope is the default scope, they are transferrable state with a unique instance for each player that it was assigned it.
-
 local states are the meat of a TGDL program and manage abstractions such as roles, default player actions, ect...
 
 ### Groups 
@@ -889,11 +904,8 @@ Movements can be defined like in the following example
 ```
 movement chess_rook 
 {
-  input
-  {
-    decimal line1;
-    decimal line2;
-  }
+  input <placeable> line1;
+  input deciaml lin2
   effect
   {
     line line1 2;
@@ -902,7 +914,12 @@ movement chess_rook
 }
 ```
 
-every movement function is checked if it is allowed, if the movement is not allowed it is not displayed
+every movement function is checked if it is allowed, if the movement is not allowed it is not displayed.
+
+multiple effects on a movement represent alternatives and need to be chosen by the player.
+
+movements can have triggers, require and phases.
+
 
 ## Board checks
 
@@ -935,6 +952,31 @@ goal <id> [priority]
 }
 ```
 goals can have a priority, the higher priority goals will be run before the lower priority goals
+
+# Setup
+The setup is the initial stage of the game where everything is put in place before the first player action is played.
+```
+setup { }
+```
+the setup can have inputs and effects:
+- allowed inputs are the types that do not require an input from a player (global inputs)
+  - lists of types with all keyword ( players, states, ect...)
+  - any of the global types like board, global states, groups, stacks
+- there can be named effects but there **must** be a unnnamed effect ( that will be run for the setup)
+- as all statement blocks it can interact trough the dictionary method with any of the instances or class
+
+# Verbs
+Verbs are a definition to group and reuse a certain set of statements on a specific set of inputs
+
+```
+verb <name>
+{
+  input {}
+  effect {}
+  return <type>;
+}
+```
+a should define a return type ( if it returns something ), a verb is called with the parenthesis syntax `<name>(comma separated params)`
 
 # Keywords
 - player: references a specific player 

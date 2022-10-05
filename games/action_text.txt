@@ -1,6 +1,0 @@
-local state testState:
-    count: 0
-
-    action requireAction: 
-        require:
-            count > 0
