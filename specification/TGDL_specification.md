@@ -22,19 +22,19 @@
   - [Unary Operations](#unary-operations)
   - [Order of evaluation](#order-of-evaluation)
 - [Statement](#statement)
+  - [Flow Control statements](#flow-control-statements)
 - [Actions](#actions)
   - [Inputs](#inputs)
     - [Input Filters](#input-filters)
+    - [Input Modifiers](#input-modifiers)
+    - [Optional Inputs](#optional-inputs)
   - [Triggers](#triggers)
+    - [Trigger Modifiers](#trigger-modifiers)
     - [Placeable Movement Events](#placeable-movement-events)
     - [State Events](#state-events)
     - [State Attribute Events](#state-attribute-events)
-    - [Callable](#callable)
-  - [Requires](#requires)
-  - [Effects](#effects)
   - [Global and Named](#global-and-named)
   - [Phases](#phases)
-  - [Action Fail](#action-fail)
   - [Action priority](#action-priority)
   - [Action transaction](#action-transaction)
     - [Action Failures](#action-failures)
@@ -59,7 +59,7 @@
   - [Turns](#turns)
     - [Turn phase](#turn-phase)
 - [Board](#board)
-  - [Boardcells](#boardcells)
+  - [Tile](#tile)
   - [Groups](#groups-1)
     - [Hex cell type](#hex-cell-type)
     - [Square cell type](#square-cell-type)
@@ -68,14 +68,11 @@
   - [Board Changes](#board-changes)
   - [Group Changes](#group-changes)
 - [Movement](#movement)
-  - [Default terms](#default-terms)
-  - [Defining movement](#defining-movement)
-  - [Board checks](#board-checks)
-    - [Adjacent places](#adjacent-places)
-    - [Connected place](#connected-place)
 - [Goals](#goals)
 - [Setup](#setup)
 - [Verbs](#verbs)
+- [Inheritances](#inheritances)
+  - [Override](#override)
 - [Keywords](#keywords)
 
 # Language primitives
@@ -103,7 +100,7 @@ the consumer action, they are the following types:
 Inputs types are choosen by the player or players when required in an action they are:
 ( **Experimental: input types can be supplied from another action in a callable** )
 - local and group states
-- boardcell
+- tile
 
 ## None Value
 `none` is a special value that any type can have and it indicates the absence of the value for that specific attribute ( unassigned )
@@ -121,6 +118,9 @@ Access to a single instance: `<list_name>[decimal]` (if a number with a decimal 
 List Lenght: `<list_name>.lenght`
 Inserting: `<list_name>[decimal] = <instance>` to append `<list_name>[<list_name>.lenght] = <instance>`
 Initialization: `type[] <list_name> = { <instance>, <instance2>, <instance3> };` ( can be empty to initializes an empty list)
+
+Appending: `<list>.append(<other>)` appends the list other to the list list
+Clearing a list: `<list>.clear()` removes all entries from the list, returning it to an empty list
 
 ## Type checking
 Type checking is done trough the `is` keyword: `<attribute> is <type>` is a type checkign expression and will return true if the attribute
@@ -199,13 +199,18 @@ a stamentent is a combination of clauses and expressions that end with a semicol
 - assignment: `<attribute or variable> = <expression>;`
 - declaration: `<type> <attribute or variable>;`
   - an assignemnt can be chained to perform an initialization of the declared variable or state attribute
-- if: `if expression {}`
-- while: `while expression {}`
-  - break: exits the while without evalueting the expression
-  - continue: goes to next iteration (it evalueates the expression, if false exits)
 - turn: `pass expression;`
 
 anything that isn't an expression or a body is a clause (ex. return, =, if, while, pass, ...).
+
+## Flow Control statements
+- if: `if expression {}`
+  - else: `else {}`
+  - else if `if {} else if {}` 
+- while: `while expression {}`
+  - break: exits the while without evalueting the expression
+  - continue: goes to next iteration (it evalueates the expression, if false exits)
+
 
 # Actions
 actions are a combination of instructions set by the user that are run on a trigger.
@@ -230,8 +235,18 @@ It works trough method dependency injection following the subsequent rules:
 2. if its a declared type it will be asked to the user to choose (if the require are satisfied else no choice is given and the action fails, check action fail):
 3. if its a Predefined types it will ask the user to choose ( if possible restrict the values so that it will always satisfy the require, or give an indication when satisfied)
 
+```
+input <type> <idenfitier> [<modifier>] [optional]
+{
+  filters
+}
+```
+
 **Attention**: every action in the action substate of a specific state has as automatic input its value substate ( this could generate a name conflict if an input
 has the same identifier of an attribute of its value substate)
+
+Inputs can be used inside an effect, it will instantiate a variable with the defined type and identifier that can be used only inside the scope of the effect.
+Effect Inputs have the same behavior of Action inputs.
 
 ### Input Filters
 Input filters can be defined using a block after the input statement that returns a boolean value, true if the current examined value passes the filters or false if it does not pass the filter.
@@ -311,7 +326,21 @@ after every selection made by the users the generic filter runs to check if the 
 there should no input filters.
 the all keyword bypasses the need for a player to select the input
 
+inputs are resolved in order of definition and subsequent inputs can use result of the previous input 
 
+### Input Modifiers
+Input modifiers are needed to modify the behavior of the input tag, they are appened after the default definition input
+```
+input <type> <identifier> [<modifier>] [{ filter }]
+```
+the possible modifiers are:
+- `player [<decimal>]` : ask a player for input, it is the default input if no number is given the current player is used
+- `auto`: no player input, filter from all the avalaible instances of the requested type. If not filter is given all instances will be accepted.
+  - exceptions: if no type satisfies the defined filter if the input type is a list it will return none if optional else the action will fail
+  
+### Optional Inputs
+an optional input defines in the its definition the `optional` keyword and it means that input can assume the value of none when no input is given by the
+corresponding player or no input satisfies the defined filters 
 
 ## Triggers
 A trigger is a body of statementes than when evalueated true will launch the corresponding effects
@@ -326,11 +355,8 @@ trigger <trigger event> [<params>]
 possible triggers events are:
 - `movement <movement>`
 - `<state>.action` ( < state > can not be in input )
-- `callable`
 - `change <state>.value`
 - `<state>.<action>.<phase>` 
-
-the inputs accessible from the trigger body depend on the specified trigger event, every event should define which attributes it allows access
 
 events:
 - state
@@ -355,67 +381,18 @@ events:
   - on turn disactivation
   - on turn phase change
 
+### Trigger Modifiers
+```
+trigger <event> [for <name>] [<modifier>]
+```
+the possible triggers modifiers are:
+- after: the trigger activates the effect after the triggering action terminated
+- before: the trigger activates the effect before the triggering action is started
+- fast: as soon as the event is thrown the triggers will evalueate
+
 ### Placeable Movement Events
 ### State Events
 ### State Attribute Events
-
-### Callable
-callable is a specialized trigger that allows action to be called in other state actions with the following syntax:
-
-```
-action <triggerable>
-{
-  input 
-  {
-    decimal a;
-    <state> s;
-  }
-  trigger { callable; }
-}
-
-action <action>
-{
-  effect 
-  {
-    call <triggerable> with 
-    {
-      a = 1;
-    } // will call with one of the inputs already supplied, what is missing will be asked in the defaults modes
-
-    call <triggerable> with
-    {
-      a = 1;
-      s = <state>;
-    } // will call with all parameters specified even declared or supplied types
-  }
-}
-```
-
-## Requires
-A require block is used to allow or disallow an action, it can contain two other tags (input and condition)
-the input tag defines what the condition will use as input ( like the effect block in an action )
-the condition block is defined as a body that **must** return a boolean value:
-- true = requirement satisfied
-- false = requirement not satisfied
-
-condition can be named but there **must be** a unnamed condition that is the only thing that will run.
-
-```
-require
-{
-  input {}
-  condition {}
-}
-```
-
-## Effects
-An effect is a body of statements or statement that interacts with the inputs
-```
-effect
-{
-  <statements>
-}
-```
 
 ## Global and Named
 Triggers, requires and effects can be associated to a shared subgroup through the name funcionality
@@ -464,9 +441,6 @@ phases ( and actions ) have the option of a specifier in the following list that
 - sequence: effects are executed in order of definition
 - simultaneos ( experimental )
 
-## Action Fail
-An action fail happens when a require is not satisfied, it follows the defined fail policy that can be declared in the default section.
-
 ## Action priority 
 As default the actions are executed in the same order as they are defined in the file, that equals a priority of value 0.
 An action priority can be changed trough the keyword `priority <decimal>` that assigns a arbitrary priority to the action.
@@ -495,6 +469,8 @@ an action fails when a it reaches a failure statement:
 # State
 A state is a construct to describe values and actions related to eachothers such as roles.
 a state is divided in two substates, the value substate and the action substate.
+
+a state can be refer to itself in the actions trough the use of the `this` keyword that means this instance of the construct
 
 ## Attributes
 A state attribute is defined as a variable declaration (and optionally an assignment) inside the state declaration
@@ -575,11 +551,11 @@ interactable <name> [<type>|<type>,<type>,...]
 ```
 
 ## Placeable
-Placeable is a type of interatable, it interacts with boardcells and board groups
+Placeable is a type of interatable, it interacts with tiles and board groups
 Placeable have specialized triggers to enhance their functions (defined in the respective section reletaed to action triggers):
 
-a placeable stores a reference to the boardcell that it occupies ( if not placed the boardcells is none ).
-and viceversa a boardcells stores the reference to all the placeable placed on itself trough a placeable list
+a placeable stores a reference to the tile that it occupies ( if not placed the tiles is none ).
+and viceversa a tiles stores the reference to all the placeable placed on itself trough a placeable list
 
 ## Stackables
 
@@ -649,38 +625,38 @@ a turn can be started from its first phase trough the call keyword `call <turn>`
 the board is the construct used to rapresent something that can be interacted with by the players trough placing tokens, claiming cells or other actions.
 it is globally defined, meaning there is only one instance of the board in the entire game, a board can have attributes.
 
-## Boardcells
-a boardcell is a specialized state-like definition trough the **boardcell** keyword, it can have multiple instances of the same declaration like local states and players.
+## Tile 
+a tile is a specialized state-like definition trough the **tile** keyword, it can have multiple instances of the same declaration like local states and players.
 
 ```
-boardcell <cellname>
+tile <cellname>
 {
   <attributes>
   <actions>
 }
 ```
 
-the concept of boardcell is abstracted by its geometrical nature that is defined by the group type
+the concept of tile is abstracted by its geometrical nature that is defined by the group type
 
-boardcells have two implicit attributes:
+tiles have two implicit attributes:
 - `board`: reference to the global board
 - `group`: reference to the group in which they are attached
 
 to do group manipulation or other that requires a specific group, type checking and casting can be used
 ```
-if(<boardcell>.group is <group>)
+if(<tile>.group is <group>)
 {
-  <group> <id> = <boardcell>.grop as <group>;
+  <group> <id> = <tile>.grop as <group>;
 }
 ``` 
 
 ## Groups
-a board contains groups of boardcells, every group can contain only one type of cell between the following:
+a board contains groups of tiles, every group can contain only one type of cell between the following:
 - hex cells
 - square cells
 - adjacency
 
-like the board, a group is globally defined and can have attributes ( they are declaration and assignement statement inside the group beside the group boardcells definition)
+like the board, a group is globally defined and can have attributes ( they are declaration and assignement statement inside the group beside the group tiles definition)
 
 all the groups can contain the blank cell (used only for spacing is an empty space) used in the group declaration with the keyword `b`
 the cell type is used to define default terms like **line**, **distance**, **adjancency** and **coordinates**,  
@@ -721,9 +697,9 @@ distance is defined as the following = abs(x_1 - x_0 + y_1 - y_0)
 
 
 
-examples with a defined boardcell
+examples with a defined tile
 ```
-boardcell h 
+tile h 
 {
   <attribute>
   <attribute>
@@ -862,7 +838,7 @@ board
 {
   group first {}
   group second {}
-  boardcells
+  tiles
   {
     <first.cell> -> <second.cell>
     <first.cell> <-> <second.cell>
@@ -879,65 +855,12 @@ board
 Movement is the act of removing a placeable from a boarder cell and placing in another boardercell.
 Custom movements can be defined trough default terms and movement operators. with an action-like syntax
 
-any movement must follow the following pattern:
+to move a placeable interactable the following syntax is used:
 ```
-<placeable> <movement> <parameters>
-```
-
-## Default terms
-generic terms valid for any type of cells:
-- adjacent <n>: a movement executed trough the adjacency for n times
-- distance <n>: a movement executed for n distance
-- jump <identifier>: jumps to the subject to the specific cell ( identifier can be a group name, the player will decide where it will end up inside the group )
-
-square and hex type movements:
-- line <number> <n>: movement in the direction of line <line> for <n> steps
-- coord <x> <y>: jumps to coordinate
-
-modifiers:
-- max <n>: modifies n to be an interval from 0 to n
-- min <n>: modifies n to be an interval from n and up
-
-## Defining movement
-Movements can be defined like in the following example 
-
-```
-movement chess_rook 
-{
-  input <placeable> line1;
-  input deciaml lin2
-  effect
-  {
-    line line1 2;
-    line line2 1;
-  }
-}
+move <placeable> to <tile>
 ```
 
-every movement function is checked if it is allowed, if the movement is not allowed it is not displayed.
-
-multiple effects on a movement represent alternatives and need to be chosen by the player.
-
-movements can have triggers, require and phases.
-
-
-## Board checks
-
-### Adjacent places
-this check is used to interact with cell or placeable nearby to a specific cell or other placeable
-```
-placeable/boardcell adj placeable/boardcell -> returns a boolean value
-```
-
-checks if a placeable or boardcell has beside a placeable or boardcell of the given type
-
-to get all adjacent boardcells to a boardcell an hidden attribute is provided called **adjcents**
-
-### Connected place
-this is check is used to interact with connected cells ( cells that have a path between them )
-```
-placeable/boardcell connect placeable/boardcell
-```
+if there is a need for complex movements, like line, obstructions ect... verbs should be used
 
 # Goals
 Goals are specific actions that will terminate the game if the global effect is triggered.
@@ -976,7 +899,36 @@ verb <name>
   return <type>;
 }
 ```
-a should define a return type ( if it returns something ), a verb is called with the parenthesis syntax `<name>(comma separated params)`
+
+it has some special rules:
+- multiple inputs
+- one unnamed effect without phases
+- no triggers or requires
+
+it is the equivalent to a function in other programming languages with the addition of dependency injection (Inversion of control ?) trough the inputs.
+
+it has a return type that is defined automatically trough it's return statements ( that must all return the same type ).
+If there is a need to return a base construct trough different derived constructs upcasting must be used trough the as keyword ( it can return null, caller has the responsability of null checking )
+
+to call a verb the parenthesis operator is used `(comma separated parameters)` the order of the parameters must be the same as the order of definition of the inputs
+in the verb definition.
+
+# Inheritances
+Inheritance permits a construct to derive actions, attributes and type from a base construct while having the possibility of modifying the behavior trough 
+the base construct can be referenced from the overrides trough the `base` keyword that has the same behavior as the this keyword but for the base construct.
+
+## Override
+the overrides obviusly change the intended behavior of a block of code, this changes are a responsability of the user to not create conflicts with 
+the base construct code 
+
+a partial action override is an a replacement for a specific part of an action of the base construct, partial overrides include:
+- named and unnamed triggers
+- named and unnamed effects
+- named and unnamed requires
+- inputs
+
+when overriding an action everything that has not the same declaration of the base construct is added.
+if inputs are removed the base construct cannot be invoked inside the effect 
 
 # Keywords
 - player: references a specific player 
