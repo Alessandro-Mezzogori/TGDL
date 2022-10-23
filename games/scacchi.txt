@@ -8,14 +8,14 @@ game "scacchi";
 
 players 2;
 
-boardcell sq
+tile sq
 {
 
 }
 
 board
 {
-   boardcell[] 
+   tile[] 
    group square grid
    {
         sq,sq,sq,sq,sq,sq,sq,sq;
@@ -36,7 +36,9 @@ setup
    effect
    {
       player_state ps0 = player_state assign to player 0;
+
       player_state ps1 = player_state assign to player 1;
+      ps1.pawn_direction = -1;
 
       // white player 0 board setup
       place new rook(owner = ps0) on b.group[0][7];
@@ -57,219 +59,286 @@ setup
 
 local state player_state
 {
-   bool in_check = false;
-   boardcell[] enemy_vision = {};
-   
-   action update_vision
+   decimal pawn_direction = 1; // 1 is up -1 is down
+
+   // ##### player pieces #####
+   action move_piece
    {
-      trigger player_state action // trigger when player completes action 
+      // TODO player trigger event
+      input piece p 
       {
-         // return event.player != this.player
-         return event.state != this;
-      }
-      
-      input interactable[] pieces // all the enemy pieces automatic input
+         return p.owner == this;
+      };
+      auto input piece[] enemy_pieces
       {
-         filter interactable piece
+         filter piece ep
          {
-            return !is_of_player(piece, this);
+            return ep.owner != this;
          }
+      }
+      auto input king k
+      {
+         return k.owner == this;
       }
       effect
       {
-         enemy_vision.clear();
-         
-         // get all the enemy vision
+         // get all enemy pieces to check if king is in check and which pieces are checking
+         bool in_check = false;
          decimal index = 0;
-         while(index < pieces.lenght)
+         tile[] enemy_vision = {};
+         while(index < enemy_pieces.lenght)
          {
-            interactable piece = pieces[i];
-            boardcell[] enemy_vision = {};
-            if(piece is rook)
-               enemy_vision.append(rook_vision(piece as rook));
-            else if(piece is bishop)
-               enemy_vision.append(bishop_vision(piece as bishop));
-            else if(piece is king)
-               enemy_vision.append((king_vision(piece as king));
+            enemy_vision.append(enemy_pieces[index]);
+         }
+         
+         if(enemy_vision.contains(king.tile))
+         {
+            in_check = true;
+         }
+
+         // get current vision of selected piece 
+         p.update_vision()
+         vision[] vision = p.vision;
+         
+         // if the king is under check
+         // TODO run the in check condition for all pieces if all fail no move can be made and it is checkmate
+
+         // check if piece is pinned -> for every enemy piece check if king is in vision ( return piece as pinning ) 
+         // if pinned and only one piece is pinning check if it can be taken ( overlap pinning vision with piece vision )
+         // valid move ( king is not in check after the mvoe ):
+         //    save previous position
+         //    check for each tile in this.vision 
+         //    move piece and compute in_check vision
+         //    if in_check is true position remove tile from vision
+         //    restore original piece position
+
+         // if there's no possibile move -> stop action
+         if(vision.lenght == 0)
+         {
+            fail;
+         }
+
+         // select move
+         input tile dest 
+         {
+            return vision.contains(dest);
+         }
+         
+         // if destination has enemy piece ( placeables in it ) capture it 
+         if(dest.placeables.lenght > 1)
+         {
+            dest.placeables.clear();
+         }
+         
+         move p to dest;
+      }
+   }
+}
+
+interactable piece placeable
+{
+   player_state owner = none;
+   tile[] vision = {};
+
+   action compute_vision 
+   {
+      effect { }
+   }
+}
+
+interactable rook : piece
+{
+   override action compute_vision
+   {
+      override effect
+      {
+         this.vision.clear();
+         this.vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: 0));
+         this.vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: -1, y: 0));
+         this.vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 0, y: 1));
+         this.vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 0, y: -1));
+      }
+   }
+}
+
+interactable bishop : piece 
+{
+   override action compute_vision
+   {
+      override effect
+      {
+         this.vision.clear();
+         this.vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: 1));
+         this.vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: -1));
+         this.vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: -1, y: 1));
+         this.vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: -1, y: -1));
+      }
+   }
+}
+
+interactable king : piece 
+{
+   override action compute_vision
+   {
+      auto input piece[] enemy_pieces 
+      {
+         filter piece p
+         {
+            return p.owner != this.owner;
+         }
+      }
+      override effect 
+      {
+         group g = this.tile.group; 
+         decimal x = this.tile.x;
+         decimal y = this.tile.y;
+         
+         this.vision.clear();
+         if(check_vision_tile(t: g[x - 1][y - 1], this.owner)) { this.vision[this.vision.lenght] = g[x - 1][y - 1]; }
+         if(check_vision_tile(t: g[x - 1][y - 0], this.owner)) { this.vision[this.vision.lenght] = g[x - 1][y - 0]; }
+         if(check_vision_tile(t: g[x - 1][y + 1], this.owner)) { this.vision[this.vision.lenght] = g[x - 1][y + 1]; }
+         if(check_vision_tile(t: g[x - 0][y - 1], this.owner)) { this.vision[this.vision.lenght] = g[x - 0][y - 1]; }
+         if(check_vision_tile(t: g[x - 0][y + 1], this.owner)) { this.vision[this.vision.lenght] = g[x - 0][y + 1]; }
+         if(check_vision_tile(t: g[x + 1][y - 1], this.owner)) { this.vision[this.vision.lenght] = g[x + 1][y - 1]; }
+         if(check_vision_tile(t: g[x + 1][y - 0], this.owner)) { this.vision[this.vision.lenght] = g[x + 1][y - 0]; }
+         if(check_vision_tile(t: g[x + 1][y + 1], this.owner)) { this.vision[this.vision.lenght] = g[x + 1][y + 1]; }
+
+         decimal index = 0;
+         while(index < enemy_pieces.lenght)
+         {
+            piece ep = enemy_piece[index];
+            ep.compute_vision();
+            this.vision = this.vision.removeRange(ep.vision);
 
             index += 1;
          }
+      }
+   }
+}
 
-         // check if the king is inside the enemy vision -> if yes go in check state
+interactable queen : piece
+{
+   override action compute_vision
+   {
+      override effect
+      {
+         this.vision.clear();
+         // bishop movement
+         this.vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: 1));
+         this.vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: -1));
+         this.vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: -1, y: 1));
+         this.vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: -1, y: -1));
+         // rook movement
+         this.vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: 0));
+         this.vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: -1, y: 0));
+         this.vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 0, y: 1));
+         this.vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 0, y: -1));
+      }
+   }
+}
+
+interactable knight: piece
+{
+   override action compute_vision
+   {
+      override effect
+      {
+         group g = this.tile.group; 
+         decimal x = this.tile.x;
+         decimal y = this.tile.y;
          
-         // TODO maybe use king.boardcell to check if it is inside the enemy_vision ( trough the non player inputs )
-         index = 0;
-         while(index < enemy_vision.lenght)
-         {
-            if(enemy_vision[index].placeables.lenght > 0 )
-            {
-               interactable temp = enemy_vision[index];
-               if(temp is king && (temp as king).owner == this)
-               {
-                  in_check = true;
-                  break;
-               }
-            }
+         this.vision.clear();
+         if(check_vision_tile(t: g[x - 1][y - 2], this.owner)) { this.vision[this.vision.lenght] = g[x - 1][y - 2]; }
+         if(check_vision_tile(t: g[x + 1][y - 2], this.owner)) { this.vision[this.vision.lenght] = g[x + 1][y - 2]; }
+         if(check_vision_tile(t: g[x - 1][y + 2], this.owner)) { this.vision[this.vision.lenght] = g[x - 1][y + 2]; }
+         if(check_vision_tile(t: g[x + 1][y + 2], this.owner)) { this.vision[this.vision.lenght] = g[x + 1][y + 2]; }
+         if(check_vision_tile(t: g[x + 2][y + 1], this.owner)) { this.vision[this.vision.lenght] = g[x + 2][y + 1]; }
+         if(check_vision_tile(t: g[x + 2][y - 1], this.owner)) { this.vision[this.vision.lenght] = g[x + 2][y - 1]; }
+         if(check_vision_tile(t: g[x - 2][y + 1], this.owner)) { this.vision[this.vision.lenght] = g[x - 2][y + 1]; }
+         if(check_vision_tile(t: g[x - 2][y - 1], this.owner)) { this.vision[this.vision.lenght] = g[x - 2][y - 1]; }
+      }
+   }
+}
 
-            index += 1;
+interactable pawn: piece
+{
+   override action compute_vision
+   {
+      override effect
+      {
+         group g = this.tile.group;
+         decimal x = this.tile.x;
+         decimal y - this.tile.y;
+         decimal direction = 1 * this.owner.pawn_direction;
+
+         this.vision.clear();
+
+         // if front is clear add 
+         tile front = g[x][y - direction];
+         if(front.placeables.lenght == 0)
+         {
+            this.vision[this.vision.lenght] = front;
          }
 
-      }
-   }
-
-   action move_rook
-   {
-      input rook r { return r.owner == this; }
-      effect 
-      {
-         boardcell[] vision = rook_vision(r);
-
-         // king under check 
-         // pinned 
-         // no legal move
-         if(vision.lenght == 0)
-            fail "no possible moves";
-
-         // select destination 
-         input boardcell dest { return vision contains dest; }
-
-         // capture piece
-         if(dest.placeables.lenght > 0)
+         // add up left if there is an enemy piece
+         tile left = g[x - 1][y - direction];
+         if(left.placeables.lenght > 0 && (left.placeables[0] as piece).owner != this.owner)
          {
-            dest.placeables.clear(); // capture placeable if not king 
+            this.vision[this.vision.lenght] = front;
          }
-         
-         move r to dest;
-      }
-   }
 
-   action move_bishop
-   {
-      input bishop b { return b.owner == this; }
-      effect 
-      {
-         boardcell[] vision = bishop_vision(b);
-
-         if(vision.lenght == 0)
-            fail "no possible moves";
-
-         input boardcell dst { return vision contains dst; }
-
-         if(dst.placeables.lenght > 0)
-            dst.placeables.clear();
-         move b to dst;
+         // add up right if there is an enemy piece
+         tile right = g[x + 1][y - direction];
+         if(right.placeables.lenght > 0 && (right.placeables[0] as piece).owner != this.owner)
+         {
+            this.vision[this.vision.lenght] = front;
+         }
       }
    }
 }
 
-interactable rook placeable
-{
-   player_state owner = none;
-}
-
-interactable bishop placeable
-{
-   player_state owner = none;
-}
-
-interactable king placeable
-{
-   player_state owner = none;
-}
-
-verb rook_vision 
-{
-   input rook r;
-   effect 
-   {
-      boardcell[] vision = {};
-
-      vision.append(line_till_obstruction(r.boardcell, r.owner, 1, 0));
-      vision.append(line_till_obstruction(r.boardcell, r.owner, -1, 0));
-      vision.append(line_till_obstruction(r.boardcell, r.owner, 0, 1));
-      vision.append(line_till_obstruction(r.boardcell, r.owner, 0, -1));
-      
-      return vision;
-   }
-}
-
-verb bishop_vision
-{
-   input bishop b;
-   effect 
-   {
-      boardcell[] vision = {};
-
-      vision.append(line_till_obstruction(b.boardcell, b.owner, 1, 1));
-      vision.append(line_till_obstruction(b.boardcell, b.owner, 1, -1));
-      vision.append(line_till_obstruction(b.boardcell, b.owner, -1, 1));
-      vision.append(line_till_obstruction(b.boardcell, b.owner, -1, -1));
-      
-      return vision;
-   }
-}
-
-verb king_vision
-{
-   input king k;
-   effect
-   {
-      // non supera gli ostacoli
-      // non puó andare in spazi che sono in visione di altri pezzi 
-   }
-}
+// ##### HELPER VERBS ######
 
 verb line_till_obstruction
 {
-   input boardcell src;
-   input player_state moving;
-   input decimal x;
-   input decimal y;
+   verb input tile src;
+   verb input player_state moving;
+   verb input decimal x;
+   verb input decimal y;
    effect
    {
       group g = src.group;
-      boardcell c = g[src.x + x][src.y + y];
-      boardcell[] line = {};
+      tile c = g[src.x + x][src.y + y];
+      tile[] line = {};
       while(c != none && c.placeables.lenght == 0){
          line.add(c);
          c = g[c.x + x][c.y + y];
       }
 
-      // add the first boardcell with another piece on it 
-      if(c != none && is_of_player(c.placeables[0], moving))
+      if(check_vision_tile(t: c, owner: moving))
       {
          line.add(c);
       }
 
-      return line; // infer return type is list of boardcell
+      return line; 
    }
 }
 
-verb is_of_player
+verb check_vision_tile 
 {
-   input interactable piece;
-   input player_state ps;
-   effect 
-   {
-      if(piece is rook)
-         return (piece as rook).owner != moving;
-      if(piece is bishop)
-         return (piece as bishop).owner != moving;
-      if(piece is king)
-         return (piece as king).owner != moving;
-      
-      return false;
-   }
-}
+   verb input tile t;
+   verb input player_state owner;
 
-verb next_cell
-{
-   input boardcell c;
-   input decimal x;
-   input decimal y;
-
-   effect 
+   effect
    {
-      return c.group[c.x + x][c.y + y];
+      if(t == null)
+         return false;
+
+      if(t.placeables.lenght > 0)
+      {
+         piece p = t.placeables[0] as piece;
+         return p.owner != owner;
+      }
+      return true;
    }
 }

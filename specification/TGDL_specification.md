@@ -76,10 +76,9 @@
 - [Keywords](#keywords)
 
 # Language primitives
-- identifier: sequence of letters or numbers starting with a letter;
+- identifier: a sequence of letters or numbers starting with a letter;
 - comments: a comment is everything till the end of line character from the double slash characters `\\` 
   - they are ignored and are only for informing, documenting or in general leaving messages inside the code
-
 # Types 
 
 ## Predefined types 
@@ -121,6 +120,11 @@ Initialization: `type[] <list_name> = { <instance>, <instance2>, <instance3> };`
 
 Appending: `<list>.append(<other>)` appends the list other to the list list
 Clearing a list: `<list>.clear()` removes all entries from the list, returning it to an empty list
+Check if list has value: `<list>.contains(<value>)` returns true if value is inside list
+Find element index: `<list>.find(<value>)` returns the key if value is found, otherwise none
+Remove element at index: `<list>.removeAt(<decimal index>)` removes the value at the index 
+Remove element: `<list>.remove(<value>)` removes the value from the lsit 
+Remove a list: `<list>.removeRange(<other_list>)` removes all the elements of other_list from list
 
 ## Type checking
 Type checking is done trough the `is` keyword: `<attribute> is <type>` is a type checkign expression and will return true if the attribute
@@ -200,6 +204,7 @@ a stamentent is a combination of clauses and expressions that end with a semicol
 - declaration: `<type> <attribute or variable>;`
   - an assignemnt can be chained to perform an initialization of the declared variable or state attribute
 - turn: `pass expression;`
+- instantiate construct: `new <construct type>;`;
 
 anything that isn't an expression or a body is a clause (ex. return, =, if, while, pass, ...).
 
@@ -226,7 +231,12 @@ action <action>
 }
 ```
 
+an action can have any combination of the other tags **input, require, trigger and effect**:
+- **WARNING**: if an action has no triggers it will never be called
+
 any of the actions can be deactived or activated trough the allowed attributge associated with an action `<state>.<action>.allowed = <boolean>;`
+
+all actions can be called using the parenthesis operator `()` 
 
 ## Inputs
 An action input are the constructs that will be used troughtout the action definition and execution.
@@ -236,7 +246,7 @@ It works trough method dependency injection following the subsequent rules:
 3. if its a Predefined types it will ask the user to choose ( if possible restrict the values so that it will always satisfy the require, or give an indication when satisfied)
 
 ```
-input <type> <idenfitier> [<modifier>] [optional]
+[optional] [<modifier>]input <type> <idenfitier>
 {
   filters
 }
@@ -309,7 +319,7 @@ action list_input
   {
     filter example ex 
     {
-      return ex < 10 and ex > 0;
+      return ex.points < 10 and ex.points > 0;
     }
     filter
     {
@@ -337,6 +347,7 @@ the possible modifiers are:
 - `player [<decimal>]` : ask a player for input, it is the default input if no number is given the current player is used
 - `auto`: no player input, filter from all the avalaible instances of the requested type. If not filter is given all instances will be accepted.
   - exceptions: if no type satisfies the defined filter if the input type is a list it will return none if optional else the action will fail
+- `verb`: special input  that can be used only in verbs, defines inputs that need to be passed trough the calling statement
   
 ### Optional Inputs
 an optional input defines in the its definition the `optional` keyword and it means that input can assume the value of none when no input is given by the
@@ -646,7 +657,7 @@ to do group manipulation or other that requires a specific group, type checking 
 ```
 if(<tile>.group is <group>)
 {
-  <group> <id> = <tile>.grop as <group>;
+  <group> <id> = <tile>.group as <group>;
 }
 ``` 
 
@@ -803,13 +814,8 @@ group <name> hex col
 }
 ```
 
-a line in a hex group is defined as a segment exiting a face or border of the hexagon
-
-<img src="board/../images/board/hex_row_lines.png"/>
-
 ### Square cell type
 square cell has the same distance, line, coordinates and adjacency rules of an hex type cell with the following exceptions:
-- there are only 4 lines numbered 0 ( to top ), 1 ( to right), 2 ( to bottom ), 3 (to left)
 - there are no orientations distinctions
 - coordinates have origin (0,0) at top left, the first number is the row the second is the column.
 - square cells have two type of default adjcency: **around** or **sides**
@@ -818,8 +824,6 @@ square cell has the same distance, line, coordinates and adjacency rules of an h
 adjacency cell types are different from both hex and square types in that they can rapresent any kind of board by using a graph notation:
 - nodes are the cells
 - edges are the adjacency and define the distance between the nodes that connect
-
-in an adjacency cell type group there is no concept of line or coordinates, just of distance and adjancency.
 
 ```
 group <name> adjency
@@ -910,12 +914,31 @@ it is the equivalent to a function in other programming languages with the addit
 it has a return type that is defined automatically trough it's return statements ( that must all return the same type ).
 If there is a need to return a base construct trough different derived constructs upcasting must be used trough the as keyword ( it can return null, caller has the responsability of null checking )
 
-to call a verb the parenthesis operator is used `(comma separated parameters)` the order of the parameters must be the same as the order of definition of the inputs
-in the verb definition.
+to call a verb the parenthesis operator is used `(identifier1: value1, identifier2: value2)` where identifier is one of the verb input identifiers defined in the verb
+definition and value is the value that will be passed to the verb call for that specific input identifier.
 
 # Inheritances
 Inheritance permits a construct to derive actions, attributes and type from a base construct while having the possibility of modifying the behavior trough 
 the base construct can be referenced from the overrides trough the `base` keyword that has the same behavior as the this keyword but for the base construct.
+
+inheritance works the same for each construct
+
+```
+state base { }
+state derived : base { }
+```
+
+for interactable you can add types of interactables 
+```
+interactable base placeable {}
+interactable derived stackable : base {} // derived is both a stackable and placeable ( inherited from base )
+```
+
+you can defined the same interactable type of the base in the derived it will be simply ignored
+```
+interactable base placeable {}
+interactable derived stackable, placeable : base {} // placeable is ignored , in the case that base is changed 
+```
 
 ## Override
 the overrides obviusly change the intended behavior of a block of code, this changes are a responsability of the user to not create conflicts with 
@@ -929,6 +952,8 @@ a partial action override is an a replacement for a specific part of an action o
 
 when overriding an action everything that has not the same declaration of the base construct is added.
 if inputs are removed the base construct cannot be invoked inside the effect 
+  
+by marking an action as **override** it will give an error if the base as no equivalent in the base class 
 
 # Keywords
 - player: references a specific player 

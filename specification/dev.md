@@ -56,3 +56,17 @@
 //    2.  will be none if it has no match ( automatic match )
 //    3.  will be noen if it has no possible player selection ( standard input )
 68. DRY for filters ( way to defined filters outside of their contexts )
+69. better define stackables
+70. define the mechanism for reversing the game state on failures:
+    1.  change tree concept ( changes of the state in the action tree following the triggers )
+    2.  copy of the state each input and action's state that is influenced by the changes but they are applied only after the whole action is applied z
+    3.  make a way to preseve changes even on failures 
+    4.  effect failure destroys the branch of the change tree
+    5.  an action failure destroys the whole change tree 
+71. trigger event for player choice -> explicit trigger for actions that a player can choose to do
+
+// scacchi
+1. pareggio -> se un giocatore non puó fare una mossa o chiede pareggio
+2. scacco matto
+3. arresa -> richiesta da giocatore
+4. castleing
