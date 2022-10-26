@@ -29,6 +29,7 @@
     - [Input Modifiers](#input-modifiers)
     - [Optional Inputs](#optional-inputs)
   - [Triggers](#triggers)
+    - [State category](#state-category)
     - [Trigger Modifiers](#trigger-modifiers)
     - [Placeable Movement Events](#placeable-movement-events)
     - [State Events](#state-events)
@@ -56,8 +57,9 @@
 - [Players](#players)
   - [Starting player](#starting-player)
   - [Winner selection and game end](#winner-selection-and-game-end)
+  - [Player expressions](#player-expressions)
   - [Turns](#turns)
-    - [Turn phase](#turn-phase)
+    - [Default turn](#default-turn)
 - [Board](#board)
   - [Tile](#tile)
   - [Groups](#groups-1)
@@ -369,10 +371,38 @@ possible triggers events are:
 - `change <state>.value`
 - `<state>.<action>.<phase>` 
 
-events:
-- state
-  - attribute change {} 
-  - action {}
+a trigger event is formed by 3 pieces: `on <construct> <event>`:
+- on is the keyword that defines the trigger event
+- construct defines the macro category of the event ( state, stack, interactables, attributes, ect... )
+- event is the event of the macro category
+
+for each construct you can use specific constructs that were defined by the programmer like a specific state, or a 
+general construct that is identifier by the identifier name of that construct ( ex. state will encompass all the states )
+
+### State category
+<center>
+<table>
+<tr>
+<th>construct</th>
+<th>event</th>
+<th>event structure</th>
+</tr>
+<tr>
+<td>state.attribute</td>
+<td>change</td>
+<td>
+<pre>
+{
+  string state: which state identifier of the state that had the attribute change
+  string attribute: attribute name that has changed
+}
+</pre>
+</td>
+</tr>
+</table>
+</center>
+
+- on action {}
 - placeable
   - on placement
   - on removal
@@ -391,6 +421,9 @@ events:
   - on turn activation
   - on turn disactivation
   - on turn phase change
+
+special events:
+- player
 
 ### Trigger Modifiers
 ```
@@ -482,6 +515,10 @@ A state is a construct to describe values and actions related to eachothers such
 a state is divided in two substates, the value substate and the action substate.
 
 a state can be refer to itself in the actions trough the use of the `this` keyword that means this instance of the construct
+
+a state has reference to the player or players that are associated with:
+- `<state>.player` works only for local states and returns the player associated with that specific instance of the state
+- `<state>.players` is used for local and group states and return all the players that have that specific state  
 
 ## Attributes
 A state attribute is defined as a variable declaration (and optionally an assignment) inside the state declaration
@@ -582,55 +619,119 @@ the starting player is always the player numbered 0.
 ## Winner selection and game end
 `winner <player> [,<player>]*`: sets the winner or winners for the game and afterwards ends the program
 
+## Player expressions
+a player expression is a special expression that returns a player object
+
+a player is identifier with a number from 0 to (number of players - 1) and they can be used as numbers with the exception
+that if a player object is used in an expression it becomes a player expression and it will always return the result by applying the following formula 
+```
+{
+  r modP              r >= 0
+  (P - |r|modP)modP   r <  0 
+}
+```
+where:
+- r = the result of the expression
+- P = the number of players in the game
+- mod = the modulo operator 
+
+the formula ensures that the result of the **player expression** is always a number between 0 and and the (number of players - 1) so that it can be mapped 
+automatically to one of the players objects.
+Furthermore it allows easy to use operations on the player objects to retrieve a player form another player number trough its cyclicity forward and backwards
+
+some examples to demistify the formula, all the exaples will have a number of players equal to 4 ( common in table top games ) and starting player (player = 3):
+`player + 1 => player 0`
+`player - 1 => player 2`
+`player +- 4 => player 3`
+`player + 5 => player 0`
+`player - 5 => player 2`
+
 ## Turns
-A turn defines who is the active player ( in most games who is taking the actions, there are games where it's permitted to act out of turn like magic the gathering ).
+A turn defines the flow of the game by using phases, it is fundemental to any game.
 
-to define the passing of turns there are two main ways:
-- using directly the turn statement `pass <decimal returning expression>;`
-- defining actions in the global state that call the turn statement 
+to pass a turn the `pass` keyword is used: `pass [<player expression>] [to <turn phase>];` 
+- the result of the player expression will be the active player
+- a specific phase of the current active turn can be selected with the `to <turn phase>` optional parameter
+- **ATTENTION**: a pass call doesn't terminate the current active branch, so if another pass call is used the previous will be overridden ( as if the previous pass call was never executed )
 
-example for global turn action
 ```
-players 4;
-
-global state turn_controller
+// the simplest turn is defined as the following
+turn <identifier>
 {
-  action default_turn
+  default
   {
-    input
-    {
-      activePlayer ap;
-    }
-    trigger
-    {
-      any action 1
-    }
-    effect
-    {
-      pass ap + 1;
-    }
+    pass player + 1;
+  }
+}
+
+// examples with phases 
+turn <identifier>
+{
+  phase A {}
+  default
+  {
+    pass player + 1 to A;
   }
 }
 ```
 
-### Turn phase
-a turn can be defined with the following syntax:
+if there is a need for multiple turns the current active turn can be changed by using the `use` keyword, or more specifically:
 ```
-turn <turn>
-{
-  phase <phase>
-  {
-    trigger {}
-    effect {}
-  }
-  ...
-}
+use turn <turn identifier>;
 ```
-every turn can have multiple phases, if no phase is defined the turn will only have one phase with **default** as the name.
-each phase can have triggers to start it, global inputs ( all of some type, board, global states) and an effect 
 
-a phase if has a callable trigger can be called to activate that phase effect and switch the turn phase to the called `call <turn>.<phase>`.
-a turn can be started from its first phase trough the call keyword `call <turn>`, this will deactivate the active turn and activate the selected turn 
+### Default turn
+The default turn, or default section of the turn, is the block of code that is called on a default `pass` call
+The default section has access to the global constructs like global states, boards, ect... furthermore inside the default tag two more arguments can be used by default:
+- player: identifies the current active player 
+- phase: identifies the current active phase
+
+these arguments can be used to define complex turns flows partially detaching them from the code base trough an agnostic default pass call
+
+**ATTENTION**: a `pass` call if used with arguments like `player expression` or `phase specificier` will cease to be a default pass call and **won't** call the default section
+```
+// sample turn used for the following two examples of normally used turn flows
+// obviously the default tag would've been inside the turn
+turn A
+{
+  phase A1 {}
+  phase A2 {}
+}
+
+// example single vertical turn: a player must do all the phases then second player ect...
+default 
+{
+  if(phase == A1) 
+  { 
+    pass player to A2; 
+  }
+  else 
+  {
+    pass player + 1 to A1;
+  }
+}
+
+// example every player does phase before passing to next phase
+default
+{
+  if(player != <number of players> - 1)
+  {
+    pass player + 1 to phase; // pass the next player to the same phase
+  }
+  else
+  {
+    if(phase == A1)
+    {
+      pass player 0 to A2; // 0 could be substituted with a global state player attribute that is changed if the first player changes 
+    }
+    else
+    {
+      pass player 0 to A1;
+    }
+  }
+}
+
+```
 
 # Board
 the board is the construct used to rapresent something that can be interacted with by the players trough placing tokens, claiming cells or other actions.
@@ -670,7 +771,10 @@ a board contains groups of tiles, every group can contain only one type of cell 
 like the board, a group is globally defined and can have attributes ( they are declaration and assignement statement inside the group beside the group tiles definition)
 
 all the groups can contain the blank cell (used only for spacing is an empty space) used in the group declaration with the keyword `b`
-the cell type is used to define default terms like **line**, **distance**, **adjancency** and **coordinates**,  
+the cell type is used to define default terms like **adjancency** and **coordinates**,  
+
+you can access a group tiles by using the square brackets operators like if it was a grid of tiles `group[x][y]`;
+if the selected coordinates has a blank tile or no tile associated with it will return a `none`
 
 Example
 ```
@@ -879,6 +983,10 @@ goal <id> [priority]
 }
 ```
 goals can have a priority, the higher priority goals will be run before the lower priority goals
+
+selecting winner and drawing:
+- `win <players>`: comma separated list of players or list of players that win
+- `draw <players>`: comma separated list of players or list of players that draw 
 
 # Setup
 The setup is the initial stage of the game where everything is put in place before the first player action is played.
