@@ -5,6 +5,7 @@
   - [Table of Contents](#table-of-contents)
 - [Language primitives](#language-primitives)
 - [Types](#types)
+  - [Object type](#object-type)
   - [Predefined types](#predefined-types)
   - [Supplied predefined types](#supplied-predefined-types)
   - [Input types](#input-types)
@@ -82,6 +83,11 @@
 - comments: a comment is everything till the end of line character from the double slash characters `\\` 
   - they are ignored and are only for informing, documenting or in general leaving messages inside the code
 # Types 
+  
+## Object type
+the object type is the base type of all the types in the language, you can always upcast (cast to object) to the object type 
+it has no attached functionality other than being used to have a simpler way to use one argument for different possible type.
+to go back to the orignal type from the object type a downcast must be performed.
 
 ## Predefined types 
 TGDL supports a small set of predefined types for simplicity and ease of use for non skilled users.
@@ -1047,6 +1053,10 @@ you can defined the same interactable type of the base in the derived it will be
 interactable base placeable {}
 interactable derived stackable, placeable : base {} // placeable is ignored , in the case that base is changed 
 ```
+
+**ATTENTION**: the type check expression will still give the same result with a base type as with the derived type, the base type 
+when upcasted from a derived type is just a different interactable interface it doesn't change the underlying type of the "physical"
+instance on which one is interacting
 
 ## Override
 the overrides obviusly change the intended behavior of a block of code, this changes are a responsability of the user to not create conflicts with 
