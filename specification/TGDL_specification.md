@@ -30,7 +30,7 @@
     - [Input Modifiers](#input-modifiers)
     - [Optional Inputs](#optional-inputs)
   - [Triggers](#triggers)
-    - [State category](#state-category)
+    - [Trigger Events](#trigger-events)
     - [Trigger Modifiers](#trigger-modifiers)
     - [Placeable Movement Events](#placeable-movement-events)
     - [State Events](#state-events)
@@ -80,8 +80,29 @@
 
 # Language primitives
 - identifier: a sequence of letters or numbers starting with a letter;
+- block: any part of the code between two curly brackets `{block}`, 
+  - may be omitted in the furture for a single statement block
+  - can contain another block or construct
+  - it delimits an area of code called scope
+- scope: anything inside a scope can use everything inside the same scope and the parents scopes
+- statement: combination of caluses and expressions ending with a semicolon `;`
+- clauses: one or more characters or symbols defined by the language specifications
+- operators: one or more characters or symbols defined by thge language specifications
+- expressions: something that needs an evaluation, combination between operators and operands
+- operands is defined as one of the following:
+  - an expression
+  - a literal
+- a literal: a pure value of some specific type ( decimal, string, bool, none )
+- tag: is a unique identifier that describes the behavior of the subsequent block
+- construct: is at least composed by one tag, one identifier and one block
+  - action construct: is a construct that can define in its body a **construct action**
+  - attribute construct: is a construct that can defined in its body **attributes**
+- attribute: is a variable associated with the instance of the construct in which it is defined, the body of the construct defines the scope of the attribute
 - comments: a comment is everything till the end of line character from the double slash characters `\\` 
   - they are ignored and are only for informing, documenting or in general leaving messages inside the code
+  
+
+
 # Types 
   
 ## Object type
@@ -377,30 +398,48 @@ possible triggers events are:
 - `change <state>.value`
 - `<state>.<action>.<phase>` 
 
-a trigger event is formed by 3 pieces: `on <construct> <event>`:
+a trigger event is formed by 3 pieces: `on <construct>[.<target>] <event>`:
 - on is the keyword that defines the trigger event
-- construct defines the macro category of the event ( state, stack, interactables, attributes, ect... )
 - event is the event of the macro category
 
 for each construct you can use specific constructs that were defined by the programmer like a specific state, or a 
 general construct that is identifier by the identifier name of that construct ( ex. state will encompass all the states )
 
-### State category
+### Trigger Events 
 <center>
 <table>
 <tr>
 <th>construct</th>
+<th>target</th>
 <th>event</th>
 <th>event structure</th>
 </tr>
 <tr>
-<td>state.attribute</td>
+<td>state</td>
+<td>attribute</td>
 <td>change</td>
 <td>
 <pre>
 {
-  string state: which state identifier of the state that had the attribute change
-  string attribute: attribute name that has changed
+  string triggering   : construct identifier that triggered the event
+  string state        : which state identifier of the state that had the attribute change
+  string attribute    : attribute name that has changed
+  object oldValue     : old value of the attribute in object type
+  object newValue     : new value of the attribute in object type
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td>state.action</td>
+<td></td>
+<td>call</td>
+<td>
+<pre>
+{
+  string triggering   : construct identifier that triggered the event
+  string state        : which state identifier had the action triggered
+  string action       : triggered action identifier
 }
 </pre>
 </td>
@@ -408,7 +447,6 @@ general construct that is identifier by the identifier name of that construct ( 
 </table>
 </center>
 
-- on action {}
 - placeable
   - on placement
   - on removal
