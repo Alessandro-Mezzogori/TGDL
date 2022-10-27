@@ -1,62 +1,15 @@
-13. game phase
 // 15. stackable / placeable show information -> info section
 // 17. azioni perpetue
 // 23. out of turn actions ( require special trigger event )
-// 24. definition for change of setup / mechanics correlated to player number -> can be defined trough new copying and changing the relevant information ( una rottura )
-// 24. modificare stati players -> trough dictionary / lua rappr
-// 25. modificare action of states -> trough dictionary / lua rapp 
-30. optional block or tag
-32. draw stackable until condition
-    1.  change stack interactions to return a specific type 
-    2.  draw from <stack> where { block with stackable as input if returns true it draws the card, optional default is always true }
-//43. input di altri giocatori oltre all'attivo -> audio telefono
-//45. definition of verbs
-//    1.  multiple inputs
-//    2.  one effects
-46. movement overhaul
-    1. obstruction
-    2. allow movement till condition 
-    3. ignore obstructions
-//47. transaction like effects
-//48. asking for input inside effect function 
-//49. change how indexing works for groups ( blank tiles count has a tile but will return none if indexed )
-50. refernce to attached players in state  
-51. clearer access to players without input 
 52. access to dictionary like lua ( dot notation and brackets notation)
-//53. automatic input keyword ( like all it skips asking for input from the player )
-//    1.  restriction for non list, input filter must match with only one value
-//    2.  automatic filter for list 
 54. placeable place on boardcells syntax ( and define boardcells with already placeables on it )
-// 55. assign state to syntax and access state from player
-// 56. maybe new keyword to create new instances
-//    1.  restrict it to instantiables (local, group and interactables)
-//57. change boardcell to tile
-//58. optional return type for verb ( infer from return expressions, if types are not the same throw compiler error )
-//59. list qol 
-//    1.  clear
-//    2.  append
-// 60. verb do not have dependency injection all must be passed to them
-// 61. allow inheritance ? 
-//    1. complex implementing it
-//    2. semplifies code and introduces to  an important concept
-//    3. restricting only to inherit attributes and actions with no overrides 
-//    4. override only of attributes
-//    5. up casting and down casting
 //62. single statement bodies ( no brackets )  
-//63. this keyword 
-//    1.  for state
 64. define trigger events attributes 
-//65. triggers modifiers:
-//    1. before
-//    2. after  
-//    3. fast  
-//66. else if
-//67. optional input ( input that can be none if not given )
-//    1.  will be none if it is not given ( like in a verb )
-//    2.  will be none if it has no match ( automatic match )
-//    3.  will be noen if it has no possible player selection ( standard input )
 68. DRY for filters ( way to defined filters outside of their contexts )
 69. better define stackables
+    1. draw stackable until condition
+        1.  change stack interactions to return a specific type 
+        2.  draw from <stack> where { block with stackable as input if returns true it draws the card, optional default is always true }
 70. define the mechanism for reversing the game state on failures:
     1.  change tree concept ( changes of the state in the action tree following the triggers )
     2.  copy of the state each input and action's state that is influenced by the changes but they are applied only after the whole action is applied z
@@ -64,9 +17,18 @@
     4.  effect failure destroys the branch of the change tree
     5.  an action failure destroys the whole change tree 
 71. trigger event for player choice -> explicit trigger for actions that a player can choose to do
+72. define name for what can contain an attribute
+73. define name for what can contain actions
+74. definire cosa deve essere fatto vedere al giocatore ( esempio quali azioni ect... )
 
 // scacchi
-1. pareggio -> se un giocatore non puó fare una mossa o chiede pareggio
+1. pareggio -> se un giocatore non puó fare una mossa o chiede pareggio ( se cosi testati == cosi che rimangono non ci osno mosse e pareggia)
 2. scacco matto
 3. arresa -> richiesta da giocatore
 4. castleing
+   1. rook e king non si devono essere mossi
+   2. gli spazi tra 
+   3. rook e king devono essere liberi
+   4. gli spazi tra rook e king non devono essere in visione dell'avversario
+   5. king non deve essere sotto scacco
+   6. sia rook che king devono essere liberi di muoversi ( non credo sia un problema  controllare perché é impossibile fare un pin del rook )
