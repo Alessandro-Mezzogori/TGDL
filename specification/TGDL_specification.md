@@ -53,7 +53,6 @@
   - [Group states](#group-states)
 - [Interactables](#interactables)
   - [Placeable](#placeable)
-  - [Stackables](#stackables)
 - [Stack](#stack)
 - [Players](#players)
   - [Starting player](#starting-player)
@@ -76,6 +75,7 @@
 - [Verbs](#verbs)
 - [Inheritances](#inheritances)
   - [Override](#override)
+- [Player information](#player-information)
 - [Keywords](#keywords)
 
 # Language primitives
@@ -415,14 +415,14 @@ general construct that is identifier by the identifier name of that construct ( 
 <th>event structure</th>
 </tr>
 <tr>
-<td>state</td>
+<td>attribute construct</td>
 <td>attribute</td>
 <td>change</td>
 <td>
 <pre>
 {
   string triggering   : construct identifier that triggered the event
-  string state        : which state identifier of the state that had the attribute change
+  string construct    : which attribute construct identifier had the attribute change
   string attribute    : attribute name that has changed
   object oldValue     : old value of the attribute in object type
   object newValue     : new value of the attribute in object type
@@ -444,30 +444,61 @@ general construct that is identifier by the identifier name of that construct ( 
 </pre>
 </td>
 </tr>
+<tr>
+<td>state</td>
+<td></td>
+<td>transferred</td>
+<td>
+<pre>
+{
+  string state        : which state identifier has been assigned
+  player from         : player that from which the state has been transferred ( if none it is a state assignment )
+  player to           : player that has been assigned the state ( if none it is a state removal )
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td>action construct.action</td>
+<td></td>
+<td>call</td>
+<td>
+<pre>
+{
+  string callingConstruct : identifier of the calling construct 
+  string action           : which action is being called
+  player callingPlayer    : which player is calling the action 
+}
+</pre>
+</td>
+</tr>
 </table>
+
+<table>
 </center>
 
-- placeable
-  - on placement
-  - on removal
-  - on movement
-- stackable
-  - on drawn
-  - on discarded
-  - on kept
-- stack
-  - on draw card
-  - on shuffle
-  - on reshuffle
-  - on put card
-  - on discard
-- turn
-  - on turn activation
-  - on turn disactivation
-  - on turn phase change
+<center>
+Special trigger events
 
-special events:
-- player
+<table>
+<tr>
+<th>target</th>
+<th>event</th>
+<th>event structure</th>
+</tr>
+<tr>
+<td>player</td>
+<td>choice</td>
+<td>
+<pre>
+{
+  player active: the player that made the choice to activate this trigger
+}
+</pre>
+</td>
+</tr>
+</table>
+</center>
 
 ### Trigger Modifiers
 ```
@@ -649,10 +680,8 @@ Placeable have specialized triggers to enhance their functions (defined in the r
 a placeable stores a reference to the tile that it occupies ( if not placed the tiles is none ).
 and viceversa a tiles stores the reference to all the placeable placed on itself trough a placeable list
 
-## Stackables
-
-
 # Stack
+
 
 # Players
 A player is defined as a decimal, every state has a hidden state attribute called `player` that corresponds to the player to which the state is attached to.
@@ -1110,6 +1139,9 @@ when overriding an action everything that has not the same declaration of the ba
 if inputs are removed the base construct cannot be invoked inside the effect 
   
 by marking an action as **override** it will give an error if the base as no equivalent in the base class 
+
+# Player information
+Which information can the player see about the written code ?
 
 # Keywords
 - player: references a specific player 
