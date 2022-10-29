@@ -76,6 +76,7 @@
 - [Inheritances](#inheritances)
   - [Override](#override)
 - [Player information](#player-information)
+- [Multiple Files](#multiple-files)
 - [Keywords](#keywords)
 
 # Language primitives
@@ -141,19 +142,22 @@ the none value behaves differently than normal types in comparisons:
 ## Lists
 List are a set of multiple instances of the same type that are aggregated under a single named variable.
 
-Declaration: `type[] <list_name>`
-Access to a single instance: `<list_name>[decimal]` (if a number with a decimal part is inserted, the decimal is ignored), when an out of index access is done it returns none
-List Lenght: `<list_name>.lenght`
-Inserting: `<list_name>[decimal] = <instance>` to append `<list_name>[<list_name>.lenght] = <instance>`
-Initialization: `type[] <list_name> = { <instance>, <instance2>, <instance3> };` ( can be empty to initializes an empty list)
-
-Appending: `<list>.append(<other>)` appends the list other to the list list
-Clearing a list: `<list>.clear()` removes all entries from the list, returning it to an empty list
-Check if list has value: `<list>.contains(<value>)` returns true if value is inside list
-Find element index: `<list>.find(<value>)` returns the key if value is found, otherwise none
-Remove element at index: `<list>.removeAt(<decimal index>)` removes the value at the index 
-Remove element: `<list>.remove(<value>)` removes the value from the lsit 
-Remove a list: `<list>.removeRange(<other_list>)` removes all the elements of other_list from list
+| operation | syntax | explanation |
+| --------- | ------ | ----------- |
+| Declaration | `type[] <list_name>` | defines a variable of type list of type |                                           
+Access to a single instance | `<list_name>[decimal]` | returns the instance at the position ( decimal part is ignored, if not found it will return none ) |
+List Lenght | `<list_name>.lenght` | returns the last used index + 1 |
+Inserting | `<list_name>[decimal] = <instance>` | inserts an instance at the index | 
+Initialization | `type[] <list_name> = { [<instance>, <instance2>, <instance3>] };` | creates a list and initializes its value |
+| Appending | `<list>.append(<other>)` | appends the list other to the list list |
+| Clearing a list | `<list>.clear()` | removes all entries from the list, returning it to an empty list |
+| Check if list has value | `<list>.contains(<value>)` | returns true if value is inside list |
+| Find element index| `<list>.find(<value>)` | returns the key if value is found, otherwise none | 
+| Remove element at index| `<list>.removeAt(<decimal index>)` | removes the value at the index |
+| Remove element| `<list>.remove(<value>)` | removes the value from the list |
+| Remove a list| `<list>.removeRange(<other_list>)` | removes all the elements of other_list from list |
+| Shuffle a list| `<list>.shuffle()` | shuffles the current list |
+| Get a copy of the list| `<list>.copy()` |  returns a new list with the same elements |
 
 ## Type checking
 Type checking is done trough the `is` keyword: `<attribute> is <type>` is a type checkign expression and will return true if the attribute
@@ -1142,6 +1146,29 @@ by marking an action as **override** it will give an error if the base as no equ
 
 # Player information
 Which information can the player see about the written code ?
+
+# Multiple Files
+Multiple files are supported by using `import <relative path to file> [as <name>]`
+to access the content of the file:
+- if there's no name conflict use the normal identifier
+- if there's a conflict to differentiate it is possible to use the `as name` import syntax, the content of the file is accessible trough by prefixing `name.`
+
+the entry point of the program and main file is the one with the game tag.
+there can only be one unnamed setup in the whole "project".
+
+```
+// ext.tgdl
+state ext { }
+
+// setup.tgdl
+setup { }
+
+// main.tgdl
+game "game";
+
+import "ext.tgdl" as ext;
+import "setup.tgdl";
+```
 
 # Keywords
 - player: references a specific player 
