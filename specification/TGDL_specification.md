@@ -7,6 +7,7 @@
 - [Types](#types)
   - [Object type](#object-type)
   - [Predefined types](#predefined-types)
+    - [String interpolation](#string-interpolation)
   - [Supplied predefined types](#supplied-predefined-types)
   - [Input types](#input-types)
   - [None Value](#none-value)
@@ -21,6 +22,7 @@
     - [Logic Operations](#logic-operations)
     - [Generic operations](#generic-operations)
   - [Unary Operations](#unary-operations)
+    - [Instantiation Expression](#instantiation-expression)
   - [Order of evaluation](#order-of-evaluation)
 - [Statement](#statement)
   - [Flow Control statements](#flow-control-statements)
@@ -54,6 +56,8 @@
 - [Interactables](#interactables)
   - [Placeable](#placeable)
 - [Stack](#stack)
+  - [Pop expression](#pop-expression)
+  - [Push expression](#push-expression)
 - [Players](#players)
   - [Starting player](#starting-player)
   - [Winner selection and game end](#winner-selection-and-game-end)
@@ -72,10 +76,11 @@
 - [Movement](#movement)
 - [Goals](#goals)
 - [Setup](#setup)
-- [Verbs](#verbs)
+- [Functions](#functions)
 - [Inheritances](#inheritances)
   - [Override](#override)
 - [Player information](#player-information)
+  - [Information tag](#information-tag)
 - [Multiple Files](#multiple-files)
 - [Keywords](#keywords)
 
@@ -108,8 +113,24 @@
   
 ## Object type
 the object type is the base type of all the types in the language, you can always upcast (cast to object) to the object type 
-it has no attached functionality other than being used to have a simpler way to use one argument for different possible type.
 to go back to the orignal type from the object type a downcast must be performed.
+
+the object type defines the `to_string()` function to get the representation of a construct / type in string form.
+the `to_string()` function can be overriden in the constructs to get custom rapresentation for that construct
+
+```
+<construct>
+{
+  override function to_string
+  {
+    override effect
+    {
+      return "custom";
+    }
+  }
+}
+
+```
 
 ## Predefined types 
 TGDL supports a small set of predefined types for simplicity and ease of use for non skilled users.
@@ -118,6 +139,22 @@ The standard supported predefined types are:
 - string: for descriptions or storing text ( no string manipulation is provided and they are not supported in the majority of expression operations )
 - bool: boolean values true and false
 
+### String interpolation
+strings types have a special, easy to use, way to construct dynamic strings.
+
+interpolated string are defined by prefixing to the string definition the dollar sign `$""`;
+
+in an interpolated string you can define normal string text `$"hello world"` and you can defined interpolated values trough the curly brackets `$"hello {name}"`:
+- when interpolating a construct the `to_string()` function will be called.
+- when interpoalting a predefined type, formatting information can be attached trough a double dot notation `$"{<value>:<formatting>}"`
+
+the supported predefined type formatting are:
+- decimal:
+  - decimal precision
+  - zero padding
+- bool: has no formatting
+- string: has no formatting
+  
 ## Supplied predefined types
 Supplied predefines types are user declared types ( or defaults if not declared ) that are automatically supplied to 
 the consumer action, they are the following types:
@@ -147,7 +184,7 @@ List are a set of multiple instances of the same type that are aggregated under 
 | Declaration | `type[] <list_name>` | defines a variable of type list of type |                                           
 Access to a single instance | `<list_name>[decimal]` | returns the instance at the position ( decimal part is ignored, if not found it will return none ) |
 List Lenght | `<list_name>.lenght` | returns the last used index + 1 |
-Inserting | `<list_name>[decimal] = <instance>` | inserts an instance at the index | 
+Inserting | `<list_name>[decimal] = <instance>` | inserts an instance at the index ( if decimal > lenght, it extends the list ) | 
 Initialization | `type[] <list_name> = { [<instance>, <instance2>, <instance3>] };` | creates a list and initializes its value |
 | Appending | `<list>.append(<other>)` | appends the list other to the list list |
 | Clearing a list | `<list>.clear()` | removes all entries from the list, returning it to an empty list |
@@ -217,6 +254,20 @@ A unary operation is defines as an expression that involves one operand and one 
 - minus: `-<operand>`
 - not: `not <operand>`
 
+### Instantiation Expression
+```
+new <attribute construct>();
+```
+
+returns a new instance of the attribute construct, to avoid event generation when changing the attributes an attribute intializer list can be used to initialize the attributs of the construct
+
+```
+new <attribute construct>()
+{
+  <attribute name> = <value>; // attribute assignemnet statement
+}
+```
+
 ## Order of evaluation
 1. state attribute acces
 2. plus and minus
@@ -237,7 +288,6 @@ a stamentent is a combination of clauses and expressions that end with a semicol
 - declaration: `<type> <attribute or variable>;`
   - an assignemnt can be chained to perform an initialization of the declared variable or state attribute
 - turn: `pass expression;`
-- instantiate construct: `new <construct type>;`;
 
 anything that isn't an expression or a body is a clause (ex. return, =, if, while, pass, ...).
 
@@ -252,6 +302,7 @@ anything that isn't an expression or a body is a clause (ex. return, =, if, whil
 
 # Actions
 actions are a combination of instructions set by the user that are run on a trigger.
+actions are specials functions that have no return type but have a more flexible functionalities thanks to requires, triggers, named tags, ect...
 
 example:
 ```
@@ -380,7 +431,7 @@ the possible modifiers are:
 - `player [<decimal>]` : ask a player for input, it is the default input if no number is given the current player is used
 - `auto`: no player input, filter from all the avalaible instances of the requested type. If not filter is given all instances will be accepted.
   - exceptions: if no type satisfies the defined filter if the input type is a list it will return none if optional else the action will fail
-- `verb`: special input  that can be used only in verbs, defines inputs that need to be passed trough the calling statement
+- `function`: special input  that can be used only in functions, defines inputs that need to be passed trough the calling statement
   
 ### Optional Inputs
 an optional input defines in the its definition the `optional` keyword and it means that input can assume the value of none when no input is given by the
@@ -497,6 +548,18 @@ Special trigger events
 <pre>
 {
   player active: the player that made the choice to activate this trigger
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td>player</td>
+<td>offturn</td>
+<td>
+<pre>
+{
+  player caller: who called the action
+  player active: who is the active player in the turn 
 }
 </pre>
 </td>
@@ -685,7 +748,41 @@ a placeable stores a reference to the tile that it occupies ( if not placed the 
 and viceversa a tiles stores the reference to all the placeable placed on itself trough a placeable list
 
 # Stack
+Stack are used to define a pile of interactables, a stack is a attribute and action construct.
 
+```
+stack <identifier> 
+{
+  default
+  {
+  }
+}
+```
+the default tag of the stack defines how the stack is defined when it is instanced.
+it must return a list of interactables that wil be become the order of the stack where
+the top of the stack is the last index of the list, and the front of the stack is the first index of the list.
+
+**warning** the list is checked for none values and will crash the program if there is a null value.
+
+## Pop expression
+```
+<stack>.pop() // returns one interactable
+<stack>.pop(decimal n) // returns n interactables, if there are less then n it will return the remaining
+
+// functions to pop from the back of the stack
+<stack>.pop_back() 
+<stack>.pop_back(decimal n)
+```
+
+## Push expression
+the push operation on the stack has two forms
+```
+<stack>.push(interactable item)   // pushes one single item to the front
+<stack>.push(interactable[] list) // pushes a list to the front
+
+<stack>.push_back(interactable item)   // pushes one single item to the back 
+<stack>.push_back(interactable[] list) // pushes a list to the back
+```
 
 # Players
 A player is defined as a decimal, every state has a hidden state attribute called `player` that corresponds to the player to which the state is attached to.
@@ -1045,7 +1142,7 @@ to move a placeable interactable the following syntax is used:
 move <placeable> to <tile>
 ```
 
-if there is a need for complex movements, like line, obstructions ect... verbs should be used
+if there is a need for complex movements, like line, obstructions ect... functions should be used
 
 # Goals
 Goals are specific actions that will terminate the game if the global effect is triggered.
@@ -1077,11 +1174,11 @@ the setup can have inputs and effects:
 - there can be named effects but there **must** be a unnnamed effect ( that will be run for the setup)
 - as all statement blocks it can interact trough the dictionary method with any of the instances or class
 
-# Verbs
-Verbs are a definition to group and reuse a certain set of statements on a specific set of inputs
+# Functions
+Functions are a definition to group and reuse a certain set of statements on a specific set of inputs
 
 ```
-verb <name>
+function <name>
 {
   input {}
   effect {}
@@ -1099,8 +1196,10 @@ it is the equivalent to a function in other programming languages with the addit
 it has a return type that is defined automatically trough it's return statements ( that must all return the same type ).
 If there is a need to return a base construct trough different derived constructs upcasting must be used trough the as keyword ( it can return null, caller has the responsability of null checking )
 
-to call a verb the parenthesis operator is used `(identifier1: value1, identifier2: value2)` where identifier is one of the verb input identifiers defined in the verb
-definition and value is the value that will be passed to the verb call for that specific input identifier.
+to call a function the parenthesis operator is used `(identifier1: value1, identifier2: value2)` where identifier is one of the function input identifiers defined in the function
+definition and value is the value that will be passed to the function call for that specific input identifier.
+
+**ATTENTION: functions can be defined inside a construct and called trough <construct>.<function>()**
 
 # Inheritances
 Inheritance permits a construct to derive actions, attributes and type from a base construct while having the possibility of modifying the behavior trough 
@@ -1147,6 +1246,19 @@ by marking an action as **override** it will give an error if the base as no equ
 # Player information
 Which information can the player see about the written code ?
 
+## Information tag
+the information tag is used to display usefull information for player choice, it has 
+two important subtags that are used for abbrevieted form ( short tag ) and a fuller, more explanatory form ( long tag );
+```
+information {
+  short { return "short"; }
+  long { return "long"; }
+}
+```
+
+each tag must return a string that will be shown to the users.
+multiple short or long tag are used to split up the informatino in multiple paragraphs
+
 # Multiple Files
 Multiple files are supported by using `import <relative path to file> [as <name>]`
 to access the content of the file:
@@ -1166,7 +1278,7 @@ setup { }
 // main.tgdl
 game "game";
 
-import "ext.tgdl" as ext;
+import "ext.tgdl" as ext/
 import "setup.tgdl";
 ```
 
