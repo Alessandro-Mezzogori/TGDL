@@ -79,6 +79,7 @@
 - [Functions](#functions)
 - [Inheritances](#inheritances)
   - [Override](#override)
+    - [Function Override](#function-override)
 - [Player information](#player-information)
   - [Information tag](#information-tag)
 - [Multiple Files](#multiple-files)
@@ -1196,6 +1197,9 @@ it is the equivalent to a function in other programming languages with the addit
 it has a return type that is defined automatically trough it's return statements ( that must all return the same type ).
 If there is a need to return a base construct trough different derived constructs upcasting must be used trough the as keyword ( it can return null, caller has the responsability of null checking )
 
+if the effect is not defined ( abstract like function ) a return type must be defined,
+the compiler needs to know what inputs and return type the function has.
+
 to call a function the parenthesis operator is used `(identifier1: value1, identifier2: value2)` where identifier is one of the function input identifiers defined in the function
 definition and value is the value that will be passed to the function call for that specific input identifier.
 
@@ -1232,7 +1236,7 @@ instance on which one is interacting
 the overrides obviusly change the intended behavior of a block of code, this changes are a responsability of the user to not create conflicts with 
 the base construct code 
 
-a partial action override is an a replacement for a specific part of an action of the base construct, partial overrides include:
+an action override is an a replacement for a specific part of an action of the base construct, partial overrides include:
 - named and unnamed triggers
 - named and unnamed effects
 - named and unnamed requires
@@ -1242,6 +1246,15 @@ when overriding an action everything that has not the same declaration of the ba
 if inputs are removed the base construct cannot be invoked inside the effect 
   
 by marking an action as **override** it will give an error if the base as no equivalent in the base class 
+
+### Function Override
+when overriding a construct function ( function defined in a construct ) the only overridable part 
+is the global effect.
+
+when overriding a function, the return type must match with the base function definition, so if the return type is implicitly defined trough the effect tag, the overriding function must have that same type.
+
+when creating an empty function to mimic a prototype/abstract like definition of the function,
+the effect tag should be omitted forcing the user to defined the return type trough the return tag.
 
 # Player information
 Which information can the player see about the written code ?
