@@ -1,0 +1,485 @@
+game "scacchi";
+
+players 2;
+
+turn chess_turn
+{
+   phase move { }    // move a piece
+   phase win_check 
+   { 
+      auto input player_state active { return active.player == player; }
+      auto input player_state opponent { return opponent.player != player; }
+      effect
+      {
+         // check if opponent is under check
+         decimal index = 0;
+         bool under_check = false;
+         while(index < active.pieces.lenght)
+         {
+            tile[] vision = active.pieces[index].compute_vision();
+            if(vision.contains(opponent.k))
+            {
+               under_check = true;
+               break; 
+            }
+
+            index += 1;
+         }
+
+         // check if opponent has any valid move that doesn't put the king in check
+         index = 0;
+         bool has_valid_move = false;
+         while(index < opponent.pieces.lenght)
+         {
+            tile[] vision = filter_illegal_vision(
+               p: opponent.pieces[index], 
+               current: opponent, 
+               opponent: active
+            );
+
+            if(vision.lenght > 0)
+            {
+               has_valid_move = true;
+               break;
+            }
+         }
+         
+         // if in check and no valid move -> win for active
+         if(under_check && !has_valid_move)
+         {
+            winner player;
+         }
+         
+         // trigger draw is opponet has no valid move but is not under check
+         if(!under_check && !has_valid_move)
+         {
+            winner player, player + 1;
+         }
+      }
+   }     
+
+   default
+   {
+      if(phase == win_check)
+      {
+         pass player + 1 to move;
+      }
+      else
+      {
+         pass player to win_check;
+      }
+   }
+}
+
+tile sq
+{
+
+}
+
+board
+{
+   tile[] 
+   group square grid
+   {
+        sq,sq,sq,sq,sq,sq,sq,sq;
+        sq,sq,sq,sq,sq,sq,sq,sq;
+        sq,sq,sq,sq,sq,sq,sq,sq;
+        sq,sq,sq,sq,sq,sq,sq,sq;
+        sq,sq,sq,sq,sq,sq,sq,sq;
+        sq,sq,sq,sq,sq,sq,sq,sq;
+        sq,sq,sq,sq,sq,sq,sq,sq;
+        sq,sq,sq,sq,sq,sq,sq,sq;
+   } 
+}
+
+setup
+{
+   input board b;
+
+   effect
+   {
+      player_state ps0 = new player_state() 
+      { 
+         pawn_direction = 1;
+      };
+
+      player_state ps1 = new player_state() 
+      { 
+         pawn_direction = -1;
+      };
+
+      ps0 assign to player 0;
+      ps1 assign to player 1;
+   }
+}
+
+local state player_state
+{
+   decimal pawn_direction = 1; // 1 is up -1 is down
+   decimal promotion_rank = 0; // 0 for white, 7 for black
+   king k = new king(){ owner = this; };
+   piece[] pieces = { }; // needs to be filled when instanced
+
+   action surrender
+   {
+      trigger on player choice;
+      effect 
+      {   
+         winner this.player + 1;
+      }
+   }
+
+   // ##### player pieces #####
+   action move_piece
+   {
+      trigger on player choice;
+      input piece p { return p.owner == this; };
+      auto input player_state opponent { return opponent != this; }
+      effect
+      {
+         // get all the valid moves for the current piece
+         tile[] vision = filter_illegal_vision(p: p, current: this, opponent: opponent)
+
+         // if there's no possibile move -> stop action
+         if(vision.lenght == 0)
+         {
+            fail;
+         }
+
+         // select move
+         input tile dest 
+         {
+            return vision.contains(dest);
+         }
+         
+         // if destination has enemy piece ( placeables in it ) capture it 
+         if(dest.placeables.lenght > 1)
+         {
+            dest.placeables.clear();
+         }
+         
+         move p to dest;
+         
+         // stop castleing if rook or king moved 
+         if(p is rook)
+         {
+            (p as rook).hasMoved = true;
+         }
+         else if(p is king)
+         {
+            (p as king).hasMoved = true;
+         }
+      }
+   }
+}
+
+interactable piece placeable
+{
+   player_state owner = none;
+   tile[] vision = {};
+
+   function compute_vision 
+   {
+      returns tile[];
+   }
+}
+
+interactable rook : piece
+{
+   bool hasMoved = false
+
+   override function compute_vision
+   {
+      override effect
+      {
+         tile[] vision = {};
+         vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: 0));
+         vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: -1, y: 0));
+         vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 0, y: 1));
+         vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 0, y: -1));
+         return vision;
+      }
+   }
+}
+
+interactable bishop : piece 
+{
+   override function compute_vision
+   {
+      override effect
+      {
+         tile[] vision = {};
+         vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: 1));
+         vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: -1));
+         vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: -1, y: 1));
+         vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: -1, y: -1));
+         return vision;
+      }
+   }
+}
+
+interactable king : piece 
+{
+   bool hasMoved = false;
+
+   override function compute_vision
+   {
+      override effect 
+      {
+         group g = this.tile.group; 
+         decimal x = this.tile.x;
+         decimal y = this.tile.y;
+         
+         tile[] vision = {};
+         if(check_vision_tile(t: g[x - 1][y - 1], this.owner)) { vision[vision.lenght] = g[x - 1][y - 1]; }
+         if(check_vision_tile(t: g[x - 1][y - 0], this.owner)) { vision[vision.lenght] = g[x - 1][y - 0]; }
+         if(check_vision_tile(t: g[x - 1][y + 1], this.owner)) { vision[vision.lenght] = g[x - 1][y + 1]; }
+         if(check_vision_tile(t: g[x - 0][y - 1], this.owner)) { vision[vision.lenght] = g[x - 0][y - 1]; }
+         if(check_vision_tile(t: g[x - 0][y + 1], this.owner)) { vision[vision.lenght] = g[x - 0][y + 1]; }
+         if(check_vision_tile(t: g[x + 1][y - 1], this.owner)) { vision[vision.lenght] = g[x + 1][y - 1]; }
+         if(check_vision_tile(t: g[x + 1][y - 0], this.owner)) { vision[vision.lenght] = g[x + 1][y - 0]; }
+         if(check_vision_tile(t: g[x + 1][y + 1], this.owner)) { vision[vision.lenght] = g[x + 1][y + 1]; }
+
+         // TODO add castleing
+         //    add to vision the positions for castleing
+         //    check if enemy has vision of in between tiles to stop castleing
+
+         return vision;
+      }
+   }
+}
+
+interactable queen : piece
+{
+   override function compute_vision
+   {
+      override effect
+      {
+         tile[] vision = {};
+         // bishop movement
+         vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: 1));
+         vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: -1));
+         vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: -1, y: 1));
+         vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: -1, y: -1));
+         // rook movement
+         vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: 0));
+         vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: -1, y: 0));
+         vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 0, y: 1));
+         vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 0, y: -1));
+         return vision;
+      }
+   }
+}
+
+interactable knight: piece
+{
+   override function compute_vision
+   {
+      override effect
+      {
+         group g = this.tile.group; 
+         decimal x = this.tile.x;
+         decimal y = this.tile.y;
+         tile[] vision = {};
+
+         if(check_vision_tile(t: g[x - 1][y - 2], this.owner)) { vision[vision.lenght] = g[x - 1][y - 2]; }
+         if(check_vision_tile(t: g[x + 1][y - 2], this.owner)) { vision[vision.lenght] = g[x + 1][y - 2]; }
+         if(check_vision_tile(t: g[x - 1][y + 2], this.owner)) { vision[vision.lenght] = g[x - 1][y + 2]; }
+         if(check_vision_tile(t: g[x + 1][y + 2], this.owner)) { vision[vision.lenght] = g[x + 1][y + 2]; }
+         if(check_vision_tile(t: g[x + 2][y + 1], this.owner)) { vision[vision.lenght] = g[x + 2][y + 1]; }
+         if(check_vision_tile(t: g[x + 2][y - 1], this.owner)) { vision[vision.lenght] = g[x + 2][y - 1]; }
+         if(check_vision_tile(t: g[x - 2][y + 1], this.owner)) { vision[vision.lenght] = g[x - 2][y + 1]; }
+         if(check_vision_tile(t: g[x - 2][y - 1], this.owner)) { vision[vision.lenght] = g[x - 2][y - 1]; }
+         
+         return vision;
+      }
+   }
+}
+
+interactable pawn: piece
+{
+   action promote
+   {
+      trigger on pawn move
+      {
+         return to.y == this.owner.promotion_rank;
+      }
+
+      effect
+      {
+         string[] promotion_choices = { "queen", "rook", "bishop", "knight" };
+         player input string promotion_choice { return promotion_choices.contains(promotion_choice); }
+
+         // find pawn inside the owner pieces
+         decimal index = 0;
+         while(index < this.owner.pieces.lenght)
+         {
+            if(this.owner.pieces[index] == this)
+            {
+               break;
+            }
+         }
+
+         if(promotion_choice == "queen")
+         {
+            this.owner.pieces[index] = new queen()
+            {
+               owner = this.owner;
+            }
+         }
+         else íf (promotion_choice == "bishop")
+         {
+            this.owner.pieces[index] = new bishop()
+            {
+               owner = this.owner;
+            }
+         }
+         else if (promotion_choice == "knight")
+         {
+            this.owner.pieces[index] = new knight()
+            {
+               owner = this.owner;
+            };
+         }
+         else
+         {
+            this.owner.pieces[index] = new rook()
+            {
+               owner = this.owner;
+            }
+         }
+
+         // substitute the pawn with the promoted piece
+         tile current_tile = this.tile;
+         current_tile.placeables.clear();
+         move this.owner.pieces[index] to current_tile; 
+      }
+   }
+
+   override function compute_vision
+   {
+      override effect
+      {
+         group g = this.tile.group;
+         decimal x = this.tile.x;
+         decimal y - this.tile.y;
+         decimal direction = 1 * this.owner.pawn_direction;
+         tile[] vision = {};
+
+         // if front is clear add 
+         tile front = g[x][y - direction];
+         if(front.placeables.lenght == 0)
+         {
+            vision[vision.lenght] = front;
+         }
+
+         // add up left if there is an enemy piece
+         tile left = g[x - 1][y - direction];
+         if(left.placeables.lenght > 0 && (left.placeables[0] as piece).owner != this.owner)
+         {
+            vision[vision.lenght] = front;
+         }
+
+         // add up right if there is an enemy piece
+         tile right = g[x + 1][y - direction];
+         if(right.placeables.lenght > 0 && (right.placeables[0] as piece).owner != this.owner)
+         {
+            vision[vision.lenght] = front;
+         }
+         
+         return vision;
+      }
+   }
+}
+
+// ##### HELPER VERBS ######
+function filter_illegal_vision
+{
+   function input piece p;
+   function input player_state current;
+   function input player_state opponent; 
+   returns tile[];
+   effect
+   {
+      tile[] vision = p.compute_vision();  
+      pieces[] enemy_pieces = opponent.pieces;
+
+      tile prev = p.tile;
+      decimal vision_index = 0;
+      tile[] legal_moves = {};
+      while(vision_index < vision.lenght)
+      {
+         // move piece and compute in_check vision
+         move p to vision[vision_index];
+         
+         decimal enemy_index = 0;
+         bool is_legal = true;
+         while(enemy_index < enemy_pieces.lenght)
+         {
+            // if the move puts the king in check remove the move from the vision
+            tile[] opponent_vision = enemy_pieces[enemy_index].compute_vision();
+            if(opponent_vision.contains(current.k.tile))
+            {
+               is_legal = false;
+               break;
+            }
+            enemy_index += 1;
+         }
+         
+         if(is_legal)
+         {
+            legal_moves[legal_moves.lenght] = vision[vision_index];
+         }
+
+         vision_index += 1;
+      } 
+      // restore the piece to its original tile
+      move p to prev;
+
+      return legal_moves;
+   }
+}
+
+function line_till_obstruction
+{
+   function input tile src;
+   function input player_state moving;
+   function input decimal x;
+   function input decimal y;
+   effect
+   {
+      group g = src.group;
+      tile c = g[src.x + x][src.y + y];
+      tile[] line = {};
+      while(c != none && c.placeables.lenght == 0){
+         line.add(c);
+         c = g[c.x + x][c.y + y];
+      }
+
+      if(check_vision_tile(t: c, owner: moving))
+      {
+         line.add(c);
+      }
+
+      return line; 
+   }
+}
+
+function check_vision_tile 
+{
+   function input tile t;
+   function input player_state owner;
+
+   effect
+   {
+      if(t == null)
+         return false;
+
+      if(t.placeables.lenght > 0)
+      {
+         piece p = t.placeables[0] as piece;
+         return p.owner != owner;
+      }
+      return true;
+   }
+}

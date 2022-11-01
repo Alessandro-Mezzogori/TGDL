@@ -2,6 +2,16 @@ game "tris";
 
 players 2;
 
+turn tris_turn
+{
+    phase tick;
+    phase win_check; // without win check phase
+    default
+    {
+
+    }
+}
+
 boardcell sq {
     player assignedTo = none;
 }
@@ -12,73 +22,5 @@ board {
         sq,sq,sq;
         sq,sq,sq;
         sq,sq,sq;
-    }
-}
-
-global state end_state {
-    player winner = none;
-}
-
-state player_state {
-    action tick {
-        input active_player p;
-        input sq selected {
-            fail selected.assignedTo != none;
-        }
-        
-        trigger { 
-            action; 
-        }
-        effect {
-            selected.assignedTo = p;
-            selected.group.board.filled = selected.group.board.filled + 1;
-            pass p + 1;
-        }
-    }
-}
-
-goal end priority 1 {
-    input board b;
-    input active_player p;
-    input end_state s;
-
-    trigger sq change priority 1 {
-        group g = sq.grid 
-        if(g != none) {
-            if(g[0][0] == g[0][1] and g[0][1] == g[0][2]) { return true; }
-            if(g[1][0] == g[1][1] and g[1][1] == g[1][2]) { return true; }
-            if(g[2][0] == g[2][1] and g[2][1] == g[2][2]) { return true; }
-            if(g[0][0] == g[1][0] and g[1][0] == g[2][0]) { return true; }
-            if(g[0][1] == g[1][1] and g[1][1] == g[2][1]) { return true; }
-            if(g[0][2] == g[1][2] and g[1][2] == g[2][2]) { return true; }
-            if(g[0][0] == g[1][1] and g[1][1] == g[2][2]) { return true; }
-            if(g[0][2] == g[1][1] and g[1][1] == g[2][0]) { return true; }
-            
-            return false;
-        }
-        
-        effect {
-            s.winner = p;
-            winner p;
-        }
-    }
-}
-
-goal draw priority 0
-{
-    input board b;
-    input end_state s;
-
-    trigger sq change priority 0 {
-        if(b.filled == 9 and s.winner == none)
-        {
-            return true;
-        }
-        
-        return false;
-    }
-    
-    effect {
-        winner none;
     }
 }

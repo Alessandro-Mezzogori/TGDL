@@ -47,14 +47,17 @@
 86. input prompts to guide 
 87. special premade filters 
     1.  ex. choice from a list of possibilities
+    2.  could be introduces with filter construct for reuseability -> premade filters are just predefined filter constructs 
 88. should all special functions like move, winner ect... be called normally with parenthesis operators ()
     1.  simplifies language parsers
     2.  simplifies intellisense-like helpers
     3.  removes some gated keywords  
 89. way to start/stop generation of events at will 
 90. exceptions are for grave faults like lua
-90. error checking like lua ( none is)
+91. error checking like lua ( none is)
+92. creating and placing tiles to a group dinamically
 // scacchi
+1. setup
 2. castleing
    1. rook e king non si devono essere mossi
    2. gli spazi tra 
@@ -62,3 +65,7 @@
    4. gli spazi tra rook e king non devono essere in visione dell'avversario
    5. king non deve essere sotto scacco
    6. sia rook che king devono essere liberi di muoversi ( non credo sia un problema  controllare perché é impossibile fare un pin del rook )
+
+// santa monica 
+
+// tris

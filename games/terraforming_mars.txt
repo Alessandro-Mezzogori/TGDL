@@ -1,0 +1,30 @@
+// colonies.tgdl
+global state colonies_standard_actions
+{
+    action trade;
+}
+
+// terraforming_standard.tgdl
+import "colonie.tgdl" as colonies;
+
+global state standard_actions
+{
+    action sell_cards;
+    action temp;
+}
+
+state player_state
+{
+    decimal money_production = 0;
+    decimal energy_production = 0;
+
+    action gioca_carta
+    {
+        trigger on player choice;
+    }
+    
+    action pass 
+    {
+        trigger on player choice;
+    }
+}
