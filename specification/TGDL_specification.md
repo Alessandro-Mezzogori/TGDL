@@ -37,7 +37,6 @@
     - [Placeable Movement Events](#placeable-movement-events)
     - [State Events](#state-events)
     - [State Attribute Events](#state-attribute-events)
-  - [Global and Named](#global-and-named)
   - [Phases](#phases)
   - [Action priority](#action-priority)
   - [Action transaction](#action-transaction)
@@ -303,7 +302,7 @@ anything that isn't an expression or a body is a clause (ex. return, =, if, whil
 
 # Actions
 actions are a combination of instructions set by the user that are run on a trigger.
-actions are specials functions that have no return type but have a more flexible functionalities thanks to requires, triggers, named tags, ect...
+actions are specials functions that have no return type but have a more flexible functionalities thanks to requires, triggers
 
 example:
 ```
@@ -454,25 +453,25 @@ possible triggers events are:
 - `change <state>.value`
 - `<state>.<action>.<phase>` 
 
-a trigger event is formed by 3 pieces: `on <construct>[.<target>] <event>`:
+a trigger event is formed by 3 pieces: `on <target> <event>`:
 - on is the keyword that defines the trigger event
 - event is the event of the macro category
 
-for each construct you can use specific constructs that were defined by the programmer like a specific state, or a 
-general construct that is identifier by the identifier name of that construct ( ex. state will encompass all the states )
+for each construct you can use specific constructs that were defined by the programmer like a specific state, or a general construct that is identifier by the identifier name of that construct ( ex. state will encompass all the states )
 
+inheritance works for targets too, a derivated target will generate the events both with its type and for the base type ( walking back the inheritance hierarchy )
+
+so for an efficient event passing you should narrow down the event to the most specific target possible so that the trigger needs to check only a minimum number of events 
 ### Trigger Events 
 <center>
 <table>
 <tr>
-<th>construct</th>
 <th>target</th>
 <th>event</th>
 <th>event structure</th>
 </tr>
 <tr>
-<td>attribute construct</td>
-<td>attribute</td>
+<td>construct.attribute</td>
 <td>change</td>
 <td>
 <pre>
@@ -487,14 +486,13 @@ general construct that is identifier by the identifier name of that construct ( 
 </td>
 </tr>
 <tr>
-<td>state.action</td>
-<td></td>
+<td>(action construct).action</td>
 <td>call</td>
 <td>
 <pre>
 {
   string triggering   : construct identifier that triggered the event
-  string state        : which state identifier had the action triggered
+  string construct    : which state identifier had the action triggered
   string action       : triggered action identifier
 }
 </pre>
@@ -502,7 +500,6 @@ general construct that is identifier by the identifier name of that construct ( 
 </tr>
 <tr>
 <td>state</td>
-<td></td>
 <td>transferred</td>
 <td>
 <pre>
@@ -515,8 +512,7 @@ general construct that is identifier by the identifier name of that construct ( 
 </td>
 </tr>
 <tr>
-<td>action construct.action</td>
-<td></td>
+<td>(action construct).action</td>
 <td>call</td>
 <td>
 <pre>
@@ -524,6 +520,44 @@ general construct that is identifier by the identifier name of that construct ( 
   string callingConstruct : identifier of the calling construct 
   string action           : which action is being called
   player callingPlayer    : which player is calling the action 
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td>turn.phase</td>
+<td>active / inactive</td>
+<td>
+<pre>
+{
+  string construct: identifier of the construct  
+  string action   : identifier of the action
+  string phase    : identifier of the phase that changed state 
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td>(action construct).action.phase</td>
+<td>active / inactive</td>
+<td>
+<pre>
+{
+  string construct: identifier of the construct  
+  string action   : identifier of the action
+  string phase    : identifier of the phase that changed state 
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td>placeable</td>
+<td>move</td>
+<td>
+<pre>
+{
+  tile from : // from which tile placeable is moved from ( can be none if placed )
+  tile to   : // to which tile placeable is moved to ( can be none if removed from board)
 }
 </pre>
 </td>
@@ -581,36 +615,9 @@ the possible triggers modifiers are:
 ### State Events
 ### State Attribute Events
 
-## Global and Named
-Triggers, requires and effects can be associated to a shared subgroup through the name funcionality
-
-```
-trigger [for <identifier>] {}
-require [for <identifier>] {}
-effect [for <identifier>] {}
-```
-
-A named require, trigger or effect will interact only with the require, triggers or effects within the same subgroup.
-An identifier can be assigned to **multiple** triggers, require and effects if needed.
-
-Global action triggers, requires and effects are not named and can interact with the named counterparts, 
-establishing a gerarchical hierarchy between the two.
-A global trigger, require or effect is global to where it is defined ( action, phase ):
-- global trigger: starts the execution of the global effect
-- global require: filters the input / blocks the execution if no input satisfies the conditions 
-To prevent code duplication and encourage use of naming when possible, the global action triggers, requires and effects can reference 
-the named counterparts trough their identifier and boolean operations (not, and, or, nand, xor).
-
-```
-require for A {}
-require for A {}
-require for B {}
-require { A and B} // satisfied when both A and B are satisfied
-```
-
 ## Phases
 Phases are introduces for multi effect actions with different requirements and / or triggers.
-A phase declaration can only contain trigger, require and effect ( both named and global for that phase)
+A phase declaration can only contain trigger, require and effect
 
 
 a phase is declared like in the following example.
@@ -664,13 +671,25 @@ a state has reference to the player or players that are associated with:
 - `<state>.players` is used for local and group states and return all the players that have that specific state  
 
 ## Attributes
-A state attribute is defined as a variable declaration (and optionally an assignment) inside the state declaration
+Attributes are defined trough the attribute tag inside an attribute construct
+
+```
+<attribute construct> <identifier>
+{
+  attribute <identifier>
+  {
+    returns <type>;
+    default { return <value>; } 
+  }
+}
+```
+
+but because it is a cumbersome and too verbose of a syntax just for defining an attribute, they can be defined with a variable definition and  initialization statement. 
 
 ```
 state <state>
 {
-  <type> <identifier> = <default> or <none>;
-  <type> <identifier> = <default> or <none>;
+  <type> <identifier> = <default>; // default can be a none value
 }
 ```
 
@@ -854,6 +873,8 @@ if there is a need for multiple turns the current active turn can be changed by 
 ```
 use turn <turn identifier>;
 ```
+
+**ATTENTION phases can contain effects like in an action that is run when the phase is activated before phase events are generated**
 
 ### Default turn
 The default turn, or default section of the turn, is the block of code that is called on a default `pass` call
@@ -1172,7 +1193,6 @@ the setup can have inputs and effects:
 - allowed inputs are the types that do not require an input from a player (global inputs)
   - lists of types with all keyword ( players, states, ect...)
   - any of the global types like board, global states, groups, stacks
-- there can be named effects but there **must** be a unnnamed effect ( that will be run for the setup)
 - as all statement blocks it can interact trough the dictionary method with any of the instances or class
 
 # Functions
@@ -1183,13 +1203,12 @@ function <name>
 {
   input {}
   effect {}
-  return <type>;
+  returns <type>;
 }
 ```
 
 it has some special rules:
 - multiple inputs
-- one unnamed effect without phases
 - no triggers or requires
 
 it is the equivalent to a function in other programming languages with the addition of dependency injection (Inversion of control ?) trough the inputs.
@@ -1237,9 +1256,9 @@ the overrides obviusly change the intended behavior of a block of code, this cha
 the base construct code 
 
 an action override is an a replacement for a specific part of an action of the base construct, partial overrides include:
-- named and unnamed triggers
-- named and unnamed effects
-- named and unnamed requires
+- triggers
+- effect
+- require
 - inputs
 
 when overriding an action everything that has not the same declaration of the base construct is added.
@@ -1279,7 +1298,7 @@ to access the content of the file:
 - if there's a conflict to differentiate it is possible to use the `as name` import syntax, the content of the file is accessible trough by prefixing `name.`
 
 the entry point of the program and main file is the one with the game tag.
-there can only be one unnamed setup in the whole "project".
+there can only be one setup in the whole "project".
 
 ```
 // ext.tgdl
