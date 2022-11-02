@@ -5,9 +5,9 @@
     4.  effect failure destroys the branch of the change tree
     5.  an action failure destroys the whole change tree 
 71. definire cosa deve essere fatto vedere al giocatore ( esempio quali azioni ect... )
-73. when should event start to be generated ( inside setup or after setup ? )
-74. typed stack ( stack that only accepts one type of interactables ) 
-76. events:
+//72. when should event start to be generated ( inside setup or after setup ? )
+73. typed stack ( stack that only accepts one type of interactables ) 
+74. . events:
     1.  board events
         1. attribute change
     2.  group events
@@ -20,42 +20,42 @@
     5.  turn events
         1.  on turn active
         2.  on turn inactive
-77. access global informations:
-    1.  turn:
-        1.  phase
-        2.  turn
-    2.  players:
-        1.  active
-        2.  number of playerss
-78. define the dependency injection trough input:
+//75. access global informations:
+//    1.  turn:
+//        1.  phase
+//        2.  turn
+//    2.  players:
+//        1.  active
+//        2.  number of playerss
+76. define the dependency injection trough input:
     1.  construct tracking
-79. body less tags
-80. language conventions 
-    1.  functions and actions in snake case
-    2.  state names with with first upper case ect...
-    3.  list functions snake case
-81. are goals needed  ? 
-    1.  functions of goals
-    2.  convoluted ways to trigger them
-    3.  change the functionality to a simple check win check that is triggered based on events ?
-    4.  transfer the actual end of game and selecting winnenr to the winner statement
-82. trigger target specificity ( ex. interactable -> placeables -> specific placeables / interactable ect... )
-84. scrivere tag returns spec
-85. IOC and DI tracking definition, does it track every new instantiaed construct ? how to free memory then ?
+//77. body less tags
+//78. language conventions 
+//    1.  functions and actions in snake case
+//    2.  state names with with first upper case ect...
+//    3.  list functions snake case
+//79. are goals needed  ? 
+//    1.  functions of goals
+//    2.  convoluted ways to trigger them
+//    3.  change the functionality to a simple check win check that is triggered based on events ?
+//    4.  transfer the actual end of game and selecting winnenr to the winner statement
+//80. trigger target specificity ( ex. interactable -> placeables -> specific placeables / interactable ect... )
+//81. scrivere tag returns spec
+82. IOC and DI tracking definition, does it track every new instantiaed construct ? how to free memory then ?
     1.  new is for temporary objects ( destroyes at end of scope )
     2.  another way to create and save to dependency container objects 
-86. input prompts to guide 
-87. special premade filters 
+//83. input prompts to guide 
+84. special premade filters 
     1.  ex. choice from a list of possibilities
     2.  could be introduces with filter construct for reuseability -> premade filters are just predefined filter constructs 
-88. should all special functions like move, winner ect... be called normally with parenthesis operators ()
-    1.  simplifies language parsers
-    2.  simplifies intellisense-like helpers
-    3.  removes some gated keywords  
-89. way to start/stop generation of events at will 
-90. exceptions are for grave faults like lua
-91. error checking like lua ( none is)
-92. creating and placing tiles to a group dinamically
+//85. should all special functions like move, winner ect... be called normally with parenthesis operators ()
+//    1.  simplifies language parsers
+//    2.  simplifies intellisense-like helpers
+//    3.  removes some gated keywords  
+//86. way to start/stop generation of events at will 
+87. exceptions are for grave faults like lua
+88. error checking like lua ( none is)
+//89. creating and placing tiles to a group dinamically
 // scacchi
 1. setup
 2. castleing
