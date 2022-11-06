@@ -6,6 +6,7 @@
 - [Language primitives](#language-primitives)
 - [Types](#types)
   - [Object type](#object-type)
+    - [ObjectConstruct type](#objectconstruct-type)
   - [Predefined types](#predefined-types)
     - [String interpolation](#string-interpolation)
   - [Supplied predefined types](#supplied-predefined-types)
@@ -32,6 +33,7 @@
     - [Input Modifiers](#input-modifiers)
     - [Optional Inputs](#optional-inputs)
   - [Triggers](#triggers)
+    - [Events general functions and data](#events-general-functions-and-data)
     - [Trigger Events](#trigger-events)
     - [Trigger Modifiers](#trigger-modifiers)
     - [Placeable Movement Events](#placeable-movement-events)
@@ -43,9 +45,7 @@
     - [Action Failures](#action-failures)
 - [State](#state)
   - [Attributes](#attributes)
-  - [Value Substate](#value-substate)
-  - [Action Substate](#action-substate)
-  - [Scopes](#scopes)
+  - [State Scopes](#state-scopes)
     - [Local](#local)
     - [Groups](#groups)
     - [Global](#global)
@@ -58,10 +58,12 @@
   - [Pop expression](#pop-expression)
   - [Push expression](#push-expression)
 - [Players](#players)
+  - [General Data and functions](#general-data-and-functions)
   - [Starting player](#starting-player)
   - [Winner selection and game end](#winner-selection-and-game-end)
   - [Player expressions](#player-expressions)
   - [Turns](#turns)
+    - [Turns Data and Functions](#turns-data-and-functions)
     - [Default turn](#default-turn)
 - [Board](#board)
   - [Tile](#tile)
@@ -70,10 +72,7 @@
     - [Square cell type](#square-cell-type)
     - [Adjacency cell type](#adjacency-cell-type)
     - [Border Cells](#border-cells)
-  - [Board Changes](#board-changes)
-  - [Group Changes](#group-changes)
 - [Movement](#movement)
-- [Goals](#goals)
 - [Setup](#setup)
 - [Functions](#functions)
 - [Inheritances](#inheritances)
@@ -81,7 +80,11 @@
     - [Function Override](#function-override)
 - [Player information](#player-information)
   - [Information tag](#information-tag)
+    - [Input tag behavior](#input-tag-behavior)
 - [Multiple Files](#multiple-files)
+- [Garbage collection and instance injector](#garbage-collection-and-instance-injector)
+- [Conventions](#conventions)
+- [Filters](#filters)
 - [Keywords](#keywords)
 
 # Language primitives
@@ -90,6 +93,8 @@
   - may be omitted in the furture for a single statement block
   - can contain another block or construct
   - it delimits an area of code called scope
+  - a block can omit the `{}` if there is only a single line statement
+  - a block can omit the `{}` and end directly with a semicolon to abbreviate the empty block 
 - scope: anything inside a scope can use everything inside the same scope and the parents scopes
 - statement: combination of caluses and expressions ending with a semicolon `;`
 - clauses: one or more characters or symbols defined by the language specifications
@@ -130,6 +135,19 @@ the `to_string()` function can be overriden in the constructs to get custom rapr
   }
 }
 
+```
+
+### ObjectConstruct type
+the object construct type is the base type of all the construct types like state, interactables, ect...
+
+it defines the following functions:
+- `input_injection(bool change)`: if change is false it disables the instance injector, if state is true it enables  the instance injector
+
+```
+<object construct> : object
+{
+  function input_injection(bool change) { }
+}
 ```
 
 ## Predefined types 
@@ -318,8 +336,6 @@ action <action>
 an action can have any combination of the other tags **input, require, trigger and effect**:
 - **WARNING**: if an action has no triggers it will never be called
 
-any of the actions can be deactived or activated trough the allowed attributge associated with an action `<state>.<action>.allowed = <boolean>;`
-
 all actions can be called using the parenthesis operator `()` 
 
 ## Inputs
@@ -330,7 +346,7 @@ It works trough method dependency injection following the subsequent rules:
 3. if its a Predefined types it will ask the user to choose ( if possible restrict the values so that it will always satisfy the require, or give an indication when satisfied)
 
 ```
-[optional] [<modifier>]input <type> <idenfitier>
+[optional] [<modifier>] input <type> <idenfitier>
 {
   filters
 }
@@ -462,6 +478,14 @@ for each construct you can use specific constructs that were defined by the prog
 inheritance works for targets too, a derivated target will generate the events both with its type and for the base type ( walking back the inheritance hierarchy )
 
 so for an efficient event passing you should narrow down the event to the most specific target possible so that the trigger needs to check only a minimum number of events 
+
+### Events general functions and data
+the `events` object contains the generic functions and data:
+- `stop()`  : stops the generation of the events
+- `start()` : starts the generation of the events
+
+the `stop()` and `start()` functions are powerfull and but dangerous, they allow for a better performance and to **globally** stop the generation of the events.
+
 ### Trigger Events 
 <center>
 <table>
@@ -599,6 +623,27 @@ Special trigger events
 </pre>
 </td>
 </tr>
+<tr>
+<td>game</td>
+<td>end</td>
+<td>
+<pre>
+{
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td>winner</td>
+<td>selected</td>
+<td>
+<pre>
+{
+  player[] winners: the players who won the game
+}
+</pre>
+</td>
+</tr>
 </table>
 </center>
 
@@ -695,15 +740,7 @@ state <state>
 
 the **none** keyword rapresents the absence of an assigned value to an attribute and it is the default for every type if assigned a default initializer value.
 
-## Value Substate
-the value substate contains the state attributes which the state actions or other state actions can use.
-it is implicitly defined as the set of attributes defined in the state declaration ( if no attribute is declared then the value state is empty ).
-
-## Action Substate
-The action substate is the set of all defined action inside a state declaration.
-It can be accessed and/or modified by any other action or pseudo-action if the state containing the action substate is not decared with the **sealed** keyword.
-
-## Scopes
+## State Scopes
 State scopes change the behaviour and attachment of a state to a player
 
 ### Local
@@ -743,6 +780,10 @@ local states can be transferred from a player to another player trough the **tra
 The transfer keeps the value state constant during the transfer opereration ( a special trigger can be setup to reset/change the value substate on transfer to another player ).
 
 the player that acquired the state can now access the state substates, on the other hand the other player has lost the rights to access the substates of the transferred state
+
+```
+<state>.transfer_to(player destination); // transfer the current state from current player to destination player
+```
 
 ## Group states
 a group states cannot be transferred as a local state, the transfer operations change the attachments of players to the group states.
@@ -806,6 +847,13 @@ the push operation on the stack has two forms
 
 # Players
 A player is defined as a decimal, every state has a hidden state attribute called `player` that corresponds to the player to which the state is attached to.
+
+## General Data and functions
+the general data and functions of the players are stored in the object that has the same name `players`.
+
+the object has:
+- `all()`: returns the list of all players
+- `active()`: returns the current active player
 
 ## Starting player
 the starting player is always the player numbered 0.
@@ -875,6 +923,11 @@ use turn <turn identifier>;
 ```
 
 **ATTENTION phases can contain effects like in an action that is run when the phase is activated before phase events are generated**
+
+### Turns Data and Functions
+the `turns` object contains all the general functions and nice to have data:
+- `active()`: returns the current active turn
+- `phase.active()`: returns the current active phase of the turn
 
 ### Default turn
 The default turn, or default section of the turn, is the block of code that is called on a default `pass` call
@@ -1150,39 +1203,16 @@ board
 }
 ```
 
-
-## Board Changes
-
-## Group Changes
-
 # Movement 
 Movement is the act of removing a placeable from a boarder cell and placing in another boardercell.
 Custom movements can be defined trough default terms and movement operators. with an action-like syntax
 
 to move a placeable interactable the following syntax is used:
 ```
-move <placeable> to <tile>
+<placeable>.move_to(tile t);
 ```
 
 if there is a need for complex movements, like line, obstructions ect... functions should be used
-
-# Goals
-Goals are specific actions that will terminate the game if the global effect is triggered.
-The syntax is the same as a state action, it supports naming and phases:
-```
-goal <id> [priority]
-{
-  input {}
-  require {}
-  trigger {}
-  effect {}
-}
-```
-goals can have a priority, the higher priority goals will be run before the lower priority goals
-
-selecting winner and drawing:
-- `win <players>`: comma separated list of players or list of players that win
-- `draw <players>`: comma separated list of players or list of players that draw 
 
 # Setup
 The setup is the initial stage of the game where everything is put in place before the first player action is played.
@@ -1215,6 +1245,8 @@ it is the equivalent to a function in other programming languages with the addit
 
 it has a return type that is defined automatically trough it's return statements ( that must all return the same type ).
 If there is a need to return a base construct trough different derived constructs upcasting must be used trough the as keyword ( it can return null, caller has the responsability of null checking )
+
+the `returns <type>;` keyword is a empty block tag used to indicate the return type of a tag block ( like in attributes and functions ).
 
 if the effect is not defined ( abstract like function ) a return type must be defined,
 the compiler needs to know what inputs and return type the function has.
@@ -1265,6 +1297,7 @@ when overriding an action everything that has not the same declaration of the ba
 if inputs are removed the base construct cannot be invoked inside the effect 
   
 by marking an action as **override** it will give an error if the base as no equivalent in the base class 
+also if an a derived class has an override that is not marked with the override key it will throw a syntax error.
 
 ### Function Override
 when overriding a construct function ( function defined in a construct ) the only overridable part 
@@ -1291,6 +1324,19 @@ information {
 each tag must return a string that will be shown to the users.
 multiple short or long tag are used to split up the informatino in multiple paragraphs
 
+### Input tag behavior
+when an information tag is used inside an input tag it will be used as a user prompt.
+the informatino tag is allowed only in player inputs and when used it forces the explicit filter 
+if one is needed.
+
+```
+player input ...
+{
+  filter { }
+  information { return "input promp"; }
+}
+```
+
 # Multiple Files
 Multiple files are supported by using `import <relative path to file> [as <name>]`
 to access the content of the file:
@@ -1312,6 +1358,51 @@ game "game";
 
 import "ext.tgdl" as ext/
 import "setup.tgdl";
+
+```
+
+# Garbage collection and instance injector
+While a reference to a construct exists the corresponding memory space it is not fred and it is usable
+by the InstanceInjector for the input mechanism.
+
+when creating a variable the tracking is disabled and it is automatically enables when the reference is assigned to a attribute in an attribute construct
+
+**WARNING:** an object with manually enabled tracking is still freed when there are no more references to the object.
+
+a nice to have feature deriving from the way the tracking works is to have variables in the input by enableing 
+the injection tracking on a construct variable, this effectevely turns into temporary inputs that are used only inside the scope where they are defined and discared at the end of the scope.
+
+# Conventions
+TGDL has suggested naming conventions:
+- Lower case snake case for:
+  - functions
+  - actions
+  - attributes
+- CamelCase ( Starting with the first letter in UpperCase):
+  - construct identifiers
+  
+# Filters
+a filter can be defined as a construct with one effect tag inside of it that returns a boolean
+
+a filter has a `filter input` tag that is a empty block tag
+
+```
+filter <identifier>
+{
+  filter input <type> <variable_identifier>; 
+  effect
+  {
+    return true;
+  }
+}
+```
+
+a filter can be used trough its identifier in a input tag
+```
+input <type> <variable_identifier>
+{
+  filter <identifier>; // the compiler will give an error if <type> of <identifier> and <type> are not the same
+}
 ```
 
 # Keywords
