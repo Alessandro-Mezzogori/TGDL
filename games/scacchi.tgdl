@@ -22,9 +22,9 @@ turn chess_turn
                under_check = true;
                break; 
             }
-
             index += 1;
          }
+         opponent.under_check = under_check;
 
          // check if opponent has any valid move that doesn't put the king in check
          index = 0;
@@ -120,6 +120,13 @@ local state player_state
    king k = new king(){ owner = this; };
    piece[] pieces = { }; // needs to be filled when instanced
 
+   // rook references used to castle
+   rook queen_rook = new rook() { owner = this; }
+   rook king_rook = new rook() { owner = this; }
+
+   bool under_check = false;
+
+
    action surrender
    {
       trigger on player choice;
@@ -133,7 +140,7 @@ local state player_state
    action move_piece
    {
       trigger on player choice;
-      input piece p { return p.owner == this; };
+      input piece p { return p.owner == this && p.captured == false; };
       auto input player_state opponent { return opponent != this; }
       effect
       {
@@ -155,10 +162,15 @@ local state player_state
          // if destination has enemy piece ( placeables in it ) capture it 
          if(dest.placeables.lenght > 1)
          {
+            dest.placeables[0].captured = true;
             dest.placeables.clear();
          }
          
          move p to dest;
+         
+         // if a move has been found possible, the king can't be under check
+         // so there is no problem in setting the under_check flag to false
+         this.under_check = false;
          
          // stop castleing if rook or king moved 
          if(p is rook)
@@ -171,12 +183,104 @@ local state player_state
          }
       }
    }
+   
+   action king_side_castle
+   {
+      required
+      {
+         // king and rook didn't move
+         if(k.hasMoved || king_rook.hasMoved)
+            return false;
+         
+         // king not in check
+         if(this.under_check)
+            return false;
+
+         // no pieces can be between the king and the rook
+         // tiles to check: x = 5, 6
+         tile first_tile = k.tile.group[5][k.tile.y];
+         tile second_tile = k.tile.group[6][k.tile.y];
+         if(first_tile.placeables.lenght > 0 || second_tile.placeables.lenght > 0)
+            return false;
+      }
+      auto input player_state opponent { return opponent != this; }
+      effect
+      {
+         // king can't pass trough a check
+         tile rook_tile = k.tile.group[5][k.tile.y];
+         tile king_tile = k.tile.group[6][k.tile.y];
+
+         vision[] opponent_vision = opponent.get_vision();
+         if(opponent_vision.contains(rook_tile) || opponent_vision.contains(king_tile))
+            fail "king can't pass trough a check when castleing";
+
+         king_rook.move_to(rook_tile);
+         k.move_to(king_tile);
+      }
+   }
+
+   action queen_side_castle 
+   {
+      required
+      {
+         // king and rook didn't move
+         if(k.hasMoved || queen_rook.hasMoved)
+            return false;
+         
+         // king not in check
+         if(this.under_check)
+            return false;
+
+         // no pieces can be between the king and the rook
+         // tiles to check: x = 5, 6
+         tile first_tile = k.tile.group[1][k.tile.y];
+         tile second_tile = k.tile.group[2][k.tile.y];
+         tile third_tile = k.tile.group[3][k.tile.y];
+         if(first_tile.placeables.lenght > 0 || second_tile.placeables.lenght > 0 || third_tile.placeables.lenght > 0)
+            return false;
+      }
+      auto input player_state opponent { return opponent != this; }
+      effect
+      {
+         // king can't pass trough a check
+         tile rook_tile = k.tile.group[3][k.tile.y];
+         tile king_tile = k.tile.group[2][k.tile.y];
+
+         vision[] opponent_vision = opponent.get_vision();
+         if(opponent_vision.contains(rook_tile) || opponent_vision.contains(king_tile))
+            fail "king can't pass trough a check when castleing";
+
+         king_rook.move_to(rook_tile);
+         k.move_to(king_tile);
+      }
+   }
+   
+   function get_vision 
+   {
+      returns tile[];
+      effect
+      {
+         decimal index = 0;
+         tile[] vision = {};
+         while(index < this.pieces.lenght)
+         {
+            if(this.pieces[index].captured)
+               continue;
+
+            vision.append(this.pieces[index].compute_vision()); 
+            index += 1;
+         }
+
+         return vision;
+      }
+   }
 }
 
 interactable piece placeable
 {
    player_state owner = none;
    tile[] vision = {};
+   bool captured = false;
 
    function compute_vision 
    {
@@ -193,6 +297,10 @@ interactable rook : piece
       override effect
       {
          tile[] vision = {};
+         
+         if(captured)
+            return vision;
+
          vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: 0));
          vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: -1, y: 0));
          vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 0, y: 1));
@@ -209,6 +317,9 @@ interactable bishop : piece
       override effect
       {
          tile[] vision = {};
+         if(captured)
+            return vision;
+
          vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: 1));
          vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: -1));
          vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: -1, y: 1));
@@ -240,10 +351,6 @@ interactable king : piece
          if(check_vision_tile(t: g[x + 1][y - 0], this.owner)) { vision[vision.lenght] = g[x + 1][y - 0]; }
          if(check_vision_tile(t: g[x + 1][y + 1], this.owner)) { vision[vision.lenght] = g[x + 1][y + 1]; }
 
-         // TODO add castleing
-         //    add to vision the positions for castleing
-         //    check if enemy has vision of in between tiles to stop castleing
-
          return vision;
       }
    }
@@ -256,6 +363,9 @@ interactable queen : piece
       override effect
       {
          tile[] vision = {};
+         if(captured)
+            return vision;
+
          // bishop movement
          vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: 1));
          vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: -1));
@@ -281,6 +391,9 @@ interactable knight: piece
          decimal x = this.tile.x;
          decimal y = this.tile.y;
          tile[] vision = {};
+         if(captured)
+            return vision;
+
 
          if(check_vision_tile(t: g[x - 1][y - 2], this.owner)) { vision[vision.lenght] = g[x - 1][y - 2]; }
          if(check_vision_tile(t: g[x + 1][y - 2], this.owner)) { vision[vision.lenght] = g[x + 1][y - 2]; }
@@ -352,7 +465,7 @@ interactable pawn: piece
          // substitute the pawn with the promoted piece
          tile current_tile = this.tile;
          current_tile.placeables.clear();
-         move this.owner.pieces[index] to current_tile; 
+         this.owner.pieces[index].move_to(current_tile); 
       }
    }
 
@@ -364,7 +477,11 @@ interactable pawn: piece
          decimal x = this.tile.x;
          decimal y - this.tile.y;
          decimal direction = 1 * this.owner.pawn_direction;
+
          tile[] vision = {};
+         if(captured)
+            return vision;
+
 
          // if front is clear add 
          tile front = g[x][y - direction];
@@ -410,12 +527,16 @@ function filter_illegal_vision
       while(vision_index < vision.lenght)
       {
          // move piece and compute in_check vision
-         move p to vision[vision_index];
+         p.move_to(vision[vision_index]);
          
          decimal enemy_index = 0;
          bool is_legal = true;
          while(enemy_index < enemy_pieces.lenght)
          {
+            // do not check vision if this piece was captured
+            if(enemy_pieces[enemy_index].captured == true)
+               continue;
+
             // if the move puts the king in check remove the move from the vision
             tile[] opponent_vision = enemy_pieces[enemy_index].compute_vision();
             if(opponent_vision.contains(current.k.tile))
@@ -434,7 +555,7 @@ function filter_illegal_vision
          vision_index += 1;
       } 
       // restore the piece to its original tile
-      move p to prev;
+      p.move_to(prev);
 
       return legal_moves;
    }

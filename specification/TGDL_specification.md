@@ -36,9 +36,6 @@
     - [Events general functions and data](#events-general-functions-and-data)
     - [Trigger Events](#trigger-events)
     - [Trigger Modifiers](#trigger-modifiers)
-    - [Placeable Movement Events](#placeable-movement-events)
-    - [State Events](#state-events)
-    - [State Attribute Events](#state-attribute-events)
   - [Phases](#phases)
   - [Action priority](#action-priority)
   - [Action transaction](#action-transaction)
@@ -656,10 +653,6 @@ the possible triggers modifiers are:
 - before: the trigger activates the effect before the triggering action is started
 - fast: as soon as the event is thrown the triggers will evalueate
 
-### Placeable Movement Events
-### State Events
-### State Attribute Events
-
 ## Phases
 Phases are introduces for multi effect actions with different requirements and / or triggers.
 A phase declaration can only contain trigger, require and effect
@@ -669,16 +662,18 @@ a phase is declared like in the following example.
 ```
 phase
 {
+  input { }
   trigger { }
   require { }
   effect { }
 }
 ```
 
-phases ( and actions ) have the option of a specifier in the following list that changes the behaviour of the effects:
-- choice <n>: not applicable to a callable action, asks a player to choose n effects that have satisfied requires
-- sequence: effects are executed in order of definition
-- simultaneos ( experimental )
+withinh a phase scope you can define:
+- new inputs that are added to the global action inputs
+- new triggers that concernt only the phase
+- require tags that define when the phase is active 
+- effects that work the same as the action effects
 
 ## Action priority 
 As default the actions are executed in the same order as they are defined in the file, that equals a priority of value 0.
@@ -1302,6 +1297,8 @@ also if an a derived class has an override that is not marked with the override 
 ### Function Override
 when overriding a construct function ( function defined in a construct ) the only overridable part 
 is the global effect.
+
+**ATTENTION** the functions inputs can't be changed in an overriden function, but any auto or player input can be added.
 
 when overriding a function, the return type must match with the base function definition, so if the return type is implicitly defined trough the effect tag, the overriding function must have that same type.
 

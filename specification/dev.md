@@ -27,12 +27,6 @@
 92. global game state that contain every information about the current game
 93. change pass to a function call
 94. update images for groups 
+95. foreach
  // scacchi
 1. setup
-2. castleing
-   1. rook e king non si devono essere mossi
-   2. gli spazi tra 
-   3. rook e king devono essere liberi
-   4. gli spazi tra rook e king non devono essere in visione dell'avversario
-   5. king non deve essere sotto scacco
-   6. sia rook che king devono essere liberi di muoversi ( non credo sia un problema  controllare perché é impossibile fare un pin del rook )
