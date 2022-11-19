@@ -75,7 +75,7 @@ tile sq
 
 board
 {
-   group square grid
+   group square grid 
    {
         sq,sq,sq,sq,sq,sq,sq,sq;
         sq,sq,sq,sq,sq,sq,sq,sq;
@@ -109,6 +109,9 @@ setup
       };
       ps1.assign_to(p1);
       setup_for_player(pState: ps1, g: b.groups[0]);
+      
+      // start the game by setting who starts 
+      pass 0 to move;
    }
 }
 

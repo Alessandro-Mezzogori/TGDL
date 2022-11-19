@@ -5,22 +5,98 @@ players 2;
 turn tris_turn
 {
     phase tick;
-    phase win_check; // without win check phase
+    phase win_check
+    {
+        auto input board b;
+        effect
+        {
+            tickTile[][] tiles = {};
+            for(decimal x = 0; x < 3; x += 1) 
+            {
+                for(decimal y = 0; y < 3; y += 1)
+                {
+                    tiles[x][y] = g.grid[x][y] as tickTile;
+                }
+            }
+
+            // row check
+            player_state winnerState = none;
+            if(tiles[0][0] != null && tiles[0][0] == tiles[1][0] && tiles[1][0] == tiles[2][0])
+                winnerState = tiles[0][0].assignedTo;
+            if(tiles[0][1] != null && tiles[0][1] == tiles[1][1] && tiles[1][1] == tiles[2][1])
+                winnerState = tiles[0][0].assignedTo;
+            if(tiles[0][2] != null && tiles[0][2] == tiles[1][2] && tiles[1][2] == tiles[2][2])
+                winnerState = tiles[0][0].assignedTo;
+                
+            // column check
+            if(tiles[0][0] != null && tiles[0][0] == tiles[0][1] && tiles[0][1] == tiles[0][2])
+                winnerState = tiles[0][0].assignedTo;
+            if(tiles[1][0] != null && tiles[1][0] == tiles[1][1] && tiles[1][1] == tiles[1][2])
+                winnerState = tiles[0][0].assignedTo;
+            if(tiles[2][0] != null && tiles[2][0] == tiles[2][1] && tiles[2][1] == tiles[2][2])
+                winnerState = tiles[0][0].assignedTo;
+
+            // diagonal check
+            if(tiles[0][0] != null && tiles[0][0] == tiles[1][1] && tiles[1][1] == tiles[2][2])
+                winnerState = tiles[0][0].assignedTo;
+            
+            if(tiles[2][0] != null && tiles[2][0] == tiles[1][1] && tiles[1][1] == tiles[0][2])
+                winnerState = tiles[0][0].assignedTo;
+                
+            if(winnerState != none)
+                winner winnerState.player;
+        }
+    } 
     default
     {
-
+        if(phase == win_check)
+        {
+            pass player + 1 to tick;
+        }
+        else
+        {
+            pass player to win_check;
+        }
     }
 }
 
-boardcell sq {
-    player assignedTo = none;
+boardcell tickTile {
+    player_state assignedTo = none;
 }
 
 board {
     decimal filled = 0;
-    group grid {
+    group square grid {
         sq,sq,sq;
         sq,sq,sq;
         sq,sq,sq;
     }
+}
+
+setup
+{
+    player_state player_state_0 = new player_state();
+    player_state_0.assign_to(0);
+
+    player_state player_state_1 = new player_state();
+    player_state_1.assign_to(1);
+    
+    pass 0 to tick;
+}
+
+local state player_state
+{
+    action tick
+    {
+        player input tickTile t
+        {
+            return t.assignedTo == none;
+        }
+        trigger on player choice;
+        effect
+        {
+            t.assignedTo = this;
+            pass;
+        }
+    } 
 }
