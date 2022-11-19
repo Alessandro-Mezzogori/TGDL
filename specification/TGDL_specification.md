@@ -1024,7 +1024,7 @@ Example
 ```
 board
 {
-  group <name> square
+  group square <name> 
   {
     <cell>, <cell>, ...
     <cell>, ...
@@ -1035,6 +1035,8 @@ board
 ```
 
 all the groups can be access in order of definition from the board object trough the `boards` lists 
+
+if a specific group is needed it can be accessed trough its name from the board object
 
 ### Hex cell type
 an hex cell group can have two orientations, **column** (face side up) or **row** (point up), that define the overall look of the board group and changes how the group definition is interpreted
