@@ -198,7 +198,7 @@ List are a set of multiple instances of the same type that are aggregated under 
 | --------- | ------ | ----------- |
 | Declaration | `type[] <list_name>` | defines a variable of type list of type |                                           
 Access to a single instance | `<list_name>[decimal]` | returns the instance at the position ( decimal part is ignored, if not found it will return none ) |
-List Lenght | `<list_name>.lenght` | returns the last used index + 1 |
+List Lenght | `<list_name>.length` | returns the last used index + 1 |
 Inserting | `<list_name>[decimal] = <instance>` | inserts an instance at the index ( if decimal > lenght, it extends the list ) | 
 Initialization | `type[] <list_name> = { [<instance>, <instance2>, <instance3>] };` | creates a list and initializes its value |
 | Appending | `<list>.append(<other>)` | appends the list other to the list list |
@@ -313,7 +313,7 @@ anything that isn't an expression or a body is a clause (ex. return, =, if, whil
 - while: `while expression {}`
   - break: exits the while without evalueting the expression
   - continue: goes to next iteration (it evalueates the expression, if false exits)
-
+- for: `for(init expresison; boolean expression, post expression)`:
 
 # Actions
 actions are a combination of instructions set by the user that are run on a trigger.
@@ -1010,12 +1010,12 @@ if(<tile>.group is <group>)
 a board contains groups of tiles, every group can contain only one type of cell between the following:
 - hex cells
 - square cells
-- adjacency
+- adjacency324wee
 
 like the board, a group is globally defined and can have attributes ( they are declaration and assignement statement inside the group beside the group tiles definition)
 
 all the groups can contain the blank cell (used only for spacing is an empty space) used in the group declaration with the keyword `b`
-the cell type is used to define default terms like **adjancency** and **coordinates**,  
+the cell type is used to define default terms like **adjancency** and **coordinates**,   
 
 you can access a group tiles by using the square brackets operators like if it was a grid of tiles `group[x][y]`;
 if the selected coordinates has a blank tile or no tile associated with it will return a `none`
@@ -1033,6 +1033,8 @@ board
   }
 }
 ```
+
+all the groups can be access in order of definition from the board object trough the `boards` lists 
 
 ### Hex cell type
 an hex cell group can have two orientations, **column** (face side up) or **row** (point up), that define the overall look of the board group and changes how the group definition is interpreted

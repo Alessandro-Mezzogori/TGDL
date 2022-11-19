@@ -27,6 +27,4 @@
 92. global game state that contain every information about the current game
 93. change pass to a function call
 94. update images for groups 
-95. foreach
  // scacchi
-1. setup

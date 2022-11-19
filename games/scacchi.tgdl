@@ -12,9 +12,8 @@ turn chess_turn
       effect
       {
          // check if opponent is under check
-         decimal index = 0;
          bool under_check = false;
-         while(index < active.pieces.lenght)
+         for(decimal index = 0; index < active.pieces.length; index += 1)
          {
             tile[] vision = active.pieces[index].compute_vision();
             if(vision.contains(opponent.k))
@@ -22,14 +21,12 @@ turn chess_turn
                under_check = true;
                break; 
             }
-            index += 1;
          }
          opponent.under_check = under_check;
 
          // check if opponent has any valid move that doesn't put the king in check
-         index = 0;
          bool has_valid_move = false;
-         while(index < opponent.pieces.lenght)
+         for(decimal index = 0; index < opponent.pieces.length; index += 1)
          {
             tile[] vision = filter_illegal_vision(
                p: opponent.pieces[index], 
@@ -37,7 +34,7 @@ turn chess_turn
                opponent: active
             );
 
-            if(vision.lenght > 0)
+            if(vision.length > 0)
             {
                has_valid_move = true;
                break;
@@ -78,7 +75,6 @@ tile sq
 
 board
 {
-   tile[] 
    group square grid
    {
         sq,sq,sq,sq,sq,sq,sq,sq;
@@ -98,18 +94,21 @@ setup
 
    effect
    {
+      player p0 = 0;
       player_state ps0 = new player_state() 
       { 
          pawn_direction = 1;
       };
+      ps0.assign_to(p0);
+      setup_for_player(pState: ps0, g: b.groups[0]);
 
+      player p1 = 1;
       player_state ps1 = new player_state() 
       { 
          pawn_direction = -1;
       };
-
-      ps0 assign to player 0;
-      ps1 assign to player 1;
+      ps1.assign_to(p1);
+      setup_for_player(pState: ps1, g: b.groups[0]);
    }
 }
 
@@ -148,7 +147,7 @@ local state player_state
          tile[] vision = filter_illegal_vision(p: p, current: this, opponent: opponent)
 
          // if there's no possibile move -> stop action
-         if(vision.lenght == 0)
+         if(vision.length == 0)
          {
             fail;
          }
@@ -160,7 +159,7 @@ local state player_state
          }
          
          // if destination has enemy piece ( placeables in it ) capture it 
-         if(dest.placeables.lenght > 1)
+         if(dest.placeables.length > 1)
          {
             dest.placeables[0].captured = true;
             dest.placeables.clear();
@@ -200,7 +199,7 @@ local state player_state
          // tiles to check: x = 5, 6
          tile first_tile = k.tile.group[5][k.tile.y];
          tile second_tile = k.tile.group[6][k.tile.y];
-         if(first_tile.placeables.lenght > 0 || second_tile.placeables.lenght > 0)
+         if(first_tile.placeables.length > 0 || second_tile.placeables.length > 0)
             return false;
       }
       auto input player_state opponent { return opponent != this; }
@@ -236,7 +235,7 @@ local state player_state
          tile first_tile = k.tile.group[1][k.tile.y];
          tile second_tile = k.tile.group[2][k.tile.y];
          tile third_tile = k.tile.group[3][k.tile.y];
-         if(first_tile.placeables.lenght > 0 || second_tile.placeables.lenght > 0 || third_tile.placeables.lenght > 0)
+         if(first_tile.placeables.length > 0 || second_tile.placeables.length > 0 || third_tile.placeables.length > 0)
             return false;
       }
       auto input player_state opponent { return opponent != this; }
@@ -260,15 +259,13 @@ local state player_state
       returns tile[];
       effect
       {
-         decimal index = 0;
          tile[] vision = {};
-         while(index < this.pieces.lenght)
+         for(decimal index = 0; index < this.pieces.length; index += 1)
          {
             if(this.pieces[index].captured)
                continue;
 
             vision.append(this.pieces[index].compute_vision()); 
-            index += 1;
          }
 
          return vision;
@@ -342,14 +339,14 @@ interactable king : piece
          decimal y = this.tile.y;
          
          tile[] vision = {};
-         if(check_vision_tile(t: g[x - 1][y - 1], this.owner)) { vision[vision.lenght] = g[x - 1][y - 1]; }
-         if(check_vision_tile(t: g[x - 1][y - 0], this.owner)) { vision[vision.lenght] = g[x - 1][y - 0]; }
-         if(check_vision_tile(t: g[x - 1][y + 1], this.owner)) { vision[vision.lenght] = g[x - 1][y + 1]; }
-         if(check_vision_tile(t: g[x - 0][y - 1], this.owner)) { vision[vision.lenght] = g[x - 0][y - 1]; }
-         if(check_vision_tile(t: g[x - 0][y + 1], this.owner)) { vision[vision.lenght] = g[x - 0][y + 1]; }
-         if(check_vision_tile(t: g[x + 1][y - 1], this.owner)) { vision[vision.lenght] = g[x + 1][y - 1]; }
-         if(check_vision_tile(t: g[x + 1][y - 0], this.owner)) { vision[vision.lenght] = g[x + 1][y - 0]; }
-         if(check_vision_tile(t: g[x + 1][y + 1], this.owner)) { vision[vision.lenght] = g[x + 1][y + 1]; }
+         if(check_vision_tile(t: g[x - 1][y - 1], this.owner)) { vision[vision.length] = g[x - 1][y - 1]; }
+         if(check_vision_tile(t: g[x - 1][y - 0], this.owner)) { vision[vision.length] = g[x - 1][y - 0]; }
+         if(check_vision_tile(t: g[x - 1][y + 1], this.owner)) { vision[vision.length] = g[x - 1][y + 1]; }
+         if(check_vision_tile(t: g[x - 0][y - 1], this.owner)) { vision[vision.length] = g[x - 0][y - 1]; }
+         if(check_vision_tile(t: g[x - 0][y + 1], this.owner)) { vision[vision.length] = g[x - 0][y + 1]; }
+         if(check_vision_tile(t: g[x + 1][y - 1], this.owner)) { vision[vision.length] = g[x + 1][y - 1]; }
+         if(check_vision_tile(t: g[x + 1][y - 0], this.owner)) { vision[vision.length] = g[x + 1][y - 0]; }
+         if(check_vision_tile(t: g[x + 1][y + 1], this.owner)) { vision[vision.length] = g[x + 1][y + 1]; }
 
          return vision;
       }
@@ -371,6 +368,7 @@ interactable queen : piece
          vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: -1));
          vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: -1, y: 1));
          vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: -1, y: -1));
+
          // rook movement
          vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: 1, y: 0));
          vision.append(line_till_obstruction(tile: this.tile, moving: this.owner, x: -1, y: 0));
@@ -395,14 +393,14 @@ interactable knight: piece
             return vision;
 
 
-         if(check_vision_tile(t: g[x - 1][y - 2], this.owner)) { vision[vision.lenght] = g[x - 1][y - 2]; }
-         if(check_vision_tile(t: g[x + 1][y - 2], this.owner)) { vision[vision.lenght] = g[x + 1][y - 2]; }
-         if(check_vision_tile(t: g[x - 1][y + 2], this.owner)) { vision[vision.lenght] = g[x - 1][y + 2]; }
-         if(check_vision_tile(t: g[x + 1][y + 2], this.owner)) { vision[vision.lenght] = g[x + 1][y + 2]; }
-         if(check_vision_tile(t: g[x + 2][y + 1], this.owner)) { vision[vision.lenght] = g[x + 2][y + 1]; }
-         if(check_vision_tile(t: g[x + 2][y - 1], this.owner)) { vision[vision.lenght] = g[x + 2][y - 1]; }
-         if(check_vision_tile(t: g[x - 2][y + 1], this.owner)) { vision[vision.lenght] = g[x - 2][y + 1]; }
-         if(check_vision_tile(t: g[x - 2][y - 1], this.owner)) { vision[vision.lenght] = g[x - 2][y - 1]; }
+         if(check_vision_tile(t: g[x - 1][y - 2], this.owner)) { vision[vision.length] = g[x - 1][y - 2]; }
+         if(check_vision_tile(t: g[x + 1][y - 2], this.owner)) { vision[vision.length] = g[x + 1][y - 2]; }
+         if(check_vision_tile(t: g[x - 1][y + 2], this.owner)) { vision[vision.length] = g[x - 1][y + 2]; }
+         if(check_vision_tile(t: g[x + 1][y + 2], this.owner)) { vision[vision.length] = g[x + 1][y + 2]; }
+         if(check_vision_tile(t: g[x + 2][y + 1], this.owner)) { vision[vision.length] = g[x + 2][y + 1]; }
+         if(check_vision_tile(t: g[x + 2][y - 1], this.owner)) { vision[vision.length] = g[x + 2][y - 1]; }
+         if(check_vision_tile(t: g[x - 2][y + 1], this.owner)) { vision[vision.length] = g[x - 2][y + 1]; }
+         if(check_vision_tile(t: g[x - 2][y - 1], this.owner)) { vision[vision.length] = g[x - 2][y - 1]; }
          
          return vision;
       }
@@ -425,7 +423,7 @@ interactable pawn: piece
 
          // find pawn inside the owner pieces
          decimal index = 0;
-         while(index < this.owner.pieces.lenght)
+         while(index < this.owner.pieces.length)
          {
             if(this.owner.pieces[index] == this)
             {
@@ -485,23 +483,23 @@ interactable pawn: piece
 
          // if front is clear add 
          tile front = g[x][y - direction];
-         if(front.placeables.lenght == 0)
+         if(front.placeables.length == 0)
          {
-            vision[vision.lenght] = front;
+            vision[vision.length] = front;
          }
 
          // add up left if there is an enemy piece
          tile left = g[x - 1][y - direction];
-         if(left.placeables.lenght > 0 && (left.placeables[0] as piece).owner != this.owner)
+         if(left.placeables.length > 0 && (left.placeables[0] as piece).owner != this.owner)
          {
-            vision[vision.lenght] = front;
+            vision[vision.length] = front;
          }
 
          // add up right if there is an enemy piece
          tile right = g[x + 1][y - direction];
-         if(right.placeables.lenght > 0 && (right.placeables[0] as piece).owner != this.owner)
+         if(right.placeables.length > 0 && (right.placeables[0] as piece).owner != this.owner)
          {
-            vision[vision.lenght] = front;
+            vision[vision.length] = front;
          }
          
          return vision;
@@ -522,37 +520,17 @@ function filter_illegal_vision
       pieces[] enemy_pieces = opponent.pieces;
 
       tile prev = p.tile;
-      decimal vision_index = 0;
       tile[] legal_moves = {};
-      while(vision_index < vision.lenght)
+      for(decimal vision_index = 0; vision_index < vision.length; vision_index += 1)
       {
          // move piece and compute in_check vision
          p.move_to(vision[vision_index]);
          
-         decimal enemy_index = 0;
-         bool is_legal = true;
-         while(enemy_index < enemy_pieces.lenght)
+         tile[] opponent_vision = opponent.get_vision();
+         if(opponent_vision.contains(current.k.tile)
          {
-            // do not check vision if this piece was captured
-            if(enemy_pieces[enemy_index].captured == true)
-               continue;
-
-            // if the move puts the king in check remove the move from the vision
-            tile[] opponent_vision = enemy_pieces[enemy_index].compute_vision();
-            if(opponent_vision.contains(current.k.tile))
-            {
-               is_legal = false;
-               break;
-            }
-            enemy_index += 1;
+            legal_moves[legal_moves.length] = vision[vision_index];
          }
-         
-         if(is_legal)
-         {
-            legal_moves[legal_moves.lenght] = vision[vision_index];
-         }
-
-         vision_index += 1;
       } 
       // restore the piece to its original tile
       p.move_to(prev);
@@ -572,7 +550,7 @@ function line_till_obstruction
       group g = src.group;
       tile c = g[src.x + x][src.y + y];
       tile[] line = {};
-      while(c != none && c.placeables.lenght == 0){
+      while(c != none && c.placeables.length == 0){
          line.add(c);
          c = g[c.x + x][c.y + y];
       }
@@ -596,11 +574,75 @@ function check_vision_tile
       if(t == null)
          return false;
 
-      if(t.placeables.lenght > 0)
+      if(t.placeables.length > 0)
       {
          piece p = t.placeables[0] as piece;
          return p.owner != owner;
       }
       return true;
+   }
+}
+
+function setup_for_player
+{
+   function input player_state pState;
+   funntion input group g;
+   effect
+   {
+      pawn[] pawns = {
+         new pawn() { owner = pState },
+         new pawn() { owner = pState },
+         new pawn() { owner = pState },
+         new pawn() { owner = pState },
+         new pawn() { owner = pState },
+         new pawn() { owner = pState },
+         new pawn() { owner = pState },
+         new pawn() { owner = pState },
+      }
+      pState.pieces.append(pawns);
+
+      rook[] rooks = {
+         new rook() { owner = pState }, // Queen side rook
+         new rook() { owner = pState }, // King side rook
+      }
+      pState.pieces.append(rooks);
+      pState.queen_rook = rooks[0];
+      pState.king_rook = rooks[1];
+      
+      bishop[] bishops = {
+         new bishop() { owner = pState }, // Queen side bishop
+         new bishop() { owner = pState }, // King side bishop
+      }
+      pState.pieces.append(bishops);
+
+      knight[] knights = {
+         new knight() { owner = pState }, // Queen side knight
+         new knight() { owner = pState }, // King side knight
+      }
+      pState.pieces.append(knights);
+      
+      queen q = new queen() { owner = pState }
+      pState.pieces[pState.pieces.length] = q;
+
+      king k = new king() { owner = pState }
+      pState.pieces[pState.pieces.length] = k;
+      pState.k = k;
+
+      decimal first_row = 7 - pState.promotion_rank;
+      deciaml pawn_row = first_row - pState.pawn_direction;
+
+      for(decimal index = 0; index < pawns.length; index += 1)
+      {
+         pawns[index].move_to(g[index][pawn_row]);
+      }
+      
+      rooks[0].move_to(g[first_row][0]);
+      knights[0].move_to(g[first_row][1]);
+      bishops[0].move_to(g[first_row][2]);
+      queen.move_to(g[first_row][3]);
+      king.move_to(g[first_row][4]);
+      bishops[1].move_to(g[first_row][5]);
+      knights[1].move_to(g[first_row][6]);
+      rooks[1].move_to(g[first_row][6]);
    }
 }
