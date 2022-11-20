@@ -64,7 +64,7 @@ boardcell tickTile {
     player_state assignedTo = none;
 }
 
-board {
+board tetris_board {
     decimal filled = 0;
     group square grid {
         sq,sq,sq;
@@ -82,6 +82,11 @@ setup
     player_state_1.assign_to(1);
     
     pass 0 to tick;
+}
+
+global state game_state
+{
+    board main_board = new tetris_board();
 }
 
 local state player_state

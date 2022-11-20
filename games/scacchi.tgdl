@@ -73,7 +73,7 @@ tile sq
 
 }
 
-board
+board chess_board
 {
    group square grid 
    {
@@ -113,6 +113,12 @@ setup
       // start the game by setting who starts 
       pass 0 to move;
    }
+}
+
+// used only for containing the board
+global state game_state
+{  
+   board chess = new chess_board();
 }
 
 local state player_state

@@ -63,12 +63,13 @@
     - [Turns Data and Functions](#turns-data-and-functions)
     - [Default turn](#default-turn)
 - [Board](#board)
+  - [Defaults](#defaults)
   - [Tile](#tile)
   - [Groups](#groups-1)
     - [Hex cell type](#hex-cell-type)
     - [Square cell type](#square-cell-type)
     - [Adjacency cell type](#adjacency-cell-type)
-    - [Border Cells](#border-cells)
+  - [Tile Connection](#tile-connection)
 - [Movement](#movement)
 - [Setup](#setup)
 - [Functions](#functions)
@@ -923,6 +924,8 @@ use turn <turn identifier>;
 the `turns` object contains all the general functions and nice to have data:
 - `active()`: returns the current active turn
 - `phase.active()`: returns the current active phase of the turn
+- `pass(player, phase)`: passes the turn to the defined player and phase
+- `pass()`: calls the default turn tag
 
 ### Default turn
 The default turn, or default section of the turn, is the block of code that is called on a default `pass` call
@@ -981,6 +984,19 @@ default
 the board is the construct used to rapresent something that can be interacted with by the players trough placing tokens, claiming cells or other actions.
 it is globally defined, meaning there is only one instance of the board in the entire game, a board can have attributes.
 
+a board is a construct that can only be instantiated else it will no be in the game, just like local states
+
+when defining a board it must have a unique identifier  `board <identfier> {}`
+
+it contains an associative array called `groups` that contains all the defined groups in the board
+
+## Defaults
+Both board and group can define a `default` tag that is run after the creation of the object.
+
+the default object is an effect-like tag that runs on different events based on the construct that defines it.
+
+for boards and groups it is used to make modifications or manually defining the board/group
+
 ## Tile 
 a tile is a specialized state-like definition trough the **tile** keyword, it can have multiple instances of the same declaration like local states and players.
 
@@ -998,23 +1014,16 @@ tiles have two implicit attributes:
 - `board`: reference to the global board
 - `group`: reference to the group in which they are attached
 
-to do group manipulation or other that requires a specific group, type checking and casting can be used
-```
-if(<tile>.group is <group>)
-{
-  <group> <id> = <tile>.group as <group>;
-}
-``` 
-
 ## Groups
 a board contains groups of tiles, every group can contain only one type of cell between the following:
 - hex cells
 - square cells
-- adjacency324wee
+- adjancency 
 
-like the board, a group is globally defined and can have attributes ( they are declaration and assignement statement inside the group beside the group tiles definition)
+a group can't have attributes, compile time groups can have a default setting
+defined trough the `gruop` tag 
 
-all the groups can contain the blank cell (used only for spacing is an empty space) used in the group declaration with the keyword `b`
+all the groups can contain the blank tile (used only for spacing, it is considered an empty space, ex: blanks at the end are not considered) used in the group declaration with the keyword `b`
 the cell type is used to define default terms like **adjancency** and **coordinates**,   
 
 you can access a group tiles by using the square brackets operators like if it was a grid of tiles `group[x][y]`;
@@ -1022,7 +1031,7 @@ if the selected coordinates has a blank tile or no tile associated with it will 
 
 Example
 ```
-board
+board <identifier>
 {
   group square <name> 
   {
@@ -1034,9 +1043,19 @@ board
 }
 ```
 
-all the groups can be access in order of definition from the board object trough the `boards` lists 
+when a specific group is needed from a board it can be accessed trough the associative array `groups` in the following manners:
+- index style access: `groups["<name?"]`
+- attribute style access: `groups.<name>`
 
-if a specific group is needed it can be accessed trough its name from the board object
+both behave the same exact way, if the group with the same name exists 
+it will be returned else it will return none
+
+a new group can be added trough the associative array by using the new keyword and the group keyword `new group() { <group definition with tiles> }`.
+
+**WARNING**: if the name of the new group coincides with an already existing group it will overwrite it.  
+
+trough a group you can access the tiles with the following:
+- matrix access: the tiles can always and should always be accessed trough a 2d matrix by using the group object `group[x][y]`.
 
 ### Hex cell type
 an hex cell group can have two orientations, **column** (face side up) or **row** (point up), that define the overall look of the board group and changes how the group definition is interpreted
@@ -1184,23 +1203,29 @@ group <name> adjency
 }
 ```
 
-### Border Cells
-A border cells is a cell that connects to another group cell.
+## Tile Connection 
+In the `adj` list of each tile are stored the connection objects that connect
+the tile with one or multiple tiles together
 
-The definition syntax is the same as a the adjacency list, because the bordercells list is a glorified adjacency list starting off as empty 
-
+the default connection object is the following
 ```
-board
 {
-  group first {}
-  group second {}
-  tiles
-  {
-    <first.cell> -> <second.cell>
-    <first.cell> <-> <second.cell>
-  }
+  to: <tile>
 }
 ```
+unidirectional connection
+
+you can define a new connection by defining a connection construct:
+```
+connection <identifier>{
+  <attributes>
+}
+```
+
+when defining a connection identifier you must use the `default` tag
+for a group / board to manually define the connections
+
+to modify a connection it just needs to modify the adj list of a tile
 
 # Movement 
 Movement is the act of removing a placeable from a boarder cell and placing in another boardercell.
